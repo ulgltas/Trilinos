@@ -70,8 +70,10 @@
 // std::shared_ptr<>.  We can modify this for use with Teuchos::RCP<>
 // by implementing the following two #define-s:
 
+#ifndef SWIG_SHARED_PTR_NAMESPACE
 #define SWIG_SHARED_PTR_NAMESPACE Teuchos
 #define shared_ptr RCP
+#endif
 
 // and %include-ing the boost_shared_ptr.i file:
 
@@ -139,7 +141,7 @@
 			      %convertptr_flags, &newmem);
   if (!SWIG_IsOK(res))
   {
-    %dirout_fail(res, "$type"); 
+    %dirout_fail(res, "$type");
   }
   if (newmem & SWIG_CAST_NEW_MEMORY)
   {
@@ -161,7 +163,7 @@
 			      %convertptr_flags, &newmem);
   if (!SWIG_IsOK(res))
   {
-    %dirout_fail(res, "$type"); 
+    %dirout_fail(res, "$type");
   }
   if (!argp)
   {
