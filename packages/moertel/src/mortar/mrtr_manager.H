@@ -91,12 +91,12 @@ The Moertel package depends on \ref Epetra, \ref EpetraExt, \ref Teuchos,
 \ref Amesos, \ref ML and \ref AztecOO:<br>
 Use at least the following lines in the configure of Trilinos:<br>
 \code
---enable-moertel 
---enable-epetra 
+--enable-moertel
+--enable-epetra
 --enable-epetraext
---enable-teuchos 
+--enable-teuchos
 --enable-ml
---enable-aztecoo --enable-aztecoo-teuchos 
+--enable-aztecoo --enable-aztecoo-teuchos
 --enable-amesos
 \endcode
 
@@ -112,18 +112,18 @@ class Solver;
 
 \brief <b> Top level user interface to mortar package 'Moertel' </b>
 
-This class supplies capabilities for nonconforming mesh tying in 2 and 3 
+This class supplies capabilities for nonconforming mesh tying in 2 and 3
 dimensions using Mortar methods. <br>
-It also supports use of mortar methods for contact formulations and 
-domain decomposition as well as some limited support to solving 
+It also supports use of mortar methods for contact formulations and
+domain decomposition as well as some limited support to solving
 mortar-coupled systems of equations.
 
 \b Proceeding:
-- The user constructs an arbitrary number of conforming or non-conforming 
+- The user constructs an arbitrary number of conforming or non-conforming
  interfaces using the \ref MOERTEL::Interface class and passes them to this
  \ref MOERTEL::Manager.
 - This class will then choose appropriate mortar and slave sides on all interfaces
- (if not already done by the user) such that conflicts are avoided on 
+ (if not already done by the user) such that conflicts are avoided on
  corner and edge nodes that are shared among interfaces.
  It will detect such corner/edge nodes based on the user input and will perform
  necessary modifications to the user chosen Lagrange multiplier shape functions
@@ -132,7 +132,7 @@ mortar-coupled systems of equations.
  each slave side of an interface and will use this field to construct the
  Mortar projection operator that projects nodal values from the mortar to the slave side
 - It will perform the integration of the Mortar integrals and assemble the
- coupling matrix \b D that couples the interface degrees of freedom of 
+ coupling matrix \b D that couples the interface degrees of freedom of
  the slave side to the Lagrange multipliers (LMs) and the coupling matrix \b M that
  couples the degrees of freedom of the master side to the LMs.
 - A saddle point system of equations can be constructed and returned to the user
@@ -142,31 +142,31 @@ mortar-coupled systems of equations.
 - The user has access to coupling matrices \b D and \b M to use in contact formulations (not yet impl.).
 - It supplies a projection operator that projects arbitrary nodal field values
   from the slave side to the master side and vice versa to use in domain decomposition methods.
-  (not yet impl.)    
-  
+  (not yet impl.)
+
 The \ref MOERTEL::Manager class supports the std::ostream& operator <<
 
-The package and this class make use of the other Trilinos packages 
+The package and this class make use of the other Trilinos packages
 \b Epetra , \b EpetraExt , \b Teuchos , \b Amesos , \b ML .
 
 For more detailed information on the usage, see "The Moertel User's Guide", Sandia report XXXX
 
 For background information on Mortar methods, we refer to <br>
-Wohlmuth, B.:"Discretization Methods and Iterative Solvers Based on Domain Decomposition", 
+Wohlmuth, B.:"Discretization Methods and Iterative Solvers Based on Domain Decomposition",
 Springer, New York, 2001, ISBN 3-540-41083-X
 
 \author Glen Hansen (gahanse@sandia.gov)
 
 */
-class Manager 
+class Manager
 {
 public:
 
   friend class MOERTEL::Solver;
-  
+
   /*!
   \brief Specification of the problem dimension
-  
+
   */
   enum DimensionType
   {
@@ -174,34 +174,34 @@ public:
     manager_2D,
     manager_3D
   };
-  
+
   // @{ \name Constructors and destructor
-  
+
   /*!
   \brief Creates and empty instance of this class
-  
+
   Constructs an empty instance of this class to be filled by the user with
   information about the non-conforming interface(s). <br>
   This is a collective call for all processors associated with the
-  Epetra_Comm 
-  
+  Epetra_Comm
+
   \param comm : An Epetra_Comm object
   \param dimension : Dimension of the problem
   \param outlevel : The level of output to stdout to be generated ( 0 - 10 )
   */
-  explicit Manager(Epetra_Comm& comm, 
-                   MOERTEL::Manager::DimensionType dimension, 
+  explicit Manager(Epetra_Comm& comm,
+                   MOERTEL::Manager::DimensionType dimension,
                    int outlevel);
-                   
-  
+
+
   /*!
   \brief Creates and empty instance of this class
-  
+
   Constructs an empty instance of this class that is filled in by the user with
   information about the non-conforming interface(s). <br>
   This is a collective call for all processors associated with the
-  Epetra_Comm 
-  
+  Epetra_Comm
+
   \param comm : An Epetra_Comm object
   \param outlevel : The level of output to stdout to be generated ( 0 - 10 )
   */
@@ -209,16 +209,16 @@ public:
 
   /*!
   \brief Destroys an instance of this class
-  
+
   Destructor
-  
+
   */
   virtual ~Manager();
-  
+
   //@}
-  
+
   // @{ \name Query methods
-  
+
   /*!
   \brief Returns the Epetra_Comm object associated with this class
   */
@@ -233,10 +233,10 @@ public:
   \brief Query the problem dimension
 
   Query the problem dimension
-  
+
   */
   MOERTEL::Manager::DimensionType Dimension() { return dimensiontype_; }
-  
+
   /*!
   \brief Query the number of interfaces passed to this class via AddInterface
 
@@ -250,7 +250,7 @@ public:
 
   */
   bool Print() const;
-  
+
   //@}
 
   // @{ \name Construction methods
@@ -258,45 +258,45 @@ public:
 
   /*!
   \brief Set problem dimension
-  
+
   This class can handle 2D and 3D problems but not both at the same time.
   It is necessary to specify the dimension of the problem
-  
+
   \param type : Dimension of the problem
   */
   void SetDimension(MOERTEL::Manager::DimensionType type) { dimensiontype_ = type; return; }
-  
+
   /*!
   \brief Add an interface class to this class
-  
+
   Add a previously constructed interface to this class. </br>
-  Before adding an interface, the interface's public method 
+  Before adding an interface, the interface's public method
   \ref MOERTEL::Interface::Complete() has to be called.</br>
   This class will not accept interface that are not completed.
   Any number of interfaces can be added. This class does not take ownership over the
   added class. The interface added can be destroyed immediately after the call to this method
-  as this class stores a deep copy of it. 
-    
+  as this class stores a deep copy of it.
+
   \param interface : A completed interface
-  
+
   \return true when adding the interface was successful and false otherwise
   */
   bool AddInterface(MOERTEL::Interface& interface);
 
   /*!
   \brief Obtain a parameter list with default values
-  
-  Obtain a parameter list containing default values for 
+
+  Obtain a parameter list containing default values for
   integration of mortar interfaces.
   Default values set are:
   \code
     // When true, values of shape functions are exact at
     // every single integration point.
-    // When false, linear shape functions of an overlap 
-    // discretization are used to linearly interpolate 
+    // When false, linear shape functions of an overlap
+    // discretization are used to linearly interpolate
     // shape functions in the overlap region.
-    // The latter is significantly cheaper but only 
-    // recommended for truly linear functions, e.g. with 
+    // The latter is significantly cheaper but only
+    // recommended for truly linear functions, e.g. with
     // 1D interfaces discretized with linear elements
     // 2D interfaces discretized with linear triangle elements
     // It is NOT recommended for 2D interfaces discretized with
@@ -311,165 +311,165 @@ public:
   \endcode
 
   \sa SetProblemMap , AddInterface, Mortar_integrate
-    
+
   */
   Teuchos::ParameterList& Default_Parameters();
 
   /*!
   \brief Perform integration of the mortar integral on all interfaces
-  
-  Once all interfaces and a row map of the original system are passed to 
+
+  Once all interfaces and a row map of the original system are passed to
   this class this method evaluates the mortar integrals on all interfaces.
-  
+
   Process:
   - Chooses a slave and a mortar side for each interface of not already
     chosen by the user in the interface class
   - Build a C0-continuous field of normals on the slave side
   - Makes special boundary modifications to the Lagrange multiplier shape functions
   - Performs integration of the mortar integrals on individual interfaces
-  - Chooses degrees of freedom for the Lagrange multipliers based on 
+  - Chooses degrees of freedom for the Lagrange multipliers based on
     the row map of the original uncoupled problem.
   - Builds a row map of the saddle point system
   - Assembles interface contributions to coupling matrices D and M
-  
+
   \return true if successful, false otherwise
-  
+
   \sa SetProblemMap , AddInterface , Integrate_Interfaces
-    
+
   */
   bool Mortar_Integrate();
 
   /*!
   \brief Perform the integration of the mortar integral on all interfaces.
-  
-  Once all interfaces and a row map of the original system are passed to 
+
+  Once all interfaces and a row map of the original system are passed to
   this class this method evaluates the mortar integrals on all interfaces.
-  
+
   Process:
   - Chooses a slave and a mortar side for each interface of not already
     chosen by the user in the interface class
   - Build a C0-continuous field of normals on the slave side
   - Makes special boundary modifications to the Lagrange multiplier shape functions
   - Performs integration of the mortar integrals on individual interfaces
-  - Chooses degrees of freedom for the Lagrange multipliers based on 
+  - Chooses degrees of freedom for the Lagrange multipliers based on
     the row map of the original uncoupled problem.
   - Builds a row map of the saddle point system
-  
+
   \return true if successful, false otherwise
-  
+
   \sa SetProblemMap , AddInterface , Mortar_Integrate
-    
+
   */
 
   bool Integrate_Interfaces();
 
   /*!
   \brief Assembles contributions from the D and M matrices into the JFNK residual vector.
-  
-  Once all interfaces and a row map of the original system are passed to 
+
+  Once all interfaces and a row map of the original system are passed to
   this class this method evaluates the mortar integrals on all interfaces.
-  
-  \param sel (in): A user-derived object inheriting from Lmselector. 
+
+  \param sel (in): A user-derived object inheriting from Lmselector.
   \param rhs (out) : JFNK rhs vector containing accumulated D and M values
   \param soln (in) : Current JFNK solution vector, used to matvec with D and M
-  
+
   \return true if successful, false otherwise
-  
+
   */
 
   bool AssembleInterfacesIntoResidual(Lmselector *sel);
-  
-  
+
+
   //@}
 
   // @{ \name Solution methods
 
   /*!
   \brief Set the RowMap of the original uncoupled problem
-  
+
   Passes in the RowMap of the original (uncoupled) problem.
   In a saddle point system, this would be the row map of the (1,1) block.
   This class does not take ownership of the passed in map. The map can
   be destroyed immediately after the call to this method as this class
   stores a deep copy of it.
-  A row map has to be passed to this class before a call to \ref Mortar_Integrate() 
-    
+  A row map has to be passed to this class before a call to \ref Mortar_Integrate()
+
   \param map : Row map of the original (uncoupled) problem
-  
+
   \sa Mortar_Integrate()
-  
+
   */
   bool SetProblemMap(const Epetra_Map* map);
-  
+
   /*!
   \brief Return view of row map of the uncoupled problem
-  
+
   return a view of the row map of the uncoupled problem the user provided using
   SetProblemMap. Returns NULL if no row map was previously set.
-  
+
   \sa SetProblemMap
 
   */
   Epetra_Map* ProblemMap() const { return problemmap_.get(); }
-  
+
   /*!
   \brief Set the Matrix of the original uncoupled problem
-  
+
   Passes in the Matrix of the original (uncoupled) problem.
   In a saddle point system, this would be the (1,1) block.
-  This class takes ownership of the matrix if DeepCopy is set to true. 
+  This class takes ownership of the matrix if DeepCopy is set to true.
 
   The matrix of the original, uncoupled problem is used to
-  construct a saddle point system via \ref MakeSaddleProblem() 
+  construct a saddle point system via \ref MakeSaddleProblem()
   or solve the coupled problem
-    
+
   \param map : Matrix of the original (uncoupled) problem
-  
-  \sa MakeSaddleProblem() 
-  
+
+  \sa MakeSaddleProblem()
+
   */
   bool SetInputMatrix(Epetra_CrsMatrix* inputmatrix, bool DeepCopy = false);
-  
+
   /*!
   \brief Construct a saddle point system of equations
-  
+
   After a call to \ref Mortar_Integrate() a saddle point system of equations
-  can be constructed and returned to the user. Prerequisite is that the user has 
+  can be constructed and returned to the user. Prerequisite is that the user has
   supplied the original uncoupled matrix via \ref SetInputMatrix and
   the integration was performed with \ref Mortar_Integrate().
   This class holds ownership of the saddle point system so the
   user must not destroy it.
-  
+
   */
   Epetra_CrsMatrix* MakeSaddleProblem();
 
   /*!
   \brief Construct a spd system of equations if possible
-  
-  If dual Lagrange multipliers are used, a symm. positive definite 
+
+  If dual Lagrange multipliers are used, a symm. positive definite
   system of equations can be constructed from the saddle point problem.
   The final solution of the problem is then obtained from<br>
   Atilde x = RHSMatrix * b
-  
+
   \sa GetSPDRHSMatrix()
   */
   Epetra_CrsMatrix* MakeSPDProblem();
 
   /*!
   \brief returns the righ hand side matrix of the spd system of equations
-  
-  If dual Lagrange multipliers are used, a symm. positive definite 
+
+  If dual Lagrange multipliers are used, a symm. positive definite
   system of equations can be constructed from the saddle point problem.
   The final solution of the problem is then obtained from<br>
   Atilde x = RHSMatrix * b
-  
+
   \sa MakeSPDProblem()
   */
   Epetra_CrsMatrix* GetRHSMatrix();
 
   /*!
   \brief Set a parameter list holding solver parameters
-  
+
   Set a ParameterList containing solver options. This class does not take
   ownership over params but instead uses a view of it.<br>
   Currently Moertel has interfaces to the Amesos, the AztecOO and the ML package.<br>
@@ -491,14 +491,14 @@ public:
   params.set("Solver","Amesos");       // use solver package Amesos
   // or
   params.set("Solver","ML/Aztec");     // use solver packages ML and AztecOO
-  
+
   // argument sublist passed to and used for Amesos
   // see Amesos documentation, all configured Amesos solvers can be used
   // This is an example of possible parameters
   Teuchos::ParameterList& amesosparams = params.sublist("Amesos");
   amesosparams.set("Solver","Amesos_Klu"); // name of Amesos solver to use
-  amesosparams.set("PrintTiming",false);   
-  amesosparams.set("PrintStatus",false);   
+  amesosparams.set("PrintTiming",false);
+  amesosparams.set("PrintStatus",false);
   amesosparams.set("UseTranspose",true);
 
   // argument sublist passed to and used for ML
@@ -529,7 +529,7 @@ public:
   application_compute_nullspace(nsp,dimnsp);
   mlparams.set("null space: dimension",dimnullspace);
   // the user is responsible for freeing nsp after solve
-  mlparams.set("null space: vectors",nsp); 
+  mlparams.set("null space: vectors",nsp);
 
   // argument sublist passed to and used for AztecOO
   // see AztecOO documentation, all configured parameters recognized by the
@@ -540,7 +540,7 @@ public:
   Teuchos::ParameterList& aztecparams = params.sublist("Aztec");
   aztecparams.set("AZ_solver","AZ_cg");
   // if "AZ_user_precond" is specified, ML will be used as a preconditioner
-  // Any other aztec-buildin preconditioner can be used as well 
+  // Any other aztec-buildin preconditioner can be used as well
   aztecparams.set("AZ_precond","AZ_user_precond");
   aztecparams.set("AZ_max_iter",500);
   aztecparams.set("AZ_output",100);
@@ -548,24 +548,24 @@ public:
   aztecparams.set("AZ_scaling","AZ_none");
 
   \endcode
-  
+
   \param params : Parameter list containing solver options
-  
+
   \warning When using ML and/or Aztec, one has to use "SPDSystem" as system matrix
-           as the amg-preconditioned iterative method will currently fail on the 
+           as the amg-preconditioned iterative method will currently fail on the
            saddle point system.
   */
   void SetSolverParameters(Teuchos::ParameterList& params);
 
   /*!
   \brief Solve the problem
-  
+
   Solve the coupled problem using the solver options supplied in params.
   Succesive calls to this method will reuse the system matrix together with
   the supplied solution and rhs vectors until
   \ref ResetSolver() is called. Then, the linear problem is recreated from
   scratch.
-  
+
   \param params (in) : Solution parameters
   \param sol (out) : The solution
   \param rhs (in) : The right hand side vector
@@ -574,52 +574,81 @@ public:
 
   /*!
   \brief Solve the problem
-  
-  Solve the coupled problem using the solver options previously 
+
+  Solve the coupled problem using the solver options previously
   supplied in using \ref SetSolverParameters
   Succesive calls to this method will resue the system matrix together with
   the supplied solution and rhs vectors until
   \ref ResetSolver() is called. Then, the linear problem is recreated from
   scratch.
-  
+
   \param sol (out) : The solution
   \param rhs (in) : The right hand side vector
   */
   bool Solve(Epetra_Vector& sol, const Epetra_Vector& rhs);
-  
+
   /*!
   \brief Reset the internal solver
-  
+
   The internal solver (no matter which one) will go on using the
   once constructed (and maybe factored) matrix until this method is
   called. After a call to this method, the linear problem as well as
   the solver are build from scratch.
-  
+
   */
   void ResetSolver();
-  
+
   /*!
   \brief Get pointer to constraints matrix D
-  
+
   */
   const Epetra_CrsMatrix* D() const { return D_.get();}
 
   /*!
   \brief Get pointer to constraints matrix M
-  
+
   */
   const Epetra_CrsMatrix* M() const { return M_.get();}
 
+
+  std::map<int,int> lm_to_dof()
+  {
+      std::map<int,Teuchos::RCP<MOERTEL::Interface> >::iterator curr;
+      // we need a map from lagrange multiplier dofs to primal dofs on the same node
+      std::vector<MOERTEL::Node*> nodes(0);
+      std::map<int,int> lm_to_dof;
+      for (curr=interface_.begin(); curr!=interface_.end(); ++curr)
+      {
+      Teuchos::RCP<MOERTEL::Interface> inter = curr->second;
+        inter->GetNodeView(nodes);
+        for (int i=0; i<(int)nodes.size(); ++i)
+        {
+          if (!nodes[i]->Nlmdof())
+            continue;
+          const int* dof = nodes[i]->Dof();
+          const int* lmdof = nodes[i]->LMDof();
+          for (int j=0; j<nodes[i]->Nlmdof(); ++j)
+          {
+            //std::cout << "j " << j << " maps lmdof " << lmdof[j] << " to dof " << dof[j] << std::endl;
+            lm_to_dof[lmdof[j]] = dof[j];
+          }
+        }
+      }
+      lm_to_dof_ = Teuchos::rcp(new std::map<int,int>(lm_to_dof)); // this is a very useful map for the moertel_ml_preconditioner
+
+      return lm_to_dof;//lm_to_dof_.get();
+  }
+
   /*!
   \brief Query a managed interface added using AddInterface
-  
+
   Accessor function to the interfaces stored within the manager by
   previous AddInterface calls.
 
   \param idx : index of the interface to be returned (0 up to Ninterfaces)
 
   \return the requested interface
-  
+
   \sa AddInterface, Ninterfaces
   */
   Teuchos::RCP<MOERTEL::Interface> GetInterface(int idx) { return interface_[idx]; }
@@ -630,34 +659,34 @@ public:
 
   //@}
 
-private:  
+private:
   // don't want = operator and copy-ctor
   Manager operator = (const Manager& old);
   Manager(MOERTEL::Manager& old);
 
   // Build the M and D matrices 2D case
   bool Build_MD_2D();
-  
+
   // just do integration of all interfaces 2D case
   bool Integrate_Interfaces_2D();
-  
+
   // Build the M and D matrices 3D case
   bool Build_MD_3D();
-  
+
   // just do integration of all interfaces 3D case
   bool Integrate_Interfaces_3D();
-  
+
   // build the map for the saddle point problem
   bool BuildSaddleMap();
 
   // choose the dofs for Lagrange multipliers
   Teuchos::RCP<Epetra_Map> LagrangeMultiplierDofs();
-  
+
   // automatically choose mortar side (called when mortarside==-2 on any interface)
   bool ChooseMortarSide();
   bool ChooseMortarSide_2D(std::vector<Teuchos::RCP<MOERTEL::Interface> >& inter);
   bool ChooseMortarSide_3D(std::vector<Teuchos::RCP<MOERTEL::Interface> >& inter);
-  
+
 protected:
 
   int                           outlevel_;            // output level (0-10)
@@ -675,16 +704,16 @@ protected:
   Teuchos::RCP<Epetra_CrsMatrix> saddlematrix_;        // the matrix of the saddle problem;
   Teuchos::RCP<Epetra_CrsMatrix> spdmatrix_;           // the spd matrix of the problem;
   Teuchos::RCP<Epetra_CrsMatrix> spdrhs_;              // the matrix to left-multiply the rhs vector with for the spd problem
-  
+
   Teuchos::RCP<std::map<int,int> >    lm_to_dof_;           // maps lagrange multiplier dofs to primary dofs (slave side))
-  
+
   Teuchos::RCP<Epetra_CrsMatrix> I_;
   Teuchos::RCP<Epetra_CrsMatrix> WT_;
   Teuchos::RCP<Epetra_CrsMatrix> B_;
   Teuchos::RCP<Epetra_Map>       annmap_;
 
   Teuchos::RCP<Teuchos::ParameterList> integrationparams_; // parameter list with integration parameters
-  Teuchos::RCP<Teuchos::ParameterList> solverparams_;  // solution parameters passed from the user    
+  Teuchos::RCP<Teuchos::ParameterList> solverparams_;  // solution parameters passed from the user
 
   Teuchos::RCP<MOERTEL::Solver>        solver_;        // the mortar solver
 
