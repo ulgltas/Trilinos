@@ -465,6 +465,11 @@ public:
     matrixData_->rightScale(x);
   }
 
+  //! Returns true if globalConstants have been computed; false otherwise
+  bool haveGlobalConstants() const {
+    return matrixData_->haveGlobalConstants();
+  }
+
   //@}
 
   //! @name Advanced Matrix-vector multiplication and solve methods
@@ -494,7 +499,7 @@ public:
   /*! Performs \f$Y = \alpha A^{\textrm{mode}} X + \beta Y\f$, with one special exceptions:
     - if <tt>beta == 0</tt>, apply() overwrites \c Y, so that any values in \c Y (including NaNs) are ignored.
   */
-  void apply(const Xpetra::MultiVector<Scalar,LocalOrdinal,GlobalOrdinal,Node>& X,
+  virtual void apply(const Xpetra::MultiVector<Scalar,LocalOrdinal,GlobalOrdinal,Node>& X,
                    Xpetra::MultiVector<Scalar,LocalOrdinal,GlobalOrdinal,Node>& Y,
                    Teuchos::ETransp mode = Teuchos::NO_TRANS,
                    Scalar alpha = ScalarTraits<Scalar>::one(),

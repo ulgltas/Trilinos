@@ -1050,6 +1050,7 @@ RCP<tcrsMatrix_t> UserInputForTests::modifyMatrixGIDs(
   RCP<map_t> outMap = rcp(new map_t(nGlobalRows, outRows(), 0,
                                     inMap->getComm()));
 
+#ifdef INCLUDE_LENGTHY_OUTPUT
   // Sanity check output
   {
     std::cout << inMap->getComm()->getRank() << " KDDKDD "
@@ -1064,6 +1065,7 @@ RCP<tcrsMatrix_t> UserInputForTests::modifyMatrixGIDs(
                 << outMap->getMyGlobalIndices()[i] << ") ";
     std::cout << std::endl;
   }
+#endif // INCLUDE_LENGTHY_OUTPUT
 
   // Create a new matrix using the new map
   // Get the length of the longest row; allocate memory.
@@ -1086,6 +1088,7 @@ RCP<tcrsMatrix_t> UserInputForTests::modifyMatrixGIDs(
   }
   outMatrix->fillComplete();
 
+#ifdef INCLUDE_LENGTHY_OUTPUT
   // Sanity check output
   {
     std::cout << inMap->getComm()->getRank() << " KDDKDD Rows "
@@ -1117,6 +1120,7 @@ RCP<tcrsMatrix_t> UserInputForTests::modifyMatrixGIDs(
       std::cout << std::endl;
     }
   }
+#endif // INCLUDE_LENGTHY_OUTPUT
 
   return outMatrix;
 }
@@ -1182,10 +1186,12 @@ void UserInputForTests::readMatrixMarketFile(
                       "UserInputForTests unable to read matrix market file");
 
   M_ = toMatrix;
+#ifdef INCLUDE_LENGTHY_OUTPUT
   std::cout << tcomm_->getRank() << " KDDKDD " << M_->getNodeNumRows() 
             << " " << M_->getGlobalNumRows()
             << " " << M_->getNodeNumEntries() 
             << " " << M_->getGlobalNumEntries() << std::endl;
+#endif // INCLUDE_LENGTHY_OUTPUT
 
   xM_ = Zoltan2::XpetraTraits<tcrsMatrix_t>::convertToXpetra(M_);
 
@@ -2691,14 +2697,14 @@ void UserInputForTests::readPamgenMeshFile(string path, string testData)
     return;
   }
 
-  char * file_data = new char[len];
-  file_data[len-1] = '\0'; // critical to null terminate buffer // MDM added -1 as this was a buffer overwrite
+  char * file_data = new char[len+1];
+  file_data[len] = '\0'; // critical to null terminate buffer 
   if(rank == 0){
     file.read(file_data,len); // if proc 0 then read file
   }
 
   // broadcast the file to the world
-  this->tcomm_->broadcast(0,(int)len,file_data);
+  this->tcomm_->broadcast(0,(int)len+1,file_data);
   this->tcomm_->barrier();
 
   // Create the PamgenMesh

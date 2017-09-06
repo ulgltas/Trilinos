@@ -74,38 +74,14 @@ public:
   {
     throw std::runtime_error(
           "BUILD ERROR:  PuLP requested but not compiled into Zoltan2.\n"
-          "Please set CMake flag Zoltan2_ENABLE_PuLP:BOOL=ON.");
+          "Please set CMake flag TPL_ENABLE_PuLP:BOOL=ON.");
   }
 
   /*! \brief Set up validators specific to this algorithm
   */
   static void getValidParameters(ParameterList & pl)
   {
-    pl.set("pulp_vert_imbalance", 1.1, "vertex imbalance tolerance, ratio of "
-      "maximum load over average load",
-      Environment::getAnyDoubleValidator());
-
-    pl.set("pulp_edge_imbalance", 1.1, "edge imbalance tolerance, ratio of "
-      "maximum load over average load",
-      Environment::getAnyDoubleValidator());
-
-    // bool parameter
-    pl.set("pulp_lp_init", false, "perform label propagation-based "
-      "initialization", Environment::getBoolValidator() );
-
-    // bool parameter
-    pl.set("pulp_minimize_maxcut", false, "perform per-part max cut "
-      "minimization", Environment::getBoolValidator() );
-
-    // bool parameter
-    pl.set("pulp_verbose", false, "verbose output",
-      Environment::getBoolValidator() );
-
-    // bool parameter
-    pl.set("pulp_do_repart", false, "perform repartitioning",
-      Environment::getBoolValidator() );
-
-    pl.set("pulp_seed", 0, "set pulp seed", Environment::getAnyIntValidator());
+    // No parameters needed in this error-handling version of AlgPuLP
   }
 };
 
@@ -138,6 +114,7 @@ public:
   typedef typename Adapter::base_adapter_t base_adapter_t;
   typedef typename Adapter::lno_t lno_t;
   typedef typename Adapter::gno_t gno_t;
+  typedef typename Adapter::offset_t offset_t;
   typedef typename Adapter::scalar_t scalar_t;
   typedef typename Adapter::part_t part_t;
   typedef typename Adapter::user_t user_t;
@@ -236,6 +213,37 @@ public:
       flags.set(VERTICES_ARE_MESH_ELEMENTS);
 
     buildModel(flags);
+  }
+
+  /*! \brief Set up validators specific to this algorithm
+  */
+  static void getValidParameters(ParameterList & pl)
+  {
+    pl.set("pulp_vert_imbalance", 1.1, "vertex imbalance tolerance, ratio of "
+      "maximum load over average load",
+      Environment::getAnyDoubleValidator());
+
+    pl.set("pulp_edge_imbalance", 1.1, "edge imbalance tolerance, ratio of "
+      "maximum load over average load",
+      Environment::getAnyDoubleValidator());
+
+    // bool parameter
+    pl.set("pulp_lp_init", false, "perform label propagation-based "
+      "initialization", Environment::getBoolValidator() );
+
+    // bool parameter
+    pl.set("pulp_minimize_maxcut", false, "perform per-part max cut "
+      "minimization", Environment::getBoolValidator() );
+
+    // bool parameter
+    pl.set("pulp_verbose", false, "verbose output",
+      Environment::getBoolValidator() );
+
+    // bool parameter
+    pl.set("pulp_do_repart", false, "perform repartitioning",
+      Environment::getBoolValidator() );
+
+    pl.set("pulp_seed", 0, "set pulp seed", Environment::getAnyIntValidator());
   }
 
   void partition(const RCP<PartitioningSolution<Adapter> > &solution);
@@ -342,7 +350,7 @@ void AlgPuLP<Adapter>::partition(
 
   // Get edge info
   ArrayView<const gno_t> adjs;
-  ArrayView<const lno_t> offsets;
+  ArrayView<const offset_t> offsets;
   ArrayView<StridedData<lno_t, scalar_t> > ewgts;
   size_t nEdge = model->getEdgeList(adjs, offsets, ewgts);
   int nEwgts = model->getNumWeightsPerEdge();
@@ -364,7 +372,7 @@ void AlgPuLP<Adapter>::partition(
   int* out_edges = NULL;
   long* out_offsets = NULL;
   TPL_Traits<int, const gno_t>::ASSIGN_ARRAY(&out_edges, adjs);
-  TPL_Traits<long, const lno_t>::ASSIGN_ARRAY(&out_offsets, offsets);
+  TPL_Traits<long, const offset_t>::ASSIGN_ARRAY(&out_offsets, offsets);
 
   pulp_graph_t g = {num_verts, num_edges, 
                     out_edges, out_offsets,
@@ -375,7 +383,7 @@ void AlgPuLP<Adapter>::partition(
   unsigned long* out_edges = NULL;
   unsigned long* out_offsets = NULL;
   TPL_Traits<unsigned long, const gno_t>::ASSIGN_ARRAY(&out_edges, adjs);
-  TPL_Traits<unsigned long, const lno_t>::ASSIGN_ARRAY(&out_offsets, offsets);
+  TPL_Traits<unsigned long, const offset_t>::ASSIGN_ARRAY(&out_offsets, offsets);
 
   const size_t modelVertsGlobal = model->getGlobalNumVertices();
   const size_t modelEdgesGlobal = model->getGlobalNumEdges();
@@ -492,7 +500,7 @@ void AlgPuLP<Adapter>::partition(
 
 
   if (verbose_output) {
-    printf("procid: %d, n: %i, m: %li, vb: %lf, eb: %lf, p: %i\n",
+    printf("procid: %d, n: %i, m: %li, vb: %f, eb: %f, p: %i\n",
       problemComm->getRank(), 
       num_verts, num_edges, vert_imbalance, edge_imbalance, num_parts);
   }
@@ -571,6 +579,19 @@ void AlgPuLP<Adapter>::scale_weights(
     sum_wgt += fw;
     if (fw > max_wgt) max_wgt = fw;
   }
+
+  // Get agreement across processors
+  double gmax_wgt;
+  double ltmp[2], gtmp[2];
+  ltmp[0] = nonint;
+  ltmp[1] = sum_wgt;
+  Teuchos::reduceAll<int,double>(*problemComm, Teuchos::REDUCE_SUM, 2,
+                                 ltmp, gtmp);
+  Teuchos::reduceAll<int,double>(*problemComm, Teuchos::REDUCE_MAX, 1,
+                                 &max_wgt, &gmax_wgt);
+  nonint = gtmp[0];
+  sum_wgt = gtmp[1];
+  max_wgt = gmax_wgt;
 
   // Scaling needed if weights are not integers or weights' 
   // range is not sufficient

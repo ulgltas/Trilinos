@@ -50,16 +50,18 @@ template <typename Scalar>
 Piro::ObserverToTempusIntegrationObserverAdapter<Scalar>::ObserverToTempusIntegrationObserverAdapter(
     const Teuchos::RCP<Tempus::SolutionHistory<Scalar> >& solutionHistory,
     const Teuchos::RCP<Tempus::TimeStepControl<Scalar> >& timeStepControl,
-    const Teuchos::RCP<Piro::ObserverBase<Scalar> > &wrappedObserver)
+    const Teuchos::RCP<Piro::ObserverBase<Scalar> > &wrappedObserver, 
+    const bool supports_x_dotdot)
     : Tempus::IntegratorObserverBasic<Scalar>(solutionHistory, timeStepControl),
     solutionHistory_(solutionHistory),
     timeStepControl_(timeStepControl),
+    supports_x_dotdot_(supports_x_dotdot), 
     out_(Teuchos::VerboseObjectBase::getDefaultOStream()),
     wrappedObserver_(wrappedObserver)
 {
   //Currently, sensitivities are not supported in Tempus.
   hasSensitivities_ = false;
-};
+}
 
 template <typename Scalar>
 Piro::ObserverToTempusIntegrationObserverAdapter<Scalar>::~ObserverToTempusIntegrationObserverAdapter()
@@ -130,17 +132,21 @@ Piro::ObserverToTempusIntegrationObserverAdapter<Scalar>::observeTimeStep()
   solution.assert_not_null();
   //Get solution_dot
   Teuchos::RCP<const Thyra::VectorBase<Scalar> > solution_dot = solutionHistory_->getCurrentState()->getXDot();
-  //IKT, 11/3/16: I think we will also need solution_dotdot for 2nd order time integrators.
-  //In this case, we will need to get x_dotdot from solutionState and Piro::ObserverBase
-  //will need to be extended to have a constructor that takes x_dotdot.
 
   const Scalar scalar_time = solutionHistory_->getCurrentState()->getTime();
   typedef typename Teuchos::ScalarTraits<Scalar>::magnitudeType StampScalar;
   const StampScalar time = Teuchos::ScalarTraits<Scalar>::real(scalar_time);
 
+  Teuchos::RCP<const Thyra::VectorBase<Scalar> > solution_dotdot = solutionHistory_->getCurrentState()->getXDotDot();
   if (Teuchos::nonnull(solution_dot))
   {
-    wrappedObserver_->observeSolution(*solution, *solution_dot, time);
+    if (supports_x_dotdot_) {
+
+      wrappedObserver_->observeSolution(*solution, *solution_dot, *solution_dotdot, time);
+    }
+   else {
+      wrappedObserver_->observeSolution(*solution, *solution_dot, time);
+   }
   }
   else {
     wrappedObserver_->observeSolution(*solution, time);

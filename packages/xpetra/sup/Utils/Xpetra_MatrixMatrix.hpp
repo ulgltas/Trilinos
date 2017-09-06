@@ -390,7 +390,7 @@ Note: this class is not in the Xpetra_UseShortNames.hpp
                                                      const Epetra_CrsMatrix& epB,
                                                      Teuchos::FancyOStream& fos) {
       throw(Xpetra::Exceptions::RuntimeError("MLTwoMatrixMultiply only available for GO=int or GO=long long with EpetraNode (Serial or OpenMP depending on configuration)"));
-      return Teuchos::null;
+      TEUCHOS_UNREACHABLE_RETURN(Teuchos::null);
     }
 #endif //ifdef HAVE_XPETRA_EPETRAEXT
 
@@ -558,8 +558,8 @@ Note: this class is not in the Xpetra_UseShortNames.hpp
           size_t maxNzInB     = 0;
           size_t numLocalRows = 0;
           if (A.isFillComplete() && B.isFillComplete()) {
-            maxNzInA     = A.getGlobalMaxNumRowEntries();
-            maxNzInB     = B.getGlobalMaxNumRowEntries();
+            maxNzInA     = A.getNodeMaxNumRowEntries();
+            maxNzInB     = B.getNodeMaxNumRowEntries();
             numLocalRows = A.getNodeNumRows();
           }
           if (maxNzInA == 1 || maxNzInB == 1 || AHasFixedNnzPerRow) {
@@ -581,11 +581,11 @@ Note: this class is not in the Xpetra_UseShortNames.hpp
             C = rcp(new CrsMatrixWrap(A.getRowMap(), exactNnzPerRow, Xpetra::StaticProfile));
           } else {
             // general case
-            double nnzPerRowInA = Teuchos::as<double>(A.getGlobalNumEntries()) / A.getGlobalNumRows();
-            double nnzPerRowInB = Teuchos::as<double>(B.getGlobalNumEntries()) / B.getGlobalNumRows();
+            double nnzPerRowInA = Teuchos::as<double>(A.getNodeNumEntries()) / A.getNodeNumRows();
+            double nnzPerRowInB = Teuchos::as<double>(B.getNodeNumEntries()) / B.getNodeNumRows();
             LO    nnzToAllocate = Teuchos::as<LO>( (nnzPerRowInA + nnzPerRowInB) * 1.5) + Teuchos::as<LO>(1);
 
-            LO maxPossible = A.getGlobalMaxNumRowEntries() + B.getGlobalMaxNumRowEntries();
+            LO maxPossible = A.getNodeMaxNumRowEntries() + B.getNodeMaxNumRowEntries();
             //Use static profiling (more efficient) if the estimate is at least as big as the max
             //possible nnz's in any single row of the result.
             Xpetra::ProfileType pft = (maxPossible) > nnzToAllocate ? Xpetra::DynamicProfile : Xpetra::StaticProfile;
@@ -1108,7 +1108,7 @@ Note: this class is not in the Xpetra_UseShortNames.hpp
 #else // no MUELU_ML
       TEUCHOS_TEST_FOR_EXCEPTION(true, Xpetra::Exceptions::RuntimeError,
                                  "No ML multiplication available. This feature is currently not supported by Xpetra.");
-      return Teuchos::null;
+       TEUCHOS_UNREACHABLE_RETURN(Teuchos::null);
 #endif
     }
 #endif //ifdef HAVE_XPETRA_EPETRAEXT
@@ -1147,14 +1147,25 @@ Note: this class is not in the Xpetra_UseShortNames.hpp
           for (size_t l = 0; l < B.Rows(); ++l) { // loop for calculating entry C_{ij}
             RCP<Matrix> crmat1 = A.getMatrix(i,l);
             RCP<Matrix> crmat2 = B.getMatrix(l,j);
+            RCP<CrsMatrixWrap> crop1 = Teuchos::rcp_dynamic_cast<CrsMatrixWrap>(crmat1);
+            RCP<CrsMatrixWrap> crop2 = Teuchos::rcp_dynamic_cast<CrsMatrixWrap>(crmat2);
 
             if (crmat1.is_null() || crmat2.is_null())
               continue;
+
+	    
+	    // Forcibly compute the global constants if we don't have them (only works for real CrsMatrices, not nested blocks)
+	    if(!crmat1.is_null() && !crop1.is_null()) {
+	      Teuchos::rcp_const_cast<CrsGraph>(crmat1->getCrsGraph())->computeGlobalConstants();
+	    }
+	    if(!crmat2.is_null() && !crop2.is_null()) {
+	      Teuchos::rcp_const_cast<CrsGraph>(crmat2->getCrsGraph())->computeGlobalConstants();
+	    }
+
+
             if (crmat1->getGlobalNumEntries() == 0 || crmat2->getGlobalNumEntries() == 0)
               continue;
 
-            RCP<CrsMatrixWrap> crop1 = Teuchos::rcp_dynamic_cast<CrsMatrixWrap>(crmat1);
-            RCP<CrsMatrixWrap> crop2 = Teuchos::rcp_dynamic_cast<CrsMatrixWrap>(crmat2);
             TEUCHOS_TEST_FOR_EXCEPTION((crop1==Teuchos::null) != (crop2==Teuchos::null), Xpetra::Exceptions::RuntimeError, "A and B must be either both (compatible) BlockedCrsMatrix objects or both CrsMatrixWrap objects.");
 
             // temporary matrix containing result of local block multiplication
@@ -1277,8 +1288,9 @@ Note: this class is not in the Xpetra_UseShortNames.hpp
       RCP<const Matrix> rcpB = Teuchos::rcpFromRef(B);
       RCP<const BlockedCrsMatrix> rcpBopA = Teuchos::rcp_dynamic_cast<const BlockedCrsMatrix>(rcpA);
       RCP<const BlockedCrsMatrix> rcpBopB = Teuchos::rcp_dynamic_cast<const BlockedCrsMatrix>(rcpB);
-
+   
       if(rcpBopA == Teuchos::null && rcpBopB == Teuchos::null) {
+
 
         if (!(A.getRowMap()->isSameAs(*(B.getRowMap()))))
           throw Exceptions::Incompatible("TwoMatrixAdd: matrix row maps are not the same.");
@@ -1288,8 +1300,9 @@ Note: this class is not in the Xpetra_UseShortNames.hpp
           size_t maxNzInB     = 0;
           size_t numLocalRows = 0;
           if (A.isFillComplete() && B.isFillComplete()) {
-            maxNzInA     = A.getGlobalMaxNumRowEntries();
-            maxNzInB     = B.getGlobalMaxNumRowEntries();
+
+            maxNzInA     = A.getNodeMaxNumRowEntries();
+            maxNzInB     = B.getNodeMaxNumRowEntries();
             numLocalRows = A.getNodeNumRows();
           }
 
@@ -1313,11 +1326,11 @@ Note: this class is not in the Xpetra_UseShortNames.hpp
 
           } else {
             // general case
-            double nnzPerRowInA = Teuchos::as<double>(A.getGlobalNumEntries()) / A.getGlobalNumRows();
-            double nnzPerRowInB = Teuchos::as<double>(B.getGlobalNumEntries()) / B.getGlobalNumRows();
+            double nnzPerRowInA = Teuchos::as<double>(A.getNodeNumEntries()) / A.getNodeNumRows();
+            double nnzPerRowInB = Teuchos::as<double>(B.getNodeNumEntries()) / B.getNodeNumRows();
             LO    nnzToAllocate = Teuchos::as<LO>( (nnzPerRowInA + nnzPerRowInB) * 1.5) + Teuchos::as<LO>(1);
 
-            LO maxPossible = A.getGlobalMaxNumRowEntries() + B.getGlobalMaxNumRowEntries();
+            LO maxPossible = A.getNodeMaxNumRowEntries() + B.getNodeMaxNumRowEntries();
             //Use static profiling (more efficient) if the estimate is at least as big as the max
             //possible nnz's in any single row of the result.
             Xpetra::ProfileType pft = (maxPossible) > nnzToAllocate ? Xpetra::DynamicProfile : Xpetra::StaticProfile;
@@ -1710,7 +1723,7 @@ Note: this class is not in the Xpetra_UseShortNames.hpp
                                                      Teuchos::FancyOStream& fos) {
       TEUCHOS_TEST_FOR_EXCEPTION(true, Xpetra::Exceptions::RuntimeError,
                                  "No ML multiplication available. This feature is currently not supported by Xpetra.");
-      return Teuchos::null;
+      TEUCHOS_UNREACHABLE_RETURN(Teuchos::null);
     }
 #endif //ifdef HAVE_XPETRA_EPETRAEXT
 
@@ -1888,8 +1901,8 @@ Note: this class is not in the Xpetra_UseShortNames.hpp
           size_t maxNzInB     = 0;
           size_t numLocalRows = 0;
           if (A.isFillComplete() && B.isFillComplete()) {
-            maxNzInA     = A.getGlobalMaxNumRowEntries();
-            maxNzInB     = B.getGlobalMaxNumRowEntries();
+            maxNzInA     = A.getNodeMaxNumRowEntries();
+            maxNzInB     = B.getNodeMaxNumRowEntries();
             numLocalRows = A.getNodeNumRows();
           }
 
@@ -1913,11 +1926,11 @@ Note: this class is not in the Xpetra_UseShortNames.hpp
 
           } else {
             // general case
-            double nnzPerRowInA = Teuchos::as<double>(A.getGlobalNumEntries()) / A.getGlobalNumRows();
-            double nnzPerRowInB = Teuchos::as<double>(B.getGlobalNumEntries()) / B.getGlobalNumRows();
+            double nnzPerRowInA = Teuchos::as<double>(A.getNodeNumEntries()) / A.getNodeNumRows();
+            double nnzPerRowInB = Teuchos::as<double>(B.getNodeNumEntries()) / B.getNodeNumRows();
             LO    nnzToAllocate = Teuchos::as<LO>( (nnzPerRowInA + nnzPerRowInB) * 1.5) + Teuchos::as<LO>(1);
 
-            LO maxPossible = A.getGlobalMaxNumRowEntries() + B.getGlobalMaxNumRowEntries();
+            LO maxPossible = A.getNodeMaxNumRowEntries() + B.getNodeMaxNumRowEntries();
             //Use static profiling (more efficient) if the estimate is at least as big as the max
             //possible nnz's in any single row of the result.
             Xpetra::ProfileType pft = (maxPossible) > nnzToAllocate ? Xpetra::DynamicProfile : Xpetra::StaticProfile;

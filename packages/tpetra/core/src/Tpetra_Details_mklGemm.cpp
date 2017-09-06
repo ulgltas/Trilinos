@@ -42,7 +42,6 @@
 */
 
 #include "Tpetra_Details_mklGemm.hpp"
-#include "Kokkos_Macros.hpp"
 #include "KokkosKernels_config.h"
 #ifdef HAVE_KOKKOSKERNELS_MKL
 #  include <mkl.h>
@@ -52,7 +51,9 @@
 
 namespace Tpetra {
 namespace Details {
+namespace Blas {
 namespace Mkl {
+namespace Impl {
 
 #ifdef HAVE_KOKKOSKERNELS_MKL
 namespace { // (anonymous)
@@ -195,6 +196,8 @@ zgemm (const char transA,
 #endif // NOT HAVE_KOKKOSKERNELS_MKL
 }
 
+} // namespace Impl
 } // namespace Mkl
+} // namespace Blas
 } // namespace Details
 } // namespace Tpetra

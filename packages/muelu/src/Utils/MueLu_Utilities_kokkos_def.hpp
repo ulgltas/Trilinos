@@ -59,7 +59,7 @@
 
 #include <Kokkos_ArithTraits.hpp>
 #include <Kokkos_Core.hpp>
-#include <Kokkos_CrsMatrix.hpp>
+#include <KokkosSparse_CrsMatrix.hpp>
 
 #if defined(HAVE_MUELU_EPETRA) && defined(HAVE_MUELU_EPETRAEXT)
 #include <EpetraExt_MatrixMatrix.h>
@@ -379,8 +379,10 @@ namespace MueLu {
 
     Kokkos::View<bool*, typename NO::device_type> boundaryNodes("boundaryNodes", numRows);
 
+    typedef Kokkos::RangePolicy<LO, typename NO::execution_space> range_type;
+
     DetectDirichletFunctor<decltype(localMatrix), decltype(boundaryNodes)> functor(localMatrix, boundaryNodes, tol);
-    Kokkos::parallel_for("MueLu:Utils::DetectDirichletRows", numRows, functor);
+    Kokkos::parallel_for("MueLu:Utils::DetectDirichletRows", range_type(0,numRows), functor);
 
     return boundaryNodes;
   }

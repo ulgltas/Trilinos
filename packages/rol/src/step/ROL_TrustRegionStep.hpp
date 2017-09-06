@@ -232,18 +232,28 @@ private:
   */
   void updateGradient( Vector<Real> &x, Objective<Real> &obj, BoundConstraint<Real> &bnd, 
                        AlgorithmState<Real> &algo_state ) {
-    Real oem2(1.e-2), one(1), oe4(1.e4);
     Teuchos::RCP<StepState<Real> > state = Step<Real>::getState();
     if ( useInexact_[1] ) {
-      Real c = scale0_*std::max(oem2,std::min(one,oe4*algo_state.gnorm));
-      Real gtol1  = c*(state->searchSize);
-      Real gtol0  = scale1_*gtol1 + one;
-      while ( gtol0 > gtol1*scale1_ ) {
+      const Real one(1);
+      //const Real oem2(1.e-2), oe4(1.e4);
+      //Real c = scale0_*std::max(oem2,std::min(one,oe4*algo_state.gnorm));
+      //Real gtol1  = c*std::min(algo_state.gnorm,state->searchSize);
+      //Real gtol0  = scale1_*gtol1 + one;
+      //while ( gtol0 > gtol1*scale1_ ) {
+      //  obj.gradient(*(state->gradientVec),x,gtol1);
+      //  algo_state.gnorm = computeCriticalityMeasure(*(state->gradientVec),x,bnd);
+      //  gtol0 = gtol1;
+      //  c = scale0_*std::max(oem2,std::min(one,oe4*algo_state.gnorm));
+      //  gtol1 = c*std::min(algo_state.gnorm,state->searchSize);
+      //}
+      //algo_state.ngrad++;
+      Real gtol1  = scale0_*std::min(algo_state.gnorm,state->searchSize);
+      Real gtol0  = gtol1 + one;
+      while ( gtol0 > gtol1 ) {
         obj.gradient(*(state->gradientVec),x,gtol1);
         algo_state.gnorm = computeCriticalityMeasure(*(state->gradientVec),x,bnd);
         gtol0 = gtol1;
-        c = scale0_*std::max(oem2,std::min(one,oe4*algo_state.gnorm));
-        gtol1 = c*std::min(algo_state.gnorm,state->searchSize);
+        gtol1 = scale0_*std::min(algo_state.gnorm,state->searchSize);
       }
       algo_state.ngrad++;
     }
@@ -385,41 +395,14 @@ public:
 
     if ( bnd.isActivated() ) {
       // Make initial guess feasible
-      bnd.project(x);
+      if ( TRmodel_ == TRUSTREGION_MODEL_COLEMANLI ) {
+        bnd.projectInterior(x);
+      }
+      else {
+        bnd.project(x);
+      }
       xnew_ = x.clone();
       xold_ = x.clone();
-
-      // Make initial guess strictly feasible
-      if ( TRmodel_ == TRUSTREGION_MODEL_COLEMANLI ) {
-        xold_->set(*bnd.getUpperVectorRCP());       // u
-        xold_->axpy(-one,*bnd.getLowerVectorRCP()); // u - l
-        Real minDiff = static_cast<Real>(1e-1)
-          * std::min(one, half * xold_->reduce(Elementwise::ReductionMin<Real>()));
-
-        class LowerFeasible : public Elementwise::BinaryFunction<Real> {
-        private:
-          const Real eps_;
-        public:
-          LowerFeasible(const Real eps) : eps_(eps) {}
-          Real apply( const Real &x, const Real &y ) const {
-            const Real tol = static_cast<Real>(100)*ROL_EPSILON<Real>();
-            return (x < y+tol) ? y+eps_ : x;
-          }
-        };
-        x.applyBinary(LowerFeasible(minDiff), *bnd.getLowerVectorRCP());
-
-        class UpperFeasible : public Elementwise::BinaryFunction<Real> {
-        private:
-          const Real eps_;
-        public:
-          UpperFeasible(const Real eps) : eps_(eps) {}
-          Real apply( const Real &x, const Real &y ) const {
-            const Real tol = static_cast<Real>(100)*ROL_EPSILON<Real>();
-            return (x > y-tol) ? y-eps_ : x;
-          }
-        };
-        x.applyBinary(UpperFeasible(minDiff), *bnd.getUpperVectorRCP());
-      }
     }
     gp_ = g.clone();
 
@@ -653,6 +636,12 @@ public:
       }
       // Update algorithm state
       (algo_state.iterateVec)->set(x);
+    }
+    else {
+      if ( useInexact_[1] ) {
+        // Update objective function and approximate model
+        updateGradient(x,obj,bnd,algo_state);
+      }
     }
     // Update algorithm state
     algo_state.value = fnew;

@@ -67,6 +67,7 @@
 #include "Panzer_ResponseLibrary.hpp"
 #include "Panzer_ResponseEvaluatorFactory_Functional.hpp"
 #include "Panzer_Response_Functional.hpp"
+#include "Panzer_CheckBCConsistency.hpp"
 
 #include "PanzerAdaptersSTK_config.hpp"
 #include "Panzer_STK_WorksetFactory.hpp"
@@ -91,9 +92,9 @@
 #include "Example_ClosureModel_Factory_TemplateBuilder.hpp"
 #include "Example_EquationSetFactory.hpp"
 
-#include "Phalanx_KokkosUtilities.hpp"
-
 #include "AztecOO.h"
+
+#include <sstream>
 
 using Teuchos::RCP;
 using Teuchos::rcp;
@@ -139,7 +140,6 @@ using Teuchos::rcp;
 //      Out[145]= {2+y-y^2,2+x-x^2,0}
 //
 
-
 void testInitialization(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
 		        std::vector<panzer::BC>& bcs,
                         const std::string & eBlockName,int basis_order);
@@ -156,7 +156,7 @@ int main(int argc,char * argv[])
    using panzer::StrPureBasisPair;
    using panzer::StrPureBasisComp;
 
-   PHX::KokkosDeviceSession session;
+   Kokkos::initialize(argc,argv);
 
    Teuchos::GlobalMPISession mpiSession(&argc,&argv);
    RCP<Epetra_Comm> Comm = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
@@ -302,6 +302,17 @@ int main(int argc,char * argv[])
       mesh_factory->completeMeshConstruction(*mesh,MPI_COMM_WORLD);
    }
 
+
+   // check that the bcs exist in the mesh
+   /////////////////////////////////////////////////////////////
+   {
+     std::vector<std::string> eBlockNames;
+     mesh->getElementBlockNames(eBlockNames);
+     std::vector<std::string> sidesetNames;
+     mesh->getSidesetNames(sidesetNames);
+     panzer::checkBCConsistency(eBlockNames,sidesetNames,bcs);
+   }
+
    // build DOF Manager and linear object factory
    /////////////////////////////////////////////////////////////
  
@@ -339,7 +350,11 @@ int main(int argc,char * argv[])
    Teuchos::RCP<panzer_stk::WorksetFactory> wkstFactory
       = Teuchos::rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
    Teuchos::RCP<panzer::WorksetContainer> wkstContainer     // attach it to a workset container (uses lazy evaluation)
-      = Teuchos::rcp(new panzer::WorksetContainer(wkstFactory,physicsBlocks,workset_size));
+      = Teuchos::rcp(new panzer::WorksetContainer);
+   wkstContainer->setFactory(wkstFactory);
+   for(size_t i=0;i<physicsBlocks.size();i++) 
+     wkstContainer->setNeeds(physicsBlocks[i]->elementBlockID(),physicsBlocks[i]->getWorksetNeeds());
+   wkstContainer->setWorksetSize(workset_size);
    wkstContainer->setGlobalIndexer(dofManager);
 
    // Setup STK response library for writing out the solution fields
@@ -505,8 +520,16 @@ int main(int argc,char * argv[])
       stkIOResponseLibrary->addResponsesToInArgs<panzer::Traits::Residual>(respInput);
       stkIOResponseLibrary->evaluate<panzer::Traits::Residual>(respInput);
 
-      // write to exodus
-      mesh->writeToExodus("output.exo");
+      // write to exodus 
+      // ---------------
+      // Due to multiple instances of this test being run at the same
+      // time (one for each order), we need to differentiate output to
+      // prevent race conditions on output file. Multiple runs for the
+      // same order are ok as they are staged one after another in the
+      // ADD_ADVANCED_TEST cmake macro.
+      std::ostringstream filename;
+      filename << "output_" << basis_order << ".exo";
+      mesh->writeToExodus(filename.str());
    }
 
    // compute error norm

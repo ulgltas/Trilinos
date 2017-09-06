@@ -82,6 +82,7 @@ namespace Intrepid2 {
 
     class Basis_HGRAD_TET_C1_FEM {
     public:
+      typedef struct Tetrahedron<4> cell_topology_type;
       template<EOperator opType>
       struct Serial {
         template<typename outputViewType,
@@ -196,6 +197,20 @@ namespace Intrepid2 {
                                     ">>> ERROR: (Intrepid2::Basis_HGRAD_TET_C1_FEM::getDofCoords) incorrect reference cell (1st) dimension in dofCoords array");
 #endif
       Kokkos::deep_copy(dofCoords, this->dofCoords_);
+    }
+
+    virtual
+    void
+    getDofCoeffs( scalarViewType dofCoeffs ) const {
+#ifdef HAVE_INTREPID2_DEBUG
+      // Verify rank of output array.
+      INTREPID2_TEST_FOR_EXCEPTION( dofCoeffs.rank() != 1, std::invalid_argument,
+                                    ">>> ERROR: (Intrepid2::Basis_HGRAD_TET_C1_FEM::getdofCoeffs) rank = 1 required for dofCoeffs array");
+      // Verify 0th dimension of output array.
+      INTREPID2_TEST_FOR_EXCEPTION( static_cast<ordinal_type>(dofCoeffs.dimension(0)) != this->getCardinality(), std::invalid_argument,
+                                    ">>> ERROR: (Intrepid2::Basis_HGRAD_TET_C1_FEM::getdofCoeffs) mismatch in number of dof and 0th dimension of dofCoeffs array");
+#endif
+      Kokkos::deep_copy(dofCoeffs, 1.0);
     }
 
     virtual

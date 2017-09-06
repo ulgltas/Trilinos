@@ -126,8 +126,16 @@ public:
     bman_->sumAll(input,output);
   }
 
+  void broadcast(Real *input, int cnt, int root) const {
+    bman_->broadcast(input,cnt,root);
+  }
+
   void barrier(void) const {
     bman_->barrier();
+  }
+
+  const Teuchos::RCP<BatchManager<Real> > getBatchManager(void) const {
+    return bman_;
   }
 
   void print(const std::string &filename = "samples",

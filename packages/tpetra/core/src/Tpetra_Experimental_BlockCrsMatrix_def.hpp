@@ -379,13 +379,16 @@ public:
   /// time.
   void setY (const OutVecType& Y) { Y_ = Y; }
 
+  typedef typename Kokkos::ArithTraits<typename std::decay<AlphaCoeffType>::type>::val_type alpha_coeff_type;
+  typedef typename Kokkos::ArithTraits<typename std::decay<BetaCoeffType>::type>::val_type beta_coeff_type;
+
   //! Constructor.
-  BcrsApplyNoTrans1VecFunctor (const typename std::decay<AlphaCoeffType>::type& alpha,
+  BcrsApplyNoTrans1VecFunctor (const alpha_coeff_type& alpha,
                                const GraphType& graph,
                                const MatrixValuesType& val,
                                const local_ordinal_type blockSize,
                                const InVecType& X,
-                               const typename std::decay<BetaCoeffType>::type& beta,
+                               const beta_coeff_type& beta,
                                const OutVecType& Y) :
     alpha_ (alpha),
     ptr_ (graph.row_map),
@@ -425,14 +428,14 @@ public:
 
     // This version of the code does not use temporary storage.
     // Each thread writes to its own block of the target vector.
-    if (beta_ == ArithTraits<BetaCoeffType>::zero ()) {
-      FILL (Y_cur, ArithTraits<BetaCoeffType>::zero ());
+    if (beta_ == ArithTraits<beta_coeff_type>::zero ()) {
+      FILL (Y_cur, ArithTraits<beta_coeff_type>::zero ());
     }
-    else if (beta_ != ArithTraits<BetaCoeffType>::one ()) { // beta != 0 && beta != 1
+    else if (beta_ != ArithTraits<beta_coeff_type>::one ()) { // beta != 0 && beta != 1
       SCAL (beta_, Y_cur);
     }
 
-    if (alpha_ != ArithTraits<AlphaCoeffType>::zero ()) {
+    if (alpha_ != ArithTraits<alpha_coeff_type>::zero ()) {
       const offset_type blkBeg = ptr_[lclRow];
       const offset_type blkEnd = ptr_[lclRow+1];
       // Precompute to save integer math in the inner loop.
@@ -452,13 +455,13 @@ public:
   }
 
 private:
-  typename std::decay<AlphaCoeffType>::type alpha_;
+  alpha_coeff_type alpha_;
   typename GraphType::row_map_type::const_type ptr_;
   typename GraphType::entries_type::const_type ind_;
   MatrixValuesType val_;
   local_ordinal_type blockSize_;
   InVecType X_;
-  typename std::decay<BetaCoeffType>::type beta_;
+  beta_coeff_type beta_;
   OutVecType Y_;
 };
 
@@ -497,8 +500,8 @@ bcrsLocalApplyNoTrans (const AlphaCoeffType& alpha,
   typedef typename MatrixValuesType::const_type matrix_values_type;
   typedef typename OutMultiVecType::non_const_type out_multivec_type;
   typedef typename InMultiVecType::const_type in_multivec_type;
-  typedef typename std::decay<AlphaCoeffType>::type alpha_type;
-  typedef typename std::decay<BetaCoeffType>::type beta_type;
+  typedef typename Kokkos::ArithTraits<typename std::decay<AlphaCoeffType>::type>::val_type alpha_type;
+  typedef typename Kokkos::ArithTraits<typename std::decay<BetaCoeffType>::type>::val_type beta_type;
   typedef typename std::remove_const<typename GraphType::data_type>::type LO;
 
   const LO numLocalMeshRows = graph.row_map.dimension_0 () == 0 ?
@@ -1147,7 +1150,7 @@ public:
 
         little_vec_type B_cur = B.getLocalBlock (actlRow, 0);
         COPY (B_cur, X_lcl);
-        SCAL (omega, X_lcl);
+        SCAL (static_cast<impl_scalar_type> (omega), X_lcl);
 
         const size_t meshBeg = ptrHost_[actlRow];
         const size_t meshEnd = ptrHost_[actlRow+1];
@@ -1160,7 +1163,7 @@ public:
           // X_lcl += alpha*A_cur*X_cur
           const Scalar alpha = meshCol == actlRow ? one_minus_omega : minus_omega;
           //X_lcl.matvecUpdate (alpha, A_cur, X_cur);
-          GEMV (alpha, A_cur, X_cur, X_lcl);
+          GEMV (static_cast<impl_scalar_type> (alpha), A_cur, X_cur, X_lcl);
         } // for each entry in the current local row of the matrix
 
         // NOTE (mfh 20 Jan 2016) The two input Views here are
@@ -1179,7 +1182,7 @@ public:
 
           little_vec_type B_cur = B.getLocalBlock (actlRow, j);
           COPY (B_cur, X_lcl);
-          SCAL (omega, X_lcl);
+          SCAL (static_cast<impl_scalar_type> (omega), X_lcl);
 
           const size_t meshBeg = ptrHost_[actlRow];
           const size_t meshEnd = ptrHost_[actlRow+1];
@@ -1191,7 +1194,7 @@ public:
 
             // X_lcl += alpha*A_cur*X_cur
             const Scalar alpha = meshCol == actlRow ? one_minus_omega : minus_omega;
-            GEMV (alpha, A_cur, X_cur, X_lcl);
+            GEMV (static_cast<impl_scalar_type> (alpha), A_cur, X_cur, X_lcl);
           } // for each entry in the current local row of the matrx
 
           auto D_lcl = Kokkos::subview (D_inv, actlRow, ALL (), ALL ());
@@ -2637,7 +2640,7 @@ public:
         const size_t actualNumBytes = PackTraits<LO, D>::unpackValue (numEntLO, inBuf);
 #ifdef HAVE_TPETRA_DEBUG
         TEUCHOS_TEST_FOR_EXCEPTION(
-          theNumBytes > numBytes, std::logic_error, "unpackRowCount: "
+          actualNumBytes > numBytes, std::logic_error, "unpackRowCount: "
           "actualNumBytes = " << actualNumBytes << " < numBytes = " << numBytes
           << ".");
 #else
@@ -2699,15 +2702,30 @@ public:
         subview (exports, pair_type (valsBeg, valsBeg + valsLen));
 
       size_t numBytesOut = 0;
+      int errorCode = 0;
       numBytesOut += PackTraits<LO, D>::packValue (numEntOut, numEntLO);
-      numBytesOut += PackTraits<GO, D>::packArray (gidsOut, gidsIn, numEnt);
-      numBytesOut += PackTraits<ST, D>::packArray (valsOut, valsIn, numScalarEnt);
+
+      {
+        Kokkos::pair<int, size_t> p;
+        p = PackTraits<GO, D>::packArray (gidsOut, gidsIn, numEnt);
+        errorCode += p.first;
+        numBytesOut += p.second;
+
+        p = PackTraits<ST, D>::packArray (valsOut, valsIn, numScalarEnt);
+        errorCode += p.first;
+        numBytesOut += p.second;
+      }
 
       const size_t expectedNumBytes = numEntLen + gidsLen + valsLen;
       TEUCHOS_TEST_FOR_EXCEPTION(
-        numBytesOut != expectedNumBytes, std::logic_error, "unpackRow: "
+        numBytesOut != expectedNumBytes, std::logic_error, "packRow: "
         "numBytesOut = " << numBytesOut << " != expectedNumBytes = "
         << expectedNumBytes << ".");
+
+      TEUCHOS_TEST_FOR_EXCEPTION(
+        errorCode != 0, std::runtime_error, "packRow: "
+        "PackTraits::packArray returned a nonzero error code");
+
       return numBytesOut;
     }
 
@@ -2767,6 +2785,7 @@ public:
         subview (imports, pair_type (valsBeg, valsBeg + valsLen));
 
       size_t numBytesOut = 0;
+      int errorCode = 0;
       LO numEntOut;
       numBytesOut += PackTraits<LO, D>::unpackValue (numEntOut, numEntIn);
       TEUCHOS_TEST_FOR_EXCEPTION(
@@ -2774,17 +2793,31 @@ public:
         "unpackRow: Expected number of entries " << numEnt
         << " != actual number of entries " << numEntOut << ".");
 
-      numBytesOut += PackTraits<GO, D>::unpackArray (gidsOut, gidsIn, numEnt);
-      numBytesOut += PackTraits<ST, D>::unpackArray (valsOut, valsIn, numScalarEnt);
+      {
+        Kokkos::pair<int, size_t> p;
+        p = PackTraits<GO, D>::unpackArray (gidsOut, gidsIn, numEnt);
+        errorCode += p.first;
+        numBytesOut += p.second;
+
+        p = PackTraits<ST, D>::unpackArray (valsOut, valsIn, numScalarEnt);
+        errorCode += p.first;
+        numBytesOut += p.second;
+      }
 
       TEUCHOS_TEST_FOR_EXCEPTION(
         numBytesOut != numBytes, std::logic_error, "unpackRow: numBytesOut = "
         << numBytesOut << " != numBytes = " << numBytes << ".");
+
       const size_t expectedNumBytes = numEntLen + gidsLen + valsLen;
       TEUCHOS_TEST_FOR_EXCEPTION(
         numBytesOut != expectedNumBytes, std::logic_error, "unpackRow: "
         "numBytesOut = " << numBytesOut << " != expectedNumBytes = "
         << expectedNumBytes << ".");
+
+      TEUCHOS_TEST_FOR_EXCEPTION(
+        errorCode != 0, std::runtime_error, "unpackRow: "
+        "PackTraits::unpackArray returned a nonzero error code");
+
       return numBytesOut;
     }
   } // namespace (anonymous)

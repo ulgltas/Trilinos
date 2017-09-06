@@ -50,8 +50,6 @@
 #include "Teuchos_GlobalMPISession.hpp"
 #include "Teuchos_CommandLineProcessor.hpp"
 
-#include "Phalanx_KokkosUtilities.hpp"
-
 #include "PanzerAdaptersSTK_config.hpp"
 #include "Panzer_GlobalData.hpp"
 #include "Panzer_Workset_Builder.hpp"
@@ -95,6 +93,8 @@
 
 #include "AztecOO.h"
 
+#include <sstream>
+
 using Teuchos::RCP;
 using Teuchos::rcp;
 
@@ -115,7 +115,7 @@ int main(int argc,char * argv[])
    using panzer::StrPureBasisPair;
    using panzer::StrPureBasisComp;
 
-   PHX::InitializeKokkosDevice();
+   Kokkos::initialize(argc,argv);
 
    {
   
@@ -275,7 +275,11 @@ int main(int argc,char * argv[])
      Teuchos::RCP<panzer_stk::WorksetFactory> wkstFactory
         = Teuchos::rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
      Teuchos::RCP<panzer::WorksetContainer> wkstContainer     // attach it to a workset container (uses lazy evaluation)
-        = Teuchos::rcp(new panzer::WorksetContainer(wkstFactory,physicsBlocks,workset_size));
+       = Teuchos::rcp(new panzer::WorksetContainer);
+     wkstContainer->setFactory(wkstFactory);
+     for(size_t i=0;i<physicsBlocks.size();i++) 
+       wkstContainer->setNeeds(physicsBlocks[i]->elementBlockID(),physicsBlocks[i]->getWorksetNeeds());
+     wkstContainer->setWorksetSize(workset_size);
      wkstContainer->setGlobalIndexer(dofManager);
   
      // Setup STK response library for writing out the solution fields
@@ -424,7 +428,15 @@ int main(int argc,char * argv[])
         stkIOResponseLibrary->evaluate<panzer::Traits::Residual>(respInput);
   
         // write to exodus
-        mesh->writeToExodus("output.exo");
+        // ---------------
+        // Due to multiple instances of this test being run at the
+        // same time (one for each order), we need to differentiate
+        // output to prevent race conditions on output file. Multiple
+        // runs for the same order are ok as they are staged one after
+        // another in the ADD_ADVANCED_TEST cmake macro.
+        std::ostringstream filename;
+        filename << "output_" << hgrad_basis_order << "_" << hdiv_basis_order << ".exo";
+        mesh->writeToExodus(filename.str());
      }
   
      // compute error norm
@@ -460,8 +472,6 @@ int main(int argc,char * argv[])
      else
         out << "ALL PASSED: Epetra" << std::endl;
    }
-
-   PHX::FinalizeKokkosDevice();
 
    return 0;
 }

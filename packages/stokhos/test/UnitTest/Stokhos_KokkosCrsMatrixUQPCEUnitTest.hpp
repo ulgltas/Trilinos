@@ -43,7 +43,8 @@
 #include "Stokhos_UnitTestHelpers.hpp"
 
 #include "Stokhos_Sacado_Kokkos_UQ_PCE.hpp"
-#include "Kokkos_Sparse.hpp"
+#include "KokkosSparse_CrsMatrix.hpp"
+#include "KokkosSparse_spmv.hpp"
 #include "Kokkos_CrsMatrix_UQ_PCE.hpp"
 #include "Kokkos_CrsMatrix_UQ_PCE_Cuda.hpp"
 #include "Stokhos_LegendreBasis.hpp"
@@ -544,7 +545,7 @@ template <typename PCEType, typename Multiply>
 bool test_embedded_pce(const typename PCEType::ordinal_type nGrid,
                        const typename PCEType::ordinal_type stoch_dim,
                        const typename PCEType::ordinal_type poly_ord,
-                       Kokkos::DeviceConfig dev_config,
+                       KokkosSparse::DeviceConfig dev_config,
                        Multiply multiply_op,
                        Teuchos::FancyOStream& out)
 {
@@ -707,7 +708,7 @@ TEUCHOS_UNIT_TEST_TEMPLATE_2_DECL(
   const Ordinal nGrid = 5;
   const Ordinal stoch_dim = 2;
   const Ordinal poly_ord = 3;
-  Kokkos::DeviceConfig dev_config;
+  KokkosSparse::DeviceConfig dev_config;
 
   success = test_embedded_pce<Scalar>(
     nGrid, stoch_dim, poly_ord, dev_config, MultiplyOp(), out);
@@ -743,7 +744,7 @@ TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(
   const Ordinal nGrid = 5;
   const Ordinal stoch_dim = 5;
   const Ordinal poly_ord = 3;
-  Kokkos::DeviceConfig dev_config;
+  KokkosSparse::DeviceConfig dev_config;
 
   typedef typename Scalar::ordinal_type ordinal_type;
   typedef typename Scalar::value_type scalar_type;
@@ -902,7 +903,7 @@ TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(
   const ordinal_type nGrid = 5;
   const ordinal_type stoch_dim = 2;
   const ordinal_type poly_ord = 3;
-  Kokkos::DeviceConfig dev_config;
+  KokkosSparse::DeviceConfig dev_config;
 
   // Build Cijk tensor
   cijk_type cijk = build_cijk<cijk_type>(stoch_dim, poly_ord);

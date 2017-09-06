@@ -1,6 +1,6 @@
 #include <Kokkos_Core.hpp>
 #include <Kokkos_ArithTraits.hpp>
-#include <Kokkos_CrsMatrix.hpp>
+#include <KokkosSparse_CrsMatrix.hpp>
 #include <Kokkos_StaticCrsGraph.hpp>
 #include <impl/Kokkos_Timer.hpp>
 
@@ -214,7 +214,7 @@ private:
 };
 
 template<class scalar_type, class local_ordinal_type, class device_type>
-Kokkos::CrsMatrix<scalar_type, local_ordinal_type, device_type>
+KokkosSparse::CrsMatrix<scalar_type, local_ordinal_type, device_type>
 kernel_construct(local_ordinal_type numRows) {
   local_ordinal_type numCols         = numRows;
   local_ordinal_type nnz             = 10*numRows;
@@ -246,14 +246,14 @@ kernel_construct(local_ordinal_type numRows) {
     }
   }
 
-  typedef Kokkos::CrsMatrix<scalar_type, local_ordinal_type, device_type> local_matrix_type;
+  typedef KokkosSparse::CrsMatrix<scalar_type, local_ordinal_type, device_type> local_matrix_type;
 
   return local_matrix_type("A", numRows, numCols, nnz, values, rowPtr, colInd, false/*pad*/);
 }
 
 template<class scalar_type, class local_ordinal_type, class device_type>
-void kernel_coalesce_drop_device(Kokkos::CrsMatrix<scalar_type, local_ordinal_type, device_type> A) {
-  typedef Kokkos::CrsMatrix<scalar_type, local_ordinal_type, device_type>   local_matrix_type;
+void kernel_coalesce_drop_device(KokkosSparse::CrsMatrix<scalar_type, local_ordinal_type, device_type> A) {
+  typedef KokkosSparse::CrsMatrix<scalar_type, local_ordinal_type, device_type>   local_matrix_type;
   typedef Kokkos::ArithTraits<scalar_type>                                  ATS;
   typedef typename ATS::mag_type                                            magnitude_type;
   typedef Kokkos::View<bool*, device_type>                                  boundary_nodes_type;
@@ -307,8 +307,8 @@ void kernel_coalesce_drop_device(Kokkos::CrsMatrix<scalar_type, local_ordinal_ty
 }
 
 template<class scalar_type, class local_ordinal_type, class device_type>
-void kernel_coalesce_drop_serial(Kokkos::CrsMatrix<scalar_type, local_ordinal_type, device_type> A) {
-  typedef Kokkos::CrsMatrix<scalar_type, local_ordinal_type, device_type>   local_matrix_type;
+void kernel_coalesce_drop_serial(KokkosSparse::CrsMatrix<scalar_type, local_ordinal_type, device_type> A) {
+  typedef KokkosSparse::CrsMatrix<scalar_type, local_ordinal_type, device_type>   local_matrix_type;
   typedef Kokkos::ArithTraits<scalar_type>                                  ATS;
   typedef typename ATS::mag_type                                            magnitude_type;
   typedef Kokkos::View<bool*, device_type>                                  boundary_nodes_type;
@@ -401,7 +401,7 @@ int main_(int argc, char **argv) {
     }
   }
 
-  typedef Kokkos::CrsMatrix<scalar_type, local_ordinal_type, device_type> local_matrix_type;
+  typedef KokkosSparse::CrsMatrix<scalar_type, local_ordinal_type, device_type> local_matrix_type;
   typedef typename device_type::execution_space execution_space;
 
   local_matrix_type A = kernel_construct<scalar_type, local_ordinal_type, device_type>(n);
@@ -409,11 +409,15 @@ int main_(int argc, char **argv) {
   execution_space::fence();
   Kokkos::Impl::Timer timer;
 
+#ifdef KOKKOS_HAVE_SERIAL
   if (typeid(device_type) == typeid(Kokkos::Serial)) {
     for (int i = 0; i < loop; i++)
       kernel_coalesce_drop_serial(A);
 
   } else {
+#else
+  {
+#endif
     for (int i = 0; i < loop; i++)
       kernel_coalesce_drop_device(A);
   }
@@ -455,21 +459,21 @@ int main(int argc, char* argv[]) {
 #ifdef KOKKOS_HAVE_SERIAL
     return main_<double,int,Kokkos::Serial>(argc, argv);
 #else
-    throw std::runtime_error("Serial node type is disabled");
+    std::cout << "Error: Serial node type is disabled" << std::endl;
 #endif
 
   } else if (node == "openmp") {
 #ifdef KOKKOS_HAVE_OPENMP
     return main_<double,int,Kokkos::OpenMP>(argc, argv);
 #else
-    throw std::runtime_error("OpenMP node type is disabled");
+    std::cout << "Error: OpenMP node type is disabled" << std::endl;
 #endif
 
   } else if (node == "cuda") {
 #ifdef KOKKOS_HAVE_CUDA
     return main_<double,int,Kokkos::Cuda>(argc, argv);
 #else
-    throw std::runtime_error("CUDA node type is disabled");
+    std::cout << "Error: CUDA node type is disabled" << std::endl;
 #endif
   }
 

@@ -68,7 +68,7 @@ public:
     return Teuchos::size<Ordinal>(*comm_);
   }
 
-  void reduceAll(Real* input, Real* output,
+  void reduceAll(Real* input, Real* output, int dim,
                  const Elementwise::ReductionOp<Real> &r) {
     int nB = this->numBatches();
     std::vector<Real> receiveBuffer(nB);
@@ -93,6 +93,10 @@ public:
   void sumAll(Real* input, Real* output, int dim) {
     Teuchos::reduceAll<Ordinal,Real>(*comm_,Teuchos::REDUCE_SUM,
       dim, input, output);
+  }
+
+  void broadcast(Real* input, int cnt, int root) {
+    Teuchos::broadcast<Ordinal,Real>(*comm_,root,cnt,input);
   }
 
   virtual void sumAll(Vector<Real> &input, Vector<Real> &output) {

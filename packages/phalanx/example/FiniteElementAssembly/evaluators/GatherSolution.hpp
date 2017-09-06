@@ -81,10 +81,11 @@ class GatherSolution<PHX::MyTraits::Residual,Traits>
   const int field_index;
   const Kokkos::View<const double*,PHX::Device> x;
   Kokkos::View<const int**,PHX::Device> gids;
+  int cell_global_offset_index;
 
 public:
   GatherSolution(const std::string& field_name,
-                 const Teuchos::RCP<const PHX::DataLayout>& layout,
+                 const Teuchos::RCP<PHX::DataLayout>& layout,
                  const int& in_num_equations,
                  const int& in_field_index,
                  const Kokkos::View<double*,PHX::Device>& x);
@@ -107,10 +108,11 @@ class GatherSolution<PHX::MyTraits::Jacobian,Traits>
   const int field_index;
   const Kokkos::View<const double*,PHX::Device> x;
   Kokkos::View<const int**,PHX::Device> gids;
+  int cell_global_offset_index;
   
 public:
   GatherSolution(const std::string& field_name,
-                 const Teuchos::RCP<const PHX::DataLayout>& layout,
+                 const Teuchos::RCP<PHX::DataLayout>& layout,
                  const int& in_num_equations,
                  const int& in_field_index,
                  const Kokkos::View<double*,PHX::Device>& x);

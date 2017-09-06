@@ -41,11 +41,6 @@
 // ************************************************************************
 // @HEADER
 
-
-#include "Phalanx_config.hpp"
-#include "Phalanx.hpp"
-#include "Phalanx_KokkosUtilities.hpp"
-
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ArrayRCP.hpp"
 #include "Teuchos_Assert.hpp"
@@ -55,8 +50,12 @@
 #include "Teuchos_GlobalMPISession.hpp"
 
 #include "Phalanx_DataLayout_MDALayout.hpp"
+#include "Phalanx_FieldTag_Tag.hpp"
+#include "Phalanx_MDField.hpp"
+#include "Phalanx_FieldManager.hpp"
 
 #include "Mesh.hpp"
+#include "WorksetBuilder.hpp"
 #include "Dimension.hpp"
 #include "MyTraits.hpp"
 #include "Constant.hpp"
@@ -69,6 +68,7 @@
 #include "ScatterResidual.hpp"
 
 #include <sstream>
+#include <vector>
 
 // User defined objects
 int main(int argc, char *argv[]) 
@@ -88,7 +88,8 @@ int main(int argc, char *argv[])
     RCP<Time> total_time = TimeMonitor::getNewTimer("Total Run Time");
     TimeMonitor tm(*total_time);
 
-    PHX::InitializeKokkosDevice();
+    Kokkos::initialize(argc,argv);
+    PHX::exec_space::print_configuration(std::cout);
 
     // *********************************************************
     // * Build the Finite Element data structures
@@ -102,19 +103,22 @@ int main(int argc, char *argv[])
     const double ly = 1.0;
     const double lz = 1.0;
     const int num_equations = 2;
-    //constexpr int ne = nx * ny * nz;
-    const int workset_size = nx*ny*nz; // hard coded to num elements
+    const int workset_size = 3;
     RCP<phx_example::Mesh> mesh = rcp(new phx_example::Mesh(nx, ny, nz, lx, ly, lz, num_equations));
-    //std::cout << *mesh << std::endl;
-
-    // Global solution vector
-    constexpr int num_dofs = (nx+1)*(ny+1)*(nz+1)*num_equations;
-    Kokkos::View<double*,PHX::Device> x("x",num_dofs);
+    std::vector<Workset> worksets;
+    {
+      WorksetBuilder builder;
+      builder.buildWorksets(workset_size,*mesh,worksets);
+    }
     
-    RCP<const PHX::DataLayout> qp_layout = rcp(new MDALayout<CELL,QP>("qp",workset_size,8));
-    RCP<const PHX::DataLayout> grad_qp_layout = rcp(new MDALayout<CELL,QP,DIM>("grad_qp",workset_size,8,3));
-    RCP<const PHX::DataLayout> basis_layout = rcp(new MDALayout<CELL,BASIS>("basis",workset_size,8));
-    RCP<const PHX::DataLayout> scatter_layout = rcp(new MDALayout<CELL>("scatter",0));
+    // Global objects
+    constexpr int num_dofs = (nx+1)*(ny+1)*(nz+1)*num_equations;
+    constexpr int max_deriv_entries_per_row = 8 * 8 * num_equations;
+        
+    RCP<PHX::DataLayout> qp_layout = rcp(new MDALayout<CELL,QP>("qp",workset_size,8));
+    RCP<PHX::DataLayout> grad_qp_layout = rcp(new MDALayout<CELL,QP,DIM>("grad_qp",workset_size,8,3));
+    RCP<PHX::DataLayout> basis_layout = rcp(new MDALayout<CELL,BASIS>("basis",workset_size,8));
+    RCP<PHX::DataLayout> scatter_layout = rcp(new MDALayout<CELL>("scatter",0));
     
     PHX::FieldManager<MyTraits> fm;
     {
@@ -124,6 +128,7 @@ int main(int argc, char *argv[])
     }
     
     // Gather DOFs
+    Kokkos::View<double*,PHX::Device> x("x",num_dofs); // solution
     for (int eq=0; eq < num_equations; ++eq) {
       std::stringstream s;
       s << "equation_" << eq;
@@ -219,21 +224,20 @@ int main(int argc, char *argv[])
     }
 
     // Scatter DOFs
-    Kokkos::View<double*> global_residual("global_residual",num_dofs);
-    Kokkos::View<double**> global_jacobian("global_jacobian",num_dofs,num_dofs);
-    
+    Kokkos::View<double*> f("global_residual",num_dofs); // residual
+    Kokkos::View<double**> J("global_jacobian",num_dofs,max_deriv_entries_per_row); // Jacobian
     for (int eq=0; eq < num_equations; ++eq) {
       std::stringstream s;
       s << "residual_" << eq;
       
       RCP<PHX::FieldTag> scatter_tag_r = rcp(new Tag<MyTraits::Residual::ScalarT>(s.str(),scatter_layout));
       RCP<ScatterResidual<Residual,MyTraits>> r =
-        rcp(new ScatterResidual<Residual,MyTraits>(scatter_tag_r,s.str(),basis_layout,num_equations,eq,global_residual));
+        rcp(new ScatterResidual<Residual,MyTraits>(scatter_tag_r,s.str(),basis_layout,eq,num_equations,f));
       fm.registerEvaluator<Residual>(r);
  
       RCP<PHX::FieldTag> scatter_tag_j = rcp(new Tag<MyTraits::Jacobian::ScalarT>(s.str(),scatter_layout));
       RCP<ScatterResidual<Jacobian,MyTraits>> j =
-        rcp(new ScatterResidual<Jacobian,MyTraits>(scatter_tag_j,s.str(),basis_layout,num_equations,eq,global_residual,global_jacobian));
+        rcp(new ScatterResidual<Jacobian,MyTraits>(scatter_tag_j,s.str(),basis_layout,eq,num_equations,f,J));
       fm.registerEvaluator<Jacobian>(j);
 
       // Require fields to be evalauted
@@ -244,23 +248,42 @@ int main(int argc, char *argv[])
     fm.postRegistrationSetup(nullptr);
     fm.writeGraphvizFile("example_fem",".dot",true,true);
 
-    MyWorkset workset;
-    workset.num_cells_ = workset_size;
-    workset.first_cell_global_index_ = 0;
-    workset.mesh_ = mesh;
-
-    RCP<Time> residual_eval_time = 
-      TimeMonitor::getNewTimer("Residual Evaluation Time");
+    Kokkos::deep_copy(f,0.0);
+    Kokkos::fence();
+    RCP<Time> residual_eval_time = TimeMonitor::getNewTimer("Residual Evaluation Time");
     {
       TimeMonitor tm_r(*residual_eval_time);
-      fm.evaluateFields<Residual>(workset);
+      for (const auto& workset : worksets)
+        fm.evaluateFields<Residual>(workset);
     }
-    
-    RCP<Time> jacobian_eval_time = 
-      TimeMonitor::getNewTimer("Jacobian Evaluation Time");
+
+    Kokkos::deep_copy(J,0.0);
+    Kokkos::fence();
+    RCP<Time> jacobian_eval_time = TimeMonitor::getNewTimer("Jacobian Evaluation Time");
     {
       TimeMonitor tm_r(*jacobian_eval_time);
-      fm.evaluateFields<Jacobian>(workset);
+      for (const auto& workset : worksets)
+        fm.evaluateFields<Jacobian>(workset);
+    }
+
+    // debugging
+    // {
+    //   for (int i=0; i < static_cast<int>(f.extent(0)); ++i)
+    //     std::cout << "f(" << i << ") = " << f(i) << std::endl;
+    // }
+
+    // Graph analysis
+    if (true) {
+      double scalability = 0.0;
+      double parallelizability = 1.0;
+      fm.analyzeGraph<MyTraits::Residual>(scalability,parallelizability);
+      std::cout << "Task Scalability       (Residual) = " << scalability << std::endl;
+      std::cout << "Task Parallelizability (Residual) = " 
+		<< parallelizability << std::endl;
+      fm.analyzeGraph<MyTraits::Jacobian>(scalability,parallelizability);
+      std::cout << "Task Scalability       (Jacobian) = " << scalability << std::endl;
+      std::cout << "Task Parallelizability (Jacobian) = " 
+		<< parallelizability << std::endl;
     }
     
   }

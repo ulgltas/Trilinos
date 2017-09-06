@@ -56,7 +56,6 @@
 #include "Phalanx_any.hpp"
 #include "Phalanx_FieldTag_Tag.hpp"
 #include "Phalanx_KokkosDeviceTypes.hpp"
-#include "Phalanx_MDFieldToKokkos.hpp"
 #include "Phalanx_MDField_TypeTraits.hpp"
 
 namespace PHX {
@@ -85,15 +84,28 @@ namespace PHX {
 
     typedef typename array_type::execution_space execution_space;
 
-    MDField(const std::string& name, const Teuchos::RCP<const PHX::DataLayout>& t);
+    MDField(const std::string& name, const Teuchos::RCP<PHX::DataLayout>& t);
     
     MDField(const PHX::Tag<DataT>& v);
     
     MDField();
+
+    template<typename CopyDataT,
+             typename T0, typename T1, typename T2, 
+             typename T3, typename T4, typename T5,
+             typename T6, typename T7>
+    MDField(const MDField<CopyDataT,T0,T1,T2,T3,T4,T5,T6,T7>& source);
     
     ~MDField();
     
     const PHX::FieldTag& fieldTag() const;
+
+    template<typename CopyDataT,
+             typename T0, typename T1, typename T2, 
+             typename T3, typename T4, typename T5,
+             typename T6, typename T7>
+    PHX::MDField<DataT,void,void,void,void,void,void,void,void>&
+    operator=(const MDField<CopyDataT,T0,T1,T2,T3,T4,T5,T6,T7>& source);
     
     // template<typename iType0, typename iType1, typename iType2, typename iType3,
     // 	     typename iType4, typename iType5, typename iType6, typename iType7>
@@ -231,6 +243,12 @@ namespace PHX {
     static const std::string m_field_tag_error_msg;
     static const std::string m_field_data_error_msg;
 #endif
+    
+    template<typename ScalarT,
+             typename T0, typename T1, typename T2, 
+             typename T3, typename T4, typename T5,
+             typename T6, typename T7>
+    friend class PHX::MDField;
 
   };
   

@@ -16,6 +16,8 @@ Level 0
   relaxation: fix tiny diagonal entries = 0   [default]
   relaxation: check diagonal entries = 0   [default]
   relaxation: local smoothing indices = Teuchos::ArrayRCP<int>{ptr=0,lowerOffset=0,upperOffset=-1,size=0,node=0,strong_count=0,weak_count=0}   [default]
+  relaxation: symmetric matrix structure = 0   [default]
+  relaxation: ifpack2 dump matrix = 0   [default]
  
 Level 1
  Prolongator smoothing (MueLu::SaPFactory)
@@ -40,6 +42,7 @@ Level 1
    aggregation: enable phase 3 = 1   [default]
    aggregation: preserve Dirichlet points = 0   [unused]
    aggregation: allow user-specified singletons = 0   [default]
+   aggregation: error on nodes with no on-rank neighbors = 0   [default]
    OnePt aggregate map name =    [default]
    OnePt aggregate map factory =    [default]
    
@@ -48,14 +51,19 @@ Level 1
    Strided block id = -1   [default]
    Domain GID offsets = {0}   [default]
    
-  [empty list]
+  tentative: calculate qr = 1   [default]
+  matrixmatrix: kernel params -> 
+   [empty list]
   
  sa: damping factor = 1.33333
  sa: calculate eigenvalue estimate = 0   [default]
  sa: eigenvalue estimate num iterations = 10   [default]
+ matrixmatrix: kernel params -> 
+  [empty list]
  
  Transpose P (MueLu::TransPFactory)
- [empty list]
+ matrixmatrix: kernel params -> 
+  [empty list]
  
  Computing Ac (MueLu::RAPFactory)
  transpose: use implicit = 0   [default]
@@ -82,6 +90,8 @@ Level 1
   relaxation: fix tiny diagonal entries = 0   [default]
   relaxation: check diagonal entries = 0   [default]
   relaxation: local smoothing indices = Teuchos::ArrayRCP<int>{ptr=0,lowerOffset=0,upperOffset=-1,size=0,node=0,strong_count=0,weak_count=0}   [default]
+  relaxation: symmetric matrix structure = 0   [default]
+  relaxation: ifpack2 dump matrix = 0   [default]
  
 Level 2
  Prolongator smoothing (MueLu::SaPFactory)
@@ -106,6 +116,7 @@ Level 2
    aggregation: enable phase 3 = 1   [default]
    aggregation: preserve Dirichlet points = 0   [unused]
    aggregation: allow user-specified singletons = 0   [default]
+   aggregation: error on nodes with no on-rank neighbors = 0   [default]
    OnePt aggregate map name =    [default]
    OnePt aggregate map factory =    [default]
    
@@ -117,14 +128,19 @@ Level 2
    Strided block id = -1   [default]
    Domain GID offsets = {0}   [default]
    
-  [empty list]
+  tentative: calculate qr = 1   [default]
+  matrixmatrix: kernel params -> 
+   [empty list]
   
  sa: damping factor = 1.33333
  sa: calculate eigenvalue estimate = 0   [default]
  sa: eigenvalue estimate num iterations = 10   [default]
+ matrixmatrix: kernel params -> 
+  [empty list]
  
  Transpose P (MueLu::TransPFactory)
- [empty list]
+ matrixmatrix: kernel params -> 
+  [empty list]
  
  Computing Ac (MueLu::RAPFactory)
  transpose: use implicit = 0   [default]
@@ -151,6 +167,8 @@ Level 2
   relaxation: fix tiny diagonal entries = 0   [default]
   relaxation: check diagonal entries = 0   [default]
   relaxation: local smoothing indices = Teuchos::ArrayRCP<int>{ptr=0,lowerOffset=0,upperOffset=-1,size=0,node=0,strong_count=0,weak_count=0}   [default]
+  relaxation: symmetric matrix structure = 0   [default]
+  relaxation: ifpack2 dump matrix = 0   [default]
  
 Level 3
  Prolongator smoothing (MueLu::SaPFactory)
@@ -175,6 +193,7 @@ Level 3
    aggregation: enable phase 3 = 1   [default]
    aggregation: preserve Dirichlet points = 0   [unused]
    aggregation: allow user-specified singletons = 0   [default]
+   aggregation: error on nodes with no on-rank neighbors = 0   [default]
    OnePt aggregate map name =    [default]
    OnePt aggregate map factory =    [default]
    
@@ -186,14 +205,19 @@ Level 3
    Strided block id = -1   [default]
    Domain GID offsets = {0}   [default]
    
-  [empty list]
+  tentative: calculate qr = 1   [default]
+  matrixmatrix: kernel params -> 
+   [empty list]
   
  sa: damping factor = 1.33333
  sa: calculate eigenvalue estimate = 0   [default]
  sa: eigenvalue estimate num iterations = 10   [default]
+ matrixmatrix: kernel params -> 
+  [empty list]
  
  Transpose P (MueLu::TransPFactory)
- [empty list]
+ matrixmatrix: kernel params -> 
+  [empty list]
  
  Computing Ac (MueLu::RAPFactory)
  transpose: use implicit = 0   [default]
@@ -220,6 +244,8 @@ Level 3
   relaxation: fix tiny diagonal entries = 0   [default]
   relaxation: check diagonal entries = 0   [default]
   relaxation: local smoothing indices = Teuchos::ArrayRCP<int>{ptr=0,lowerOffset=0,upperOffset=-1,size=0,node=0,strong_count=0,weak_count=0}   [default]
+  relaxation: symmetric matrix structure = 0   [default]
+  relaxation: ifpack2 dump matrix = 0   [default]
  
 Level 4
  Prolongator smoothing (MueLu::SaPFactory)
@@ -244,6 +270,7 @@ Level 4
    aggregation: enable phase 3 = 1   [default]
    aggregation: preserve Dirichlet points = 0   [unused]
    aggregation: allow user-specified singletons = 0   [default]
+   aggregation: error on nodes with no on-rank neighbors = 0   [default]
    OnePt aggregate map name =    [default]
    OnePt aggregate map factory =    [default]
    
@@ -255,14 +282,19 @@ Level 4
    Strided block id = -1   [default]
    Domain GID offsets = {0}   [default]
    
-  [empty list]
+  tentative: calculate qr = 1   [default]
+  matrixmatrix: kernel params -> 
+   [empty list]
   
  sa: damping factor = 1.33333
  sa: calculate eigenvalue estimate = 0   [default]
  sa: eigenvalue estimate num iterations = 10   [default]
+ matrixmatrix: kernel params -> 
+  [empty list]
  
  Transpose P (MueLu::TransPFactory)
- [empty list]
+ matrixmatrix: kernel params -> 
+  [empty list]
  
  Computing Ac (MueLu::RAPFactory)
  transpose: use implicit = 0   [default]
@@ -289,6 +321,8 @@ Level 4
   relaxation: fix tiny diagonal entries = 0   [default]
   relaxation: check diagonal entries = 0   [default]
   relaxation: local smoothing indices = Teuchos::ArrayRCP<int>{ptr=0,lowerOffset=0,upperOffset=-1,size=0,node=0,strong_count=0,weak_count=0}   [default]
+  relaxation: symmetric matrix structure = 0   [default]
+  relaxation: ifpack2 dump matrix = 0   [default]
  
 Level 5
  Prolongator smoothing (MueLu::SaPFactory)
@@ -313,6 +347,7 @@ Level 5
    aggregation: enable phase 3 = 1   [default]
    aggregation: preserve Dirichlet points = 0   [unused]
    aggregation: allow user-specified singletons = 0   [default]
+   aggregation: error on nodes with no on-rank neighbors = 0   [default]
    OnePt aggregate map name =    [default]
    OnePt aggregate map factory =    [default]
    
@@ -324,14 +359,19 @@ Level 5
    Strided block id = -1   [default]
    Domain GID offsets = {0}   [default]
    
-  [empty list]
+  tentative: calculate qr = 1   [default]
+  matrixmatrix: kernel params -> 
+   [empty list]
   
  sa: damping factor = 1.33333
  sa: calculate eigenvalue estimate = 0   [default]
  sa: eigenvalue estimate num iterations = 10   [default]
+ matrixmatrix: kernel params -> 
+  [empty list]
  
  Transpose P (MueLu::TransPFactory)
- [empty list]
+ matrixmatrix: kernel params -> 
+  [empty list]
  
  Computing Ac (MueLu::RAPFactory)
  transpose: use implicit = 0   [default]

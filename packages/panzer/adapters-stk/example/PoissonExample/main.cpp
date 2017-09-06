@@ -49,8 +49,6 @@
 #include "Teuchos_DefaultComm.hpp"
 #include "Teuchos_GlobalMPISession.hpp"
 
-#include "Phalanx_KokkosUtilities.hpp"
-
 #include "PanzerAdaptersSTK_config.hpp"
 #include "Panzer_GlobalData.hpp"
 #include "Panzer_Workset_Builder.hpp"
@@ -87,6 +85,8 @@
 
 #include "AztecOO.h"
 
+#include <sstream>
+
 using Teuchos::RCP;
 using Teuchos::rcp;
 
@@ -102,7 +102,7 @@ int main(int argc,char * argv[])
    using panzer::StrPureBasisPair;
    using panzer::StrPureBasisComp;
 
-   PHX::InitializeKokkosDevice();
+   Kokkos::initialize(argc,argv);
 
    Teuchos::GlobalMPISession mpiSession(&argc,&argv);
    RCP<const Teuchos::MpiComm<int> > tComm = Teuchos::rcp(new Teuchos::MpiComm<int>(MPI_COMM_WORLD));
@@ -207,7 +207,11 @@ int main(int argc,char * argv[])
    Teuchos::RCP<panzer_stk::WorksetFactory> wkstFactory
       = Teuchos::rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
    Teuchos::RCP<panzer::WorksetContainer> wkstContainer     // attach it to a workset container (uses lazy evaluation)
-      = Teuchos::rcp(new panzer::WorksetContainer(wkstFactory,physicsBlocks,workset_size));
+       = Teuchos::rcp(new panzer::WorksetContainer);
+    wkstContainer->setFactory(wkstFactory);
+    for(size_t i=0;i<physicsBlocks.size();i++) 
+      wkstContainer->setNeeds(physicsBlocks[i]->elementBlockID(),physicsBlocks[i]->getWorksetNeeds());
+    wkstContainer->setWorksetSize(workset_size);
 
    // build DOF Manager and linear object factory
    /////////////////////////////////////////////////////////////
@@ -382,7 +386,14 @@ int main(int argc,char * argv[])
       // get X Epetra_Vector from ghosted container
       RCP<panzer::EpetraLinearObjContainer> ep_ghostCont = rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(ghostCont);
       panzer_stk::write_solution_data(*dofManager,*mesh,*ep_ghostCont->get_x());
-      mesh->writeToExodus("output.exo");
+      // Due to multiple instances of this test being run at the same
+      // time (one for each order), we need to differentiate output to
+      // prevent race conditions on output file. Multiple runs for the
+      // same order are ok as they are staged one after another in the
+      // ADD_ADVANCED_TEST cmake macro.
+      std::ostringstream filename;
+      filename << "output_" << basis_order << ".exo";
+      mesh->writeToExodus(filename.str());
    }
 
    // compute error norm
@@ -421,8 +432,6 @@ int main(int argc,char * argv[])
 
    // all done!
    /////////////////////////////////////////////////////////////
-
-   //PHX::FinalizeKokkosDevice();
    
    out << "ALL PASSED" << std::endl;
 

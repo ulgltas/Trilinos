@@ -115,6 +115,9 @@
 /* Define if user requested explicit instantiation of classes into libtpetra */
 #cmakedefine HAVE_TPETRA_EXPLICIT_INSTANTIATION
 
+/* Define when Tpetra assumes that the MPI implementation is CUDA aware */
+#cmakedefine TPETRA_ASSUME_CUDA_AWARE_MPI
+
 /* List of enabled (LocalOrdinal, GlobalOrdinal) pairs */
 #cmakedefine HAVE_TPETRA_INST_INT_INT
 #cmakedefine HAVE_TPETRA_INST_INT_LONG
@@ -165,6 +168,11 @@
 #endif // HAVE_TPETRACORE_RTI
 
 #cmakedefine HAVE_TPETRA_BCRS_DO_POINT_IMPORT
+
+/* Define the Fortran name mangling to be used for the BLAS */
+#ifndef TPETRACORE_F77_BLAS_MANGLE
+#  define TPETRACORE_F77_BLAS_MANGLE@F77_BLAS_MANGLE@
+#endif
 
 @TPETRA_DEPRECATED_DECLARATIONS@
 

@@ -33,6 +33,7 @@ Level 1
      aggregation: enable phase 3 = 1   [default]
      aggregation: preserve Dirichlet points = 0   [default]
      aggregation: allow user-specified singletons = 0   [default]
+     aggregation: error on nodes with no on-rank neighbors = 0   [default]
      OnePt aggregate map name =    [default]
      OnePt aggregate map factory =    [default]
      
@@ -44,12 +45,16 @@ Level 1
      Strided block id = -1   [default]
      Domain GID offsets = {0}   [default]
      
-    [empty list]
+    tentative: calculate qr = 1   [default]
+    matrixmatrix: kernel params -> 
+     [empty list]
     
     Transpose P (MueLu::TransPFactory)
-    [empty list]
+    matrixmatrix: kernel params -> 
+     [empty list]
     
    Build (MueLu::CoordinatesTransferFactory)
+   Geometric = 0   [default]
    write start = -1   [default]
    write end = -1   [default]
    
@@ -66,8 +71,7 @@ Level 1
    repartition: max imbalance = 1.2   [default]
    
    Build (MueLu::Zoltan2Interface)
-   rowWeight = 0   [default]
-   ParameterList = Teuchos::RCP<Teuchos::ParameterList const>{ptr=0x1e332a0,node=0x1e33100,strong_count=2,weak_count=0}   [unused]
+   ParameterList = Teuchos::RCP<Teuchos::ParameterList const>{ptr=0x24a5ae0,node=0x232de40,strong_count=2,weak_count=0}   [unused]
    
   repartition: print partition distribution = 0   [default]
   repartition: remap parts = 1   [default]
@@ -125,6 +129,7 @@ Level 2
      aggregation: enable phase 3 = 1   [default]
      aggregation: preserve Dirichlet points = 0   [default]
      aggregation: allow user-specified singletons = 0   [default]
+     aggregation: error on nodes with no on-rank neighbors = 0   [default]
      OnePt aggregate map name =    [default]
      OnePt aggregate map factory =    [default]
      
@@ -136,12 +141,16 @@ Level 2
      Strided block id = -1   [default]
      Domain GID offsets = {0}   [default]
      
-    [empty list]
+    tentative: calculate qr = 1   [default]
+    matrixmatrix: kernel params -> 
+     [empty list]
     
     Transpose P (MueLu::TransPFactory)
-    [empty list]
+    matrixmatrix: kernel params -> 
+     [empty list]
     
    Build (MueLu::CoordinatesTransferFactory)
+   Geometric = 0   [default]
    write start = -1   [default]
    write end = -1   [default]
    
@@ -158,8 +167,7 @@ Level 2
    repartition: max imbalance = 1.2   [default]
    
    Build (MueLu::Zoltan2Interface)
-   rowWeight = 0   [default]
-   ParameterList = Teuchos::RCP<Teuchos::ParameterList const>{ptr=0x2183ab0,node=0x1ef45d0,strong_count=2,weak_count=0}   [unused]
+   ParameterList = Teuchos::RCP<Teuchos::ParameterList const>{ptr=0x227b4b0,node=0x24a1000,strong_count=2,weak_count=0}   [unused]
    
   repartition: print partition distribution = 0   [default]
   repartition: remap parts = 1   [default]
@@ -232,7 +240,8 @@ Level 1
  
  Build (MueLu::RebalanceTransferFactory)
   Transpose P (MueLu::TransPFactory)
-  [empty list]
+  matrixmatrix: kernel params -> 
+   [empty list]
   
  repartition: rebalance P and R = 0
  transpose: use implicit = 0   [default]
@@ -246,6 +255,7 @@ Level 1
    Reusing previous AP data
    Reusing previous RAP data
   Build (MueLu::CoordinatesTransferFactory)
+  Geometric = 0   [default]
   write start = -1   [default]
   write end = -1   [default]
   
@@ -292,6 +302,7 @@ Level 2
      aggregation: enable phase 3 = 1   [default]
      aggregation: preserve Dirichlet points = 0   [default]
      aggregation: allow user-specified singletons = 0   [default]
+     aggregation: error on nodes with no on-rank neighbors = 0   [default]
      OnePt aggregate map name =    [default]
      OnePt aggregate map factory =    [default]
      
@@ -303,12 +314,16 @@ Level 2
      Strided block id = -1   [default]
      Domain GID offsets = {0}   [default]
      
-    [empty list]
+    tentative: calculate qr = 1   [default]
+    matrixmatrix: kernel params -> 
+     [empty list]
     
     Transpose P (MueLu::TransPFactory)
-    [empty list]
+    matrixmatrix: kernel params -> 
+     [empty list]
     
    Build (MueLu::CoordinatesTransferFactory)
+   Geometric = 0   [default]
    write start = -1   [default]
    write end = -1   [default]
    
@@ -325,8 +340,7 @@ Level 2
    repartition: max imbalance = 1.2   [default]
    
    Build (MueLu::Zoltan2Interface)
-   rowWeight = 0   [default]
-   ParameterList = Teuchos::RCP<Teuchos::ParameterList const>{ptr=0x2183ab0,node=0x1ef45d0,strong_count=2,weak_count=0}   [unused]
+   ParameterList = Teuchos::RCP<Teuchos::ParameterList const>{ptr=0x227b4b0,node=0x24a1000,strong_count=2,weak_count=0}   [unused]
    
   repartition: print partition distribution = 0   [default]
   repartition: remap parts = 1   [default]

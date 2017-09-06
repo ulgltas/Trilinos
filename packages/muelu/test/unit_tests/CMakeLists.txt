@@ -20,6 +20,8 @@ APPEND_SET(SOURCES
   CoalesceDropFactory.cpp
   CoarseMapFactory.cpp
 # CoupledAggregationFactory.cpp
+  FineLevelInputDataFactory.cpp
+  GeneralGeometricPFactory.cpp
   GenericRFactory.cpp
   Hierarchy.cpp
   IntrepidPCoarsenFactory.cpp
@@ -35,11 +37,21 @@ APPEND_SET(SOURCES
   RAPFactory.cpp
   SaPFactory.cpp
   Smoothers/SmootherFactory.cpp
+  StructuredLineDetection.cpp
   TentativePFactory.cpp
   ThresholdAFilterFactory.cpp
   TransPFactory.cpp
+  UnsmooshFactory.cpp
+  UserData/CreateXpetraPreconditioner.cpp
   Utilities
   VariableContainer.cpp
+  VariableDofLaplacianFactory.cpp
+)
+
+TRIBITS_COPY_FILES_TO_BINARY_DIR(UnitTestsUserData_cp
+  SOURCE_DIR ${MueLu_SOURCE_DIR}/test/unit_tests/UserData
+  SOURCE_FILES test.xml
+  DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/UserData
 )
 
 IF (${PACKAGE_NAME}_ENABLE_Epetra)
@@ -49,18 +61,16 @@ APPEND_SET(SOURCES
 )
 ENDIF()
 
-IF (${PACKAGE_NAME}_ENABLE_Experimental)
+APPEND_SET(SOURCES
+  BlockedCoarseMapFactory.cpp
+  BlockedPFactory.cpp
+  SchurComplementFactory.cpp
+  SubBlockAFactory.cpp
+)
+IF (TPL_ENABLE_MPI)
   APPEND_SET(SOURCES
-    BlockedCoarseMapFactory.cpp
-    BlockedPFactory.cpp
-    SchurComplementFactory.cpp
-    SubBlockAFactory.cpp
+  BlockedRepartition.cpp
   )
-  IF (TPL_ENABLE_MPI)
-    APPEND_SET(SOURCES
-    BlockedRepartition.cpp
-    )
-  ENDIF()
 ENDIF()
 
 ### Tests that require other Trilinos packages
@@ -84,9 +94,7 @@ ENDIF()
 
 IF (${PACKAGE_NAME}_ENABLE_Tpetra AND ${PACKAGE_NAME}_ENABLE_Ifpack2)
   APPEND_SET(SOURCES Smoothers/Ifpack2Smoother.cpp)
-  IF (${PACKAGE_NAME}_ENABLE_Experimental)
-    APPEND_SET(SOURCES Smoothers/BlockedSmoother.cpp)
-  ENDIF()
+  APPEND_SET(SOURCES Smoothers/BlockedSmoother.cpp)
 ENDIF()
 
 IF (${PACKAGE_NAME}_ENABLE_Epetra AND ${PACKAGE_NAME}_ENABLE_Ifpack)
@@ -96,17 +104,13 @@ ENDIF()
 IF (${PACKAGE_NAME}_ENABLE_Epetra AND ${PACKAGE_NAME}_ENABLE_Amesos)
   APPEND_SET(SOURCES Smoothers/AmesosSmoother.cpp)
   IF (NOT ${PACKAGE_NAME}_ENABLE_Tpetra OR NOT ${PACKAGE_NAME}_ENABLE_Amesos2)
-    IF (${PACKAGE_NAME}_ENABLE_Experimental)
-      APPEND_SET(SOURCES Smoothers/BlockedDirectSolver.cpp)
-    ENDIF()
+    APPEND_SET(SOURCES Smoothers/BlockedDirectSolver.cpp)
   ENDIF()
 ENDIF()
 
 IF (${PACKAGE_NAME}_ENABLE_Tpetra AND ${PACKAGE_NAME}_ENABLE_Amesos2)
   APPEND_SET(SOURCES Smoothers/Amesos2Smoother.cpp)
-  IF (${PACKAGE_NAME}_ENABLE_Experimental)
-    APPEND_SET(SOURCES Smoothers/BlockedDirectSolver.cpp)
-  ENDIF()
+  APPEND_SET(SOURCES Smoothers/BlockedDirectSolver.cpp)
 ENDIF()
 
 IF (${PACKAGE_NAME}_ENABLE_Tpetra AND ${PACKAGE_NAME}_ENABLE_AmgX)

@@ -87,23 +87,14 @@ namespace Intrepid2 {
       void operator()(const ordinal_type cl,
                       const ordinal_type bf,
                       const ordinal_type pt) const {
-        //       auto y = Kokkos::subview(_output,     cl, bf, pt, Kokkos::ALL());
-        // const auto A = Kokkos::subview(_jacInverse, cl,     pt, Kokkos::ALL(), Kokkos::ALL());
-        // const auto x = Kokkos::subview(_input,      bf,     pt, Kokkos::ALL());
-        
-        // restructuring 
-        const ordinal_type cfp[3] = { cl, bf, pt };
-        const ordinal_type c_p[2] = { cl,     pt };
-        const ordinal_type _bp[2] = {     bf, pt };
-
-        ViewAdapter<3,outputViewType>     y(cfp, _output); 
-        ViewAdapter<2,jacInverseViewType> A(c_p, _jacInverse);
-        ViewAdapter<2,inputViewType>      x(_bp, _input);
+        /* */ auto y = Kokkos::subview(_output,     cl, bf, pt, Kokkos::ALL());
+        const auto A = Kokkos::subview(_jacInverse, cl,     pt, Kokkos::ALL(), Kokkos::ALL());
+        const auto x = Kokkos::subview(_input,      bf,     pt, Kokkos::ALL());
         
         if (spaceDim == 2) {
-          Kernels::matvec_trans_product_d2( y, A, x );
+          Kernels::Serial::matvec_trans_product_d2( y, A, x );
         } else {
-          Kernels::matvec_trans_product_d3( y, A, x );
+          Kernels::Serial::matvec_trans_product_d3( y, A, x );
         }
       }
     };
@@ -462,12 +453,12 @@ namespace Intrepid2 {
     //                                                                        inputJac.dimension(0), 
     //                                                                        inputJac.dimension(1), 
     //                                                                        inputJac.dimension(2));
-    Kokkos::DynRankView<scratchValueType,scratchProperties...> faceNormals = 
-      Kokkos::createDynRankView(scratch,
-                                scratch.data(), 
-                                inputJac.dimension(0), 
-                                inputJac.dimension(1), 
-                                inputJac.dimension(2));
+    auto vcprop = Kokkos::common_view_alloc_prop(scratch);
+    typedef Kokkos::DynRankView<typename decltype(vcprop)::value_type> viewType;
+    viewType faceNormals(Kokkos::view_wrap(scratch.data(), vcprop),
+                         inputJac.dimension(0),
+                         inputJac.dimension(1),
+                         inputJac.dimension(2));
 
     // compute normals
     CellTools<SpT>::getPhysicalFaceNormals(faceNormals, inputJac, whichFace, parentCell);
@@ -508,13 +499,13 @@ namespace Intrepid2 {
     //                                                                         inputJac.dimension(0), 
     //                                                                         inputJac.dimension(1), 
     //                                                                         inputJac.dimension(2));
-    Kokkos::DynRankView<scratchValueType,scratchProperties...> edgeTangents = 
-      Kokkos::createDynRankView(scratch,
-                                scratch.data(), 
-                                inputJac.dimension(0), 
-                                inputJac.dimension(1), 
-                                inputJac.dimension(2));
-    
+    auto vcprop = Kokkos::common_view_alloc_prop(scratch);
+    typedef Kokkos::DynRankView<typename decltype(vcprop)::value_type> viewType;
+    viewType edgeTangents(Kokkos::view_wrap(scratch.data(), vcprop),
+                         inputJac.dimension(0),
+                         inputJac.dimension(1),
+                         inputJac.dimension(2));
+
     // compute normals
     CellTools<SpT>::getPhysicalEdgeTangents(edgeTangents, inputJac, whichEdge, parentCell);
 

@@ -46,9 +46,9 @@
 template<typename EvalT, typename Traits>
 IntegrateSourceTerm<EvalT,Traits>::
 IntegrateSourceTerm(const std::string& source_name,
-                    const Teuchos::RCP<const PHX::DataLayout>& source_layout,
+                    const Teuchos::RCP<PHX::DataLayout>& source_layout,
                     const std::string& residual_name,
-                    const Teuchos::RCP<const PHX::DataLayout>& residual_layout) :
+                    const Teuchos::RCP<PHX::DataLayout>& residual_layout) :
   source(source_name,source_layout),
   residual(residual_name,residual_layout)
 {
@@ -61,9 +61,9 @@ IntegrateSourceTerm(const std::string& source_name,
 template<typename EvalT, typename Traits>
 void IntegrateSourceTerm<EvalT,Traits>::evaluateFields(typename Traits::EvalData workset)
 {
-  basis_view = workset.mesh_->getBasis();
-  weights = workset.mesh_->getWeights();
-  cell_measure = workset.mesh_->getDetJac();
+  basis_view = workset.basis_;
+  weights = workset.weights_;
+  cell_measure = workset.det_jac_;
   Kokkos::parallel_for(Kokkos::TeamPolicy<PHX::exec_space>(workset.num_cells_,Kokkos::AUTO()),*this);
 }
 

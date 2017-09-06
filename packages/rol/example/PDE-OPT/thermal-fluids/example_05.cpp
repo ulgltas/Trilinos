@@ -61,7 +61,7 @@
 #include "ROL_Algorithm.hpp"
 #include "ROL_Reduced_Objective_SimOpt.hpp"
 #include "ROL_MonteCarloGenerator.hpp"
-#include "ROL_SimulatedEqualityConstraint.hpp"
+#include "ROL_SimulatedConstraint.hpp"
 #include "ROL_SimulatedObjectiveCVaR.hpp"
 #include "ROL_SimulatedObjective.hpp"
 #include "ROL_TpetraTeuchosBatchManager.hpp"
@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
     // Initialize PDE describing Navier-Stokes equations.
     Teuchos::RCP<PDE_ThermalFluids_ex03<RealT> > pde
       = Teuchos::rcp(new PDE_ThermalFluids_ex03<RealT>(*parlist));
-    Teuchos::RCP<ROL::EqualityConstraint_SimOpt<RealT> > con
+    Teuchos::RCP<ROL::Constraint_SimOpt<RealT> > con
       = Teuchos::rcp(new PDE_Constraint<RealT>(pde,meshMgr,serial_comm,*parlist,*outStream));
     // Cast the constraint and get the assembler.
     Teuchos::RCP<PDE_Constraint<RealT> > pdecon
@@ -191,9 +191,9 @@ int main(int argc, char *argv[]) {
     p_rcp  = assembler->createStateVector();     p_rcp->randomize();
     y_rcp  = assembler->createStateVector();     y_rcp->randomize();
     r_rcp  = assembler->createResidualVector();  r_rcp->randomize();
-    z_rcp  = assembler->createControlVector();   z_rcp->randomize();
-    s_rcp  = assembler->createControlVector();   s_rcp->randomize();
-    t_rcp  = assembler->createControlVector();   t_rcp->randomize();
+    z_rcp  = assembler->createControlVector();   z_rcp->putScalar(1.234); //z_rcp->randomize();
+    s_rcp  = assembler->createControlVector();   s_rcp->putScalar(2.345); //s_rcp->randomize();
+    t_rcp  = assembler->createControlVector();   t_rcp->putScalar(3.456); //t_rcp->randomize();
     Teuchos::RCP<ROL::Vector<RealT> > up, pp, yp, rp, zp, sp, tp;
     up  = Teuchos::rcp(new PDE_PrimalSimVector<RealT>(u_rcp,pde,assembler));
     pp  = Teuchos::rcp(new PDE_PrimalSimVector<RealT>(p_rcp,pde,assembler));
@@ -254,8 +254,8 @@ int main(int argc, char *argv[]) {
     /*************************************************************************/
     bool useW    = parlist->sublist("SOL").sublist("Simulated").get("Use Constraint Weights", true);
     bool useCVaR = parlist->sublist("SOL").sublist("Simulated").get("Use CVaR", false);
-    Teuchos::RCP<ROL::EqualityConstraint<RealT> > simcon
-      = Teuchos::rcp(new ROL::SimulatedEqualityConstraint<RealT>(sampler, con, useW));
+    Teuchos::RCP<ROL::Constraint<RealT> > simcon
+      = Teuchos::rcp(new ROL::SimulatedConstraint<RealT>(sampler, con, useW));
     Teuchos::RCP<ROL::Objective<RealT> > simobj;
     if (useCVaR) {
       Teuchos::ParameterList list = parlist->sublist("SOL").sublist("Simulated");
@@ -270,9 +270,9 @@ int main(int argc, char *argv[]) {
     std::vector<Teuchos::RCP<ROL::Vector<RealT> > > vuvec, vpvec, vyvec;
     for (int i = 0; i < sampler->numMySamples(); ++i) {
       Teuchos::RCP<Tpetra::MultiVector<> > vu_rcp, vp_rcp, vy_rcp;
-      vu_rcp  = assembler->createStateVector(); vu_rcp->randomize();
-      vp_rcp  = assembler->createStateVector(); vp_rcp->randomize();
-      vy_rcp  = assembler->createStateVector(); vy_rcp->randomize();
+      vu_rcp  = assembler->createStateVector(); vu_rcp->putScalar(4.567); //vu_rcp->randomize();
+      vp_rcp  = assembler->createStateVector(); vp_rcp->putScalar(5.678); //vp_rcp->randomize();
+      vy_rcp  = assembler->createStateVector(); vy_rcp->putScalar(6.789); //vy_rcp->randomize();
       Teuchos::RCP<ROL::Vector<RealT> > vup, vpp, vyp;
       vup  = Teuchos::rcp(new PDE_PrimalSimVector<RealT>(vu_rcp,pde,assembler));
       vpp  = Teuchos::rcp(new PDE_PrimalSimVector<RealT>(vp_rcp,pde,assembler));
@@ -303,7 +303,7 @@ int main(int argc, char *argv[]) {
 
     bool derivCheck = parlist->sublist("Problem").get("Check derivatives",false);
     if (derivCheck) {
-      *outStream << std::endl << "TESTING SimulatedEqualityConstraint" << std::endl;
+      *outStream << std::endl << "TESTING SimulatedConstraint" << std::endl;
       simcon->checkApplyJacobian(x, p, *vu, true, *outStream);
       simcon->checkAdjointConsistencyJacobian(*vu, p, x, *vu, x, true, *outStream);
       simcon->checkApplyAdjointHessian(x, *vu, p, x, true, *outStream);
@@ -324,6 +324,12 @@ int main(int argc, char *argv[]) {
       vusim->get(i)->zero();
       con->update(*(vusim->get(i)),*zp);
       con->solve(*rp,*(vusim->get(i)),*zp,tol);
+    }
+
+    bool zeroInit = parlist->sublist("Problem").get("Zero initial guess",true);
+    if (zeroInit) {
+      x.zero();
+      vp->zero();
     }
 
     /*************************************************************************/
