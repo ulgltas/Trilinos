@@ -66,7 +66,7 @@
 #include "Tpetra_Details_Environment.hpp"
 #include "Tpetra_Details_getEntryOnHost.hpp"
 #include "Tpetra_Details_packCrsMatrix.hpp"
-#include "Tpetra_Details_unpackCrsMatrix.hpp"
+#include "Tpetra_Details_unpackCrsMatrixAndCombine.hpp"
 #include <typeinfo>
 #include <vector>
 
@@ -548,11 +548,11 @@ namespace Tpetra {
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, const bool classic>
   CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, classic>::
-  CrsMatrix (const Teuchos::RCP<const map_type>& rowMap,
+  CrsMatrix (const local_matrix_type& lclMatrix,
+             const Teuchos::RCP<const map_type>& rowMap,
              const Teuchos::RCP<const map_type>& colMap,
              const Teuchos::RCP<const map_type>& domainMap,
              const Teuchos::RCP<const map_type>& rangeMap,
-             const local_matrix_type& lclMatrix,
              const Teuchos::RCP<Teuchos::ParameterList>& params) :
     dist_object_type (rowMap),
     lclMatrix_ (lclMatrix),
@@ -7971,11 +7971,12 @@ namespace Tpetra {
         destMat->numExportPacketsPerLID_.template modify<Kokkos::HostSpace> ();
         Teuchos::ArrayView<size_t> numExportPacketsPerLID =
           getArrayViewFromDualView (destMat->numExportPacketsPerLID_);
-        Tpetra::Details::packCrsMatrixWithOwningPIDs (*this, destMat->exports_,
-                                                      numExportPacketsPerLID,
-                                                      ExportLIDs, SourcePids,
-                                                      constantNumPackets,
-                                                      Distor);
+        using Tpetra::Details::packCrsMatrixWithOwningPIDs;
+        packCrsMatrixWithOwningPIDs (*this, destMat->exports_,
+                                     numExportPacketsPerLID,
+                                     ExportLIDs, SourcePids,
+                                     constantNumPackets,
+                                     Distor);
       }
       catch (std::exception& e) {
         os << "Proc " << myRank << ": " << e.what ();
