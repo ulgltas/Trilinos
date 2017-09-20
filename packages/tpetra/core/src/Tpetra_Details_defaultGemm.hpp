@@ -100,13 +100,13 @@ gemm (const char transA,
   IndexType m, n, k;
   if (transA == 'N' || transA == 'n') {
     m = static_cast<IndexType> (A.dimension_0 ());
-    n = static_cast<IndexType> (A.dimension_1 ());
+    k = static_cast<IndexType> (A.dimension_1 ());
   }
   else {
     m = static_cast<IndexType> (A.dimension_1 ());
-    n = static_cast<IndexType> (A.dimension_0 ());
+    k = static_cast<IndexType> (A.dimension_0 ());
   }
-  k = static_cast<IndexType> (C.dimension_1 ());
+  n = static_cast<IndexType> (C.dimension_1 ());
 
   // quick return if possible
   if (alpha == ZERO && beta == ONE) {
@@ -117,14 +117,14 @@ gemm (const char transA,
   if (alpha == ZERO) {
     if (beta == ZERO) {
       for (IndexType i = 0; i < m; ++i) {
-        for (IndexType j = 0; j < k; ++j) {
+        for (IndexType j = 0; j < n; ++j) {
           C(i,j) = ZERO;
         }
       }
     }
     else {
       for (IndexType i = 0; i < m; ++i) {
-        for (IndexType j = 0; j < k; ++j) {
+        for (IndexType j = 0; j < n; ++j) {
           C(i,j) = beta*C(i,j);
         }
       }

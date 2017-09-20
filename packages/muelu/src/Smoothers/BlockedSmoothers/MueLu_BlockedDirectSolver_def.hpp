@@ -80,6 +80,7 @@ namespace MueLu {
     MergedAFact_ = Teuchos::rcp(new MergedBlockedMatrixFactory());
 
     Teuchos::ParameterList params;
+    //s_ = Teuchos::rcp(new DirectSolver("Basker", params));
     s_ = Teuchos::rcp(new DirectSolver("", params));
   }
 

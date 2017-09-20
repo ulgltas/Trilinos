@@ -895,7 +895,7 @@ bool MOERTEL::Overlap::buildPoly(std::vector<double>& source_xi, std::vector<dou
 
   bool s_in, p_in;
   double point_s[2], point_p[2];
-  double eps = 1.0e-10; // GAH EPSILON
+  double eps = 1.0e-15; // GAH EPSILON
   int index = -1;
   bool ok;
 
@@ -1415,6 +1415,19 @@ bool MOERTEL::Overlap::Triangulation()
     for (int i=0; i<np; ++i)
     {
       Teuchos::RCP<MOERTEL::Node> node = points[i]->Node();
+      
+      //-----------------
+      {
+        double xi[2];
+        xi[0] = xi[1] = 0.;
+
+        const double * node_norm = node->N();
+        const double * seg_norm = mseg_.BuildNormal(xi);
+ 
+        double eps = MOERTEL::dot(node_norm,seg_norm,3);
+        if (eps < 1.0e-10 && eps > -1.0e-10) return false;
+      }
+      //-----------------
       projector.ProjectNodetoSegment_NodalNormal(*node,mseg_,mxi,gap);
       // create a projected node and set it in node
       MOERTEL::ProjectedNode* pnode = new MOERTEL::ProjectedNode(*node,mxi,&mseg_);

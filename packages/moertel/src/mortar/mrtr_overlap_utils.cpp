@@ -149,7 +149,7 @@ bool MOERTEL::Overlap::Guarded_Clip_Intersect(const double* N, const double* PE,
   // GAH - EPSILON test here
   // Failing here probably should be fatal
 
-  if (fabs(denom)<1.0e-10)
+  if (fabs(denom)<1.0e-15)
 
     return false;
     
