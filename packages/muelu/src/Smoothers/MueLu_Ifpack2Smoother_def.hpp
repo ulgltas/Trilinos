@@ -608,14 +608,15 @@ namespace MueLu {
     //moved SetPrecParameters(paramList) into the if-else block above.
 
 
-    std::ofstream outfile ("muelu_ifpack2smoother_output.txt");
-    RCP<Teuchos::FancyOStream> fancy = Teuchos::fancyOStream(Teuchos::rcpFromRef(outfile));
+    //std::ofstream outfile ("muelu_ifpack2smoother_output.txt");
+    //RCP<Teuchos::FancyOStream> fancy = Teuchos::fancyOStream(Teuchos::rcpFromRef(outfile));
 
     // Apply
     if (InitialGuessIsZero || supportInitialGuess) {
       Tpetra::MultiVector<SC,LO,GO,NO>&       tpX = Utilities::MV2NonConstTpetraMV(X);
       const Tpetra::MultiVector<SC,LO,GO,NO>& tpB = Utilities::MV2TpetraMV(B);
 
+      /*
       *fancy << "if branch X before" << std::endl;
       X.describe (*fancy, Teuchos::VERB_EXTREME);
 
@@ -626,44 +627,53 @@ namespace MueLu {
       B.describe (*fancy, Teuchos::VERB_EXTREME);
 
       *fancy << "if branch tpB before" << std::endl;
-      tpB.describe (*fancy, Teuchos::VERB_EXTREME);      
+      tpB.describe (*fancy, Teuchos::VERB_EXTREME);    
+      */  
 
       prec_->apply(tpB, tpX);
 
+      /*
       *fancy << "if branch X after" << std::endl;
       X.describe (*fancy, Teuchos::VERB_EXTREME);
 
       *fancy << "if branch tpX after" << std::endl;
       tpX.describe (*fancy, Teuchos::VERB_EXTREME);
+      */
     } else {
       typedef Teuchos::ScalarTraits<Scalar> TST;
       RCP<MultiVector> Residual   = Utilities::Residual(*A_, X, B);
       RCP<MultiVector> Correction = MultiVectorFactory::Build(A_->getDomainMap(), X.getNumVectors());
 
+      /*
       *fancy << "else branch Residual" << std::endl;
       Residual->describe (*fancy, Teuchos::VERB_EXTREME);
 
       *fancy << "else branch Correction" << std::endl;
       Correction->describe (*fancy, Teuchos::VERB_EXTREME);
+      */
 
       Tpetra::MultiVector<SC,LO,GO,NO>&       tpX = Utilities::MV2NonConstTpetraMV(*Correction);
       const Tpetra::MultiVector<SC,LO,GO,NO>& tpB = Utilities::MV2TpetraMV(*Residual);
 
+      /*
       *fancy << "else branch X before" << std::endl;
       X.describe (*fancy, Teuchos::VERB_EXTREME);
 
       *fancy << "else branch tpX before" << std::endl;
       tpX.describe (*fancy, Teuchos::VERB_EXTREME);
+      */
 
       prec_->apply(tpB, tpX);
 
       X.update(TST::one(), *Correction, TST::one());
 
+      /*
       *fancy << "else branch X after" << std::endl;
       X.describe (*fancy, Teuchos::VERB_EXTREME);
 
       *fancy << "else branch tpX after" << std::endl;
       tpX.describe (*fancy, Teuchos::VERB_EXTREME);
+      */
     }
   }
 

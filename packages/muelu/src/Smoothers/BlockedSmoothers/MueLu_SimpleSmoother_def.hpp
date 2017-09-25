@@ -383,8 +383,8 @@ namespace MueLu {
     RCP<MultiVector> xhat2 = bxhat->getMultiVector(1,bDomainThyraMode);
 
 
-    std::ofstream outfile ("muelu_output.txt");
-    RCP<Teuchos::FancyOStream> fancy = Teuchos::fancyOStream(Teuchos::rcpFromRef(outfile));
+    //std::ofstream outfile ("muelu_output.txt");
+    //RCP<Teuchos::FancyOStream> fancy = Teuchos::fancyOStream(Teuchos::rcpFromRef(outfile));
 
 
     // incrementally improve solution vector X
@@ -392,14 +392,14 @@ namespace MueLu {
       // 1) calculate current residual
       residual->update(one,*rcpB,zero); // residual = B
 
-      *fancy << "residual->describe (fancy, Teuchos::VERB_EXTREME)" << std::endl;
-      residual->describe (*fancy, Teuchos::VERB_EXTREME);
+      //*fancy << "residual->describe (fancy, Teuchos::VERB_EXTREME)" << std::endl;
+      //residual->describe (*fancy, Teuchos::VERB_EXTREME);
       // TO DO print res to see 
 
       if(InitialGuessIsZero == false || run > 0){
         A_->apply(*rcpX, *residual, Teuchos::NO_TRANS, -one, one);
-        *fancy << "A_->apply(*rcpX, *residual, Teuchos::NO_TRANS, -one, one)" << std::endl;
-        residual->describe (*fancy, Teuchos::VERB_EXTREME);
+        //*fancy << "A_->apply(*rcpX, *residual, Teuchos::NO_TRANS, -one, one)" << std::endl;
+        //residual->describe (*fancy, Teuchos::VERB_EXTREME);
       }  
       // 2) solve F * \Delta \tilde{x}_1 = r_1
       //    start with zero guess \Delta \tilde{x}_1
@@ -407,60 +407,60 @@ namespace MueLu {
       xtilde2->putScalar(zero);
       velPredictSmoo_->Apply(*xtilde1,*r1);
 
-      *fancy << "r1" << std::endl;
-      r1->describe (*fancy, Teuchos::VERB_EXTREME);
+      //*fancy << "r1" << std::endl;
+      //r1->describe (*fancy, Teuchos::VERB_EXTREME);
 
-      *fancy << "xtilde1" << std::endl;
-      xtilde1->describe (*fancy, Teuchos::VERB_EXTREME);
+      //*fancy << "xtilde1" << std::endl;
+      //xtilde1->describe (*fancy, Teuchos::VERB_EXTREME);
 
       // 3) calculate rhs for SchurComp equation
       //    r_2 - D \Delta \tilde{x}_1
       RCP<MultiVector> schurCompRHS = rangeMapExtractor_->getVector(1, rcpB->getNumVectors(), bRangeThyraMode);
       D_->apply(*xtilde1,*schurCompRHS);
 
-      *fancy << "schurCompRHS before r2" << std::endl;
-      schurCompRHS->describe (*fancy, Teuchos::VERB_EXTREME);
+      //*fancy << "schurCompRHS before r2" << std::endl;
+      //schurCompRHS->describe (*fancy, Teuchos::VERB_EXTREME);
 
       schurCompRHS->update(one,*r2,-one);
 
-      *fancy << "schurCompRHS after r2" << std::endl;
-      schurCompRHS->describe (*fancy, Teuchos::VERB_EXTREME);
+      //*fancy << "schurCompRHS after r2" << std::endl;
+      //schurCompRHS->describe (*fancy, Teuchos::VERB_EXTREME);
 
       // 4) solve SchurComp equation
       //    start with zero guess \Delta \tilde{x}_2
       schurCompSmoo_->Apply(*xtilde2,*schurCompRHS);
 
-      *fancy << "xtilde2" << std::endl;
-      xtilde2->describe (*fancy, Teuchos::VERB_EXTREME);
+      //*fancy << "xtilde2" << std::endl;
+      //xtilde2->describe (*fancy, Teuchos::VERB_EXTREME);
 
       // 5) scale xtilde2 with omega
       //    store this in xhat2
       xhat2->update(omega,*xtilde2,zero);
 
-      *fancy << "xhat2" << std::endl;
-      xhat2->describe (*fancy, Teuchos::VERB_EXTREME);
+      //*fancy << "xhat2" << std::endl;
+      //xhat2->describe (*fancy, Teuchos::VERB_EXTREME);
 
       // 6) calculate xhat1
       RCP<MultiVector> xhat1_temp = domainMapExtractor_->getVector(0, rcpX->getNumVectors(), bDomainThyraMode);
       G_->apply(*xhat2,*xhat1_temp); // store result temporarely in xtilde1_temp
 
-      *fancy << "xhat1_temp" << std::endl;
-      xhat1_temp->describe (*fancy, Teuchos::VERB_EXTREME);
+      //*fancy << "xhat1_temp" << std::endl;
+      //xhat1_temp->describe (*fancy, Teuchos::VERB_EXTREME);
 
       xhat1->elementWiseMultiply(one/*/omega*/,*diagFinv_,*xhat1_temp,zero);
 
-      *fancy << "xhat1 afer element wise multiply" << std::endl;
-      xhat1->describe (*fancy, Teuchos::VERB_EXTREME);
+      //*fancy << "xhat1 afer element wise multiply" << std::endl;
+      //xhat1->describe (*fancy, Teuchos::VERB_EXTREME);
 
       xhat1->update(one,*xtilde1,-one);
 
-      *fancy << "xhat1 afer update" << std::endl;
-      xhat1->describe (*fancy, Teuchos::VERB_EXTREME);
+      //*fancy << "xhat1 afer update" << std::endl;
+      //xhat1->describe (*fancy, Teuchos::VERB_EXTREME);
 
       rcpX->update(one,*bxhat,one);
 
-      *fancy << "rcpX" << std::endl;
-      rcpX->describe (*fancy, Teuchos::VERB_EXTREME);      
+      //*fancy << "rcpX" << std::endl;
+      //rcpX->describe (*fancy, Teuchos::VERB_EXTREME);      
     }
 
     if (bCopyResultX == true) {

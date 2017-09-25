@@ -200,9 +200,9 @@ namespace MueLu {
     Set(currentLevel, "A", S);
 
 
-    std::ofstream outfile ("schur_output.txt");
-    RCP<Teuchos::FancyOStream> fancy = Teuchos::fancyOStream(Teuchos::rcpFromRef(outfile));
-    S->describe (*fancy, Teuchos::VERB_EXTREME);
+    //std::ofstream outfile ("schur_output.txt");
+    //RCP<Teuchos::FancyOStream> fancy = Teuchos::fancyOStream(Teuchos::rcpFromRef(outfile));
+    //S->describe (*fancy, Teuchos::VERB_EXTREME);
   }
 
 } // namespace MueLu
