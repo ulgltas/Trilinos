@@ -235,6 +235,7 @@ namespace MueLu {
   "<ParameterList name=\"repartition: params\"/>"
   "<Parameter name=\"repartition: start level\" type=\"int\" value=\"2\"/>"
   "<Parameter name=\"repartition: min rows per proc\" type=\"int\" value=\"800\"/>"
+  "<Parameter name=\"repartition: target rows per proc\" type=\"int\" value=\"0\"/>"
   "<Parameter name=\"repartition: max imbalance\" type=\"double\" value=\"1.2\"/>"
   "<Parameter name=\"repartition: remap parts\" type=\"bool\" value=\"true\"/>"
   "<Parameter name=\"repartition: remap num values\" type=\"int\" value=\"4\"/>"
@@ -244,6 +245,7 @@ namespace MueLu {
   "<Parameter name=\"rap: fix zero diagonals\" type=\"bool\" value=\"false\"/>"
   "<Parameter name=\"rap: shift\" type=\"double\" value=\"0.0\"/>"
   "<Parameter name=\"rap: algorithm\" type=\"string\" value=\"galerkin\"/>"
+  "<Parameter name=\"rap: triple product\" type=\"bool\" value=\"false\"/>"
   "<ParameterList name=\"matrixmatrix: kernel params\"/>"
   "<Parameter name=\"reuse: type\" type=\"string\" value=\"none\"/>"
   "<Parameter name=\"use external multigrid package\" type=\"string\" value=\"none\"/>"
@@ -535,6 +537,8 @@ namespace MueLu {
       
          ("repartition: min per proc","repartition: min rows per proc")
       
+         ("repartition: target rows per proc","repartition: target rows per proc")
+      
          ("repartition: max min ratio","repartition: max imbalance")
       
          ("repartition: remap parts","repartition: remap parts")
@@ -552,6 +556,8 @@ namespace MueLu {
          ("rap: shift","rap: shift")
       
          ("rap: algorithm","rap: algorithm")
+      
+         ("rap: triple product","rap: triple product")
       
          ("matrixmatrix: kernel params","matrixmatrix: kernel params")
       
