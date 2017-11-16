@@ -795,7 +795,7 @@ bool MOERTEL::Manager::Build_MD_3D()
   //-------------------------------------------------------------------
   // call FillComplete() on M_ and D_ 
   D_->FillComplete(*saddlemap_,*saddlemap_);
-  D_ = Teuchos::rcp(MOERTEL::StripZeros(*D_,1.e-4));
+  //D_ = Teuchos::rcp(MOERTEL::StripZeros(*D_,1.e-8));
   D_->OptimizeStorage();
   M_->FillComplete(*saddlemap_,*saddlemap_);
   M_->OptimizeStorage();

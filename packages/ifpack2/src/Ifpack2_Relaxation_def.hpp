@@ -977,6 +977,12 @@ void Relaxation<MatrixType>::compute ()
     auto diag_1d = Kokkos::subview (diag_2d, Kokkos::ALL (), 0);
     // FIXME (mfh 12 Jan 2016) temp fix for Kokkos::complex vs. std::complex.
     scalar_type* const diag = reinterpret_cast<scalar_type*> (diag_1d.ptr_on_device ());
+    
+    /*
+    for (size_t i = 0 ; i < numMyRows; ++i) {
+      std::cout << i << ":" << diag[i] << std::endl;
+    }
+    */
 
     // Setup for L1 Methods.
     // Here we add half the value of the off-processor entries in the row,
