@@ -223,6 +223,7 @@ public:
       /*************************************************************/
       /******** Decide Whether Step is Serious or Null *************/
       /*************************************************************/
+      using std::isnan;
       if (std::max(algo_state.aggregateGradientNorm,aggLinErrNew_) <= tol_) {
         // Current iterate is already epsilon optimal!
         s.zero(); algo_state.snorm = zero;
@@ -231,9 +232,9 @@ public:
         algo_state.flag = true;
         break;
       }
-      else if (std::isnan(algo_state.aggregateGradientNorm)
-               || std::isnan(aggLinErrNew_)
-               || (std::isnan(aggDistMeasNew_) && !isConvex_)) {
+      else if (isnan(algo_state.aggregateGradientNorm)
+               || isnan(aggLinErrNew_)
+               || (isnan(aggDistMeasNew_) && !isConvex_)) {
         s.zero(); algo_state.snorm = zero;
         flag = false;
         step_flag_ = 2;

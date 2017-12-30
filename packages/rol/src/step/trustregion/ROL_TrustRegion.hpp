@@ -194,11 +194,12 @@ public:
     Real EPS = eps_*((one > std::abs(fold1)) ? one : std::abs(fold1));
     Real aRed_safe = aRed + EPS, pRed_safe = pRed_ + EPS;
     Real rho(0);
+    using std::isnan;
     if (((std::abs(aRed_safe) < eps_) && (std::abs(pRed_safe) < eps_)) || aRed == pRed_) {
       rho = one;
       flagTR = TRUSTREGION_FLAG_SUCCESS;
     }
-    else if ( std::isnan(aRed_safe) || std::isnan(pRed_safe) ) {
+    else if ( isnan(aRed_safe) || isnan(pRed_safe) ) {
       rho = -one;
       flagTR = TRUSTREGION_FLAG_NAN;
     }

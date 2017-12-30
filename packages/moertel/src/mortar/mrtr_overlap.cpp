@@ -961,7 +961,8 @@ bool MOERTEL::Overlap::buildPoly(std::vector<double>& source_xi, std::vector<dou
         oss << "***ERR*** MOERTEL::Overlap::buildPoly:\n"
           << "***ERR*** Cannot find the intersection between edge and clip edge\n"
           << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
-        throw ReportError(oss);
+        return false;
+        //throw ReportError(oss);
       }
 
       // Store i in new polygon
