@@ -76,6 +76,8 @@
 #include "Kokkos_Random_MP_Vector.hpp"
 #endif
 
+#include "Tpetra_Details_defaultGemm_MP_Vector.hpp"
+
 namespace Stokhos {
 
 /// \brief Trait class that determines (new) Kokkos execution space
