@@ -54,6 +54,16 @@
 
 #include "Stokhos_Sacado_Kokkos_MP_Vector.hpp"
 #include "Kokkos_Core.hpp"
+
+#include "KokkosBatched_Vector.hpp"
+
+
+#include "KokkosBatched_Gemm_Decl.hpp"
+
+#include "KokkosBatched_Gemm_Serial_Impl.hpp"
+#include <iostream>
+
+
 #include "Tpetra_Details_defaultGemm.hpp"
 
 namespace Tpetra {
@@ -103,46 +113,6 @@ gemm (const char transA,
   static_assert (ViewType2::rank == 2, "GEMM: B must have rank 2 (be a matrix).");
   static_assert (ViewType3::rank == 2, "GEMM: C must have rank 2 (be a matrix).");
 
-/*
-  typedef Sacado::MP::Vector<Storage> CoefficientType;
-  typedef typename ViewType3::non_const_value_type c_value_type;
-  typedef Kokkos::Details::ArithTraits<CoefficientType> STS;
-  const CoefficientType ZERO = STS::zero ();
-  const CoefficientType ONE = STS::one ();
-
-  // Get the dimensions
-  const IndexType m = C.dimension_0 ();
-  const IndexType n = C.dimension_1 ();
-  const IndexType k = (transA == 'N' || transA == 'n') ?
-    A.dimension_1 () : A.dimension_0 ();
-
-  const bool conjA = transA == 'C' || transA == 'c';
-  const bool conjB = transB == 'C' || transB == 'c';
-
-  // quick return if possible
-  if (alpha == ZERO && beta == ONE) {
-    return;
-  }
-
-  // And if alpha equals zero...
-  if (alpha == ZERO) {
-    if (beta == ZERO) {
-      for (IndexType i = 0; i < m; ++i) {
-        for (IndexType j = 0; j < n; ++j) {
-          C(i,j) = ZERO;
-        }
-      }
-    }
-    else {
-      for (IndexType i = 0; i < m; ++i) {
-        for (IndexType j = 0; j < n; ++j) {
-          C(i,j) = beta*C(i,j);
-        }
-      }
-    }
-    return;
-  }
-*/
   using KokkosBatched::Experimental::Trans;
   using KokkosBatched::Experimental::Algo;
 
