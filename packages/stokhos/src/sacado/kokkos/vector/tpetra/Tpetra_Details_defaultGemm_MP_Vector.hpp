@@ -106,35 +106,7 @@ gemm (const char transA,
       const ViewType1& A,
       const ViewType2& B,
       const Sacado::MP::Vector<Storage>& beta,
-      const ViewType3& C)
-{
-  // Assert that A, B, and C are in fact matrices
-  static_assert (ViewType1::rank == 2, "GEMM: A must have rank 2 (be a matrix).");
-  static_assert (ViewType2::rank == 2, "GEMM: B must have rank 2 (be a matrix).");
-  static_assert (ViewType3::rank == 2, "GEMM: C must have rank 2 (be a matrix).");
-
-  using KokkosBatched::Experimental::Trans;
-  using KokkosBatched::Experimental::Algo;
-
-  if(transA == 'N' || transA == 'n')
-  {
-    if (transB == 'N' || transB == 'n')
-        KokkosBatched::Experimental::SerialGemm<Trans::NoTranspose,Trans::NoTranspose,Algo::Gemm::Blocked>
-        ::invoke(alpha, A, B, beta, C);
-    else
-        KokkosBatched::Experimental::SerialGemm<Trans::NoTranspose,Trans::Transpose,Algo::Gemm::Blocked>
-        ::invoke(alpha, A, B, beta, C);
-  }
-  else
-  {
-    if (transB == 'N' || transB == 'n')
-        KokkosBatched::Experimental::SerialGemm<Trans::Transpose,Trans::NoTranspose,Algo::Gemm::Blocked>
-        ::invoke(alpha, A, B, beta, C);
-    else
-        KokkosBatched::Experimental::SerialGemm<Trans::Transpose,Trans::Transpose,Algo::Gemm::Blocked>
-        ::invoke(alpha, A, B, beta, C);
-  }  
-}
+      const ViewType3& C);
 
 } // namespace Default
 } // namespace Blas
