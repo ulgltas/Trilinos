@@ -140,16 +140,29 @@ bool MOERTEL::Overlap::Guarded_Clip_Intersect(const double* N, const double* PE,
   P1P0[0] = P1[0] - P0[0];
   P1P0[1] = P1[1] - P0[1];
 
+
+  double normN = sqrt(N[0]*N[0]+N[1]*N[1]);
+  double normP1P0 = sqrt(P1P0[0]*P1P0[0]+P1P0[1]*P1P0[1]);
+
+  P1P0[0] = P1P0[0]/normP1P0;
+  P1P0[1] = P1P0[1]/normP1P0;
+
+  normP1P0 = sqrt(P1P0[0]*P1P0[0]+P1P0[1]*P1P0[1]);
+
   // determine the denominator - N \cdot P1P0 
 
   double denom = -(N[0]*P1P0[0] + N[1]*P1P0[1]);
   
   // if the denom is zero, then lines are parallel, no intersection
 
+
+
   // GAH - EPSILON test here
   // Failing here probably should be fatal
 
-  if (fabs(denom)<1.0e-15)
+  //std::cout << normN << " " << normP1P0 << " " << denom << std::endl;
+
+  if ((fabs(denom)/(normN*normP1P0))<1.0e-15)
 
     return false;
     
@@ -179,6 +192,8 @@ bool MOERTEL::Overlap::Clip_TestPoint(const double* N, const double* PE,
   PPE[0] = P[0] - PE[0];
   PPE[1] = P[1] - PE[1];
 
+  double normN = sqrt(N[0]*N[0]+N[1]*N[1]);
+  double normPPE = sqrt(PPE[0]*PPE[0]+PPE[1]*PPE[1]);
 /* 
    dotproduct gives a measure of the angle between N with tail at PE, and P with tail at PE
    If there is a component of P in the direction of N (greater than eps), return false.
@@ -187,7 +202,7 @@ bool MOERTEL::Overlap::Clip_TestPoint(const double* N, const double* PE,
   double dotproduct = PPE[0]*N[0]+PPE[1]*N[1];
   // cout << "OVERLAP Clip_TestPoint: dotproduct " << dotproduct << endl;
 
-  if (dotproduct > eps){
+  if (dotproduct/(normN*normPPE) > eps){
 
     return false;
   }

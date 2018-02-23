@@ -12,6 +12,7 @@
         "cctype": "cpp",
         "cstdio": "cpp",
         "cwchar": "cpp",
-        "cwctype": "cpp"
+        "cwctype": "cpp",
+        "__locale": "cpp"
     }
 }
