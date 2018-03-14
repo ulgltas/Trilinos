@@ -341,8 +341,14 @@ bool MOERTEL::Overlap::build_mxi()
   {
     // project node i onto sseg
 
-    projector.ProjectNodetoSegment_SegmentNormal(*mnode[i],sseg_,mxi_[i],gap);
-
+    //std::cout << __FILE__ << "/" << __LINE__ << "\n";
+    try {projector.ProjectNodetoSegment_SegmentNormal(*mnode[i],sseg_,mxi_[i],gap);}
+    catch(...)
+    {
+      std::cout << __FILE__ << "/" << __LINE__ << "\n";
+      throw;
+    }
+    //std::cout << __FILE__ << "/" << __LINE__ << "\n";
     /*
        mxi_[i] output. mxi_[i][0] is the \xi coordinate of the projection in sseg_, and
        mxi_[i][1] is the \eta coordinate of the projection in sseg_.
@@ -374,7 +380,16 @@ bool MOERTEL::Overlap::build_sxim()
   for (int i=0; i<nsnode; ++i)
   {
     // project node i onto sseg
-    projector.ProjectNodetoSegment_NodalNormal(*snode[i],mseg_,sxim_[i],gap);
+    //std::cout << __FILE__ << "/" << __LINE__ << "\n";
+    try{projector.ProjectNodetoSegment_NodalNormal(*snode[i],mseg_,sxim_[i],gap);}
+    catch(...)
+    {
+      std::cout << " Node to project " << snode[i]->Id() << "\n";
+      std::cout << " Segment to project on " << mseg_.Id() << "\n";      
+      std::cout << __FILE__ << "/" << __LINE__ << "\n";
+
+      throw;
+    }
 #if 0
     // check whether i is inside sseg
     if (sxim_[i][0]<=1. && sxim_[i][1]<=abs(1.-sxim_[i][0]) && sxim_[i][0]>=0. && sxim_[i][1]>=0.)
