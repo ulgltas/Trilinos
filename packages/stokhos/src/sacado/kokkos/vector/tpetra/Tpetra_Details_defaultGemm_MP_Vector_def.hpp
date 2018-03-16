@@ -38,9 +38,6 @@ gemm (const char transA,
   const IndexType k = (transA == 'N' || transA == 'n') ?
     A.dimension_1 () : A.dimension_0 ();
 
-
-  //std::cout << m << " "<< n << " " << k << std::endl;   
-
   using KokkosBatched::Experimental::Trans;
   using KokkosBatched::Experimental::Algo;
 
@@ -71,8 +68,6 @@ gemm (const char transA,
   }
   else
   {
-    //std::cout <<"A "<< m << " "<< n << " " << k << std::endl;   
-
     Kokkos::parallel_for (m, KOKKOS_LAMBDA (const int i) {     
       for (IndexType j = 0; j < n; ++j) {     
         C(i,j) = beta*C(i,j);     
@@ -83,8 +78,6 @@ gemm (const char transA,
 
     const IndexType sub_m = ceil(((double ) m)/max_size);
     const IndexType sub_k = ceil(((double ) k)/max_size);
-
-    //std::cout <<"sub_m "<< sub_m << " sub_k "<< sub_k << std::endl;
 
     const int nb_of_submatrices = sub_m*sub_k;
 
@@ -118,6 +111,8 @@ gemm (const char transA,
     }
     index_k[sub_k] = k;    
 
+    bool sub_layout_right = (sub_m>sub_k);
+
     ScalarViewType C_threads("C_threads", pool_size,max_size,n);
 
     Kokkos::deep_copy(C_threads,0);
@@ -127,19 +122,13 @@ gemm (const char transA,
       if (transB == 'N' || transB == 'n')
       { 
         Kokkos::parallel_for (nb_of_submatrices, KOKKOS_LAMBDA (const int i) {
-          IndexType tmp = i%sub_m;
+          IndexType tmp = sub_layout_right ? i%sub_m:floor(((double) i)/sub_k);
           IndexType index_i_min = index_m[tmp];
           IndexType index_i_max = index_m[tmp+1];
-          tmp = floor(((double) i)/sub_m);
+          tmp = sub_layout_right ? floor(((double) i)/sub_m): i%sub_k;
           IndexType index_j_min = index_k[tmp];
           IndexType index_j_max = index_k[tmp+1];
-/*
-          std::cout << transA << " " << transB << " " << i << "/"<< nb_of_submatrices 
-                    << " thread " << Kokkos::DefaultExecutionSpace::thread_pool_rank() 
-                    << " i=" << index_i_min << ":"<< index_i_max
-                    << " j=" << index_j_min << ":"<< index_j_max
-                    << " m="<<m<< " n="<<n <<" k="<<k<<std::endl;
-*/
+
           auto A_sub = subview (A, Kokkos::make_pair (index_i_min,  index_i_max), Kokkos::make_pair (index_j_min, index_j_max));
           auto B_sub = subview (B, Kokkos::make_pair (index_j_min, index_j_max), Kokkos::ALL());
           auto C_sub = subview (C_threads, Kokkos::DefaultExecutionSpace::thread_pool_rank(), Kokkos::make_pair (0,  index_i_max-index_i_min), Kokkos::ALL());
@@ -156,19 +145,13 @@ gemm (const char transA,
       else
       {
         Kokkos::parallel_for (nb_of_submatrices, KOKKOS_LAMBDA (const int i) {
-          IndexType tmp = i%sub_m;
+          IndexType tmp = sub_layout_right ? i%sub_m:floor(((double) i)/sub_k);
           IndexType index_i_min = index_m[tmp];
           IndexType index_i_max = index_m[tmp+1];
-          tmp = floor(((double) i)/sub_m);
+          tmp = sub_layout_right ? floor(((double) i)/sub_m): i%sub_k;
           IndexType index_j_min = index_k[tmp];
           IndexType index_j_max = index_k[tmp+1];
-/*
-          std::cout << transA << " " << transB << " " << i << "/"<< nb_of_submatrices 
-                    << " thread " << Kokkos::DefaultExecutionSpace::thread_pool_rank() 
-                    << " i=" << index_i_min << ":"<< index_i_max
-                    << " j=" << index_j_min << ":"<< index_j_max
-                    << " m="<<m<< " n="<<n <<" k="<<k<<std::endl;
-*/
+
           auto A_sub = subview (A, Kokkos::make_pair (index_i_min,  index_i_max), Kokkos::make_pair (index_j_min, index_j_max));
           auto B_sub = subview (B, Kokkos::ALL(), Kokkos::make_pair (index_j_min, index_j_max));
           auto C_sub = subview (C_threads, Kokkos::DefaultExecutionSpace::thread_pool_rank(), Kokkos::make_pair (0,  index_i_max-index_i_min), Kokkos::ALL());
@@ -188,24 +171,13 @@ gemm (const char transA,
       if (transB == 'N' || transB == 'n')
       { 
         Kokkos::parallel_for (nb_of_submatrices, KOKKOS_LAMBDA (const int i) {
-          IndexType tmp = i%sub_m;
-
-          //std::cout << i << " "<< sub_m << " "<< ((double) i)/((double) sub_m) << " "<< tmp << std::endl;
-
+          IndexType tmp = sub_layout_right ? i%sub_m:floor(((double) i)/sub_k);
           IndexType index_i_min = index_m[tmp];
           IndexType index_i_max = index_m[tmp+1];
-          tmp = floor(((double) i)/sub_m);
+          tmp = sub_layout_right ? floor(((double) i)/sub_m): i%sub_k;
           IndexType index_j_min = index_k[tmp];
           IndexType index_j_max = index_k[tmp+1];
 
-          
-/*
-          std::cout << transA << " " << transB << " " << i << "/"<< nb_of_submatrices 
-                    << " thread " << Kokkos::DefaultExecutionSpace::thread_pool_rank() 
-                    << " i=" << index_i_min << ":"<< index_i_max
-                    << " j=" << index_j_min << ":"<< index_j_max
-                    << " m="<<m<< " n="<<n <<" k="<<k<<std::endl;
-*/
           auto A_sub = subview (A, Kokkos::make_pair (index_j_min, index_j_max), Kokkos::make_pair (index_i_min,  index_i_max));
           auto B_sub = subview (B, Kokkos::make_pair (index_j_min, index_j_max), Kokkos::ALL());
           auto C_sub = subview (C_threads, Kokkos::DefaultExecutionSpace::thread_pool_rank(), Kokkos::make_pair (0,  index_i_max-index_i_min), Kokkos::ALL());
@@ -222,19 +194,13 @@ gemm (const char transA,
       else
       {
         Kokkos::parallel_for (nb_of_submatrices, KOKKOS_LAMBDA (const int i) {
-          IndexType tmp = i%sub_m;
+          IndexType tmp = sub_layout_right ? i%sub_m:floor(((double) i)/sub_k);
           IndexType index_i_min = index_m[tmp];
           IndexType index_i_max = index_m[tmp+1];
-          tmp = floor(((double) i)/sub_m);
+          tmp = sub_layout_right ? floor(((double) i)/sub_m): i%sub_k;
           IndexType index_j_min = index_k[tmp];
           IndexType index_j_max = index_k[tmp+1];
-/*
-          std::cout << transA << " " << transB << " " << i << "/"<< nb_of_submatrices 
-                    << " thread " << Kokkos::DefaultExecutionSpace::thread_pool_rank() 
-                    << " i=" << index_i_min << ":"<< index_i_max
-                    << " j=" << index_j_min << ":"<< index_j_max
-                    << " m="<<m<< " n="<<n <<" k="<<k<<std::endl;
-*/
+
           auto A_sub = subview (A, Kokkos::make_pair (index_j_min, index_j_max), Kokkos::make_pair (index_i_min,  index_i_max));
           auto B_sub = subview (B, Kokkos::ALL(), Kokkos::make_pair (index_j_min, index_j_max));
           auto C_sub = subview (C_threads, Kokkos::DefaultExecutionSpace::thread_pool_rank(), Kokkos::make_pair (0,  index_i_max-index_i_min), Kokkos::ALL());
@@ -250,187 +216,6 @@ gemm (const char transA,
       }
     }  
   }
-
-
-/*  
-  //else if(m < k)
-  {
-    //Inner product: 
-    // We split the k columnss of A (if transA == 'N') or the k rows of A (else) in 
-    // pool_size groups of at ceil(k/pool_size) (or possibly ceil(k/pool_size)-1 
-    // for the last one).
-    // We do the same for the k rows of B (if transB == 'N') or the k columns  of B (else).
-    const IndexType k_per_thread = ceil(((double ) k)/pool_size);
-
-    for (IndexType i = 0; i < m; ++i) {       
-      for (IndexType j = 0; j < n; ++j) {     
-        C(i,j) = beta*C(i,j);     
-      }
-    }
-
-    ScalarViewType C_threads("C_threads", pool_size,m,n);
-
-    Kokkos::deep_copy(C_threads,0);
-
-    if (transA == 'N' || transA == 'n')
-    {
-      if (transB == 'N' || transB == 'n')
-      { 
-
-        Kokkos::parallel_for (pool_size, KOKKOS_LAMBDA (const int i) {
-          IndexType k_max = ((i+1)*k_per_thread > k)? k:(i+1)*k_per_thread ;
-          auto A_sub = subview (A, Kokkos::ALL(), Kokkos::make_pair (i*k_per_thread,  k_max));
-          auto B_sub = subview (B, Kokkos::make_pair (i*k_per_thread,  k_max), Kokkos::ALL());
-          auto C_sub = subview (C_threads, i, Kokkos::ALL(), Kokkos::ALL());
-          KokkosBatched::Experimental::SerialGemm<Trans::NoTranspose,Trans::NoTranspose,Algo::Gemm::Blocked>
-            ::invoke(alpha, A_sub, B_sub, beta, C_sub); 
-
-          for (IndexType i = 0; i < m; ++i) {       
-            for (IndexType j = 0; j < n; ++j) {     
-              Kokkos::atomic_add(&C(i,j),C_sub(i,j));     
-            }
-          }
-        });             
-      }
-      else
-      {
-        Kokkos::parallel_for (pool_size, KOKKOS_LAMBDA (const int i) {
-          IndexType k_max = ((i+1)*k_per_thread > k)? k:(i+1)*k_per_thread ;
-          auto A_sub = subview (A, Kokkos::ALL(), Kokkos::make_pair (i*k_per_thread,  k_max));
-          auto B_sub = subview (B, Kokkos::ALL(), Kokkos::make_pair (i*k_per_thread,  k_max));
-          auto C_sub = subview (C_threads, i, Kokkos::ALL(), Kokkos::ALL());
-          KokkosBatched::Experimental::SerialGemm<Trans::NoTranspose,Trans::Transpose,Algo::Gemm::Blocked>
-            ::invoke(alpha, A_sub, B_sub, beta, C_sub); 
-
-          for (IndexType i = 0; i < m; ++i) {       
-            for (IndexType j = 0; j < n; ++j) {     
-              Kokkos::atomic_add(&C(i,j),C_sub(i,j));     
-            }
-          }
-        });                   
-      }
-    }  
-    else
-    {
-      if (transB == 'N' || transB == 'n')
-      {      
-        Kokkos::parallel_for (pool_size, KOKKOS_LAMBDA (const int i) {
-          IndexType k_max = ((i+1)*k_per_thread > k)? k:(i+1)*k_per_thread ;
-          auto A_sub = subview (A, Kokkos::make_pair (i*k_per_thread,  k_max), Kokkos::ALL());
-          auto B_sub = subview (B, Kokkos::make_pair (i*k_per_thread,  k_max), Kokkos::ALL());
-          auto C_sub = subview (C_threads, i, Kokkos::ALL(), Kokkos::ALL());
-          KokkosBatched::Experimental::SerialGemm<Trans::Transpose,Trans::NoTranspose,Algo::Gemm::Blocked>
-            ::invoke(alpha, A_sub, B_sub, beta, C_sub); 
-
-          for (IndexType i = 0; i < m; ++i) {       
-            for (IndexType j = 0; j < n; ++j) {     
-              Kokkos::atomic_add(&C(i,j),C_sub(i,j));     
-            }
-          }
-        });           
-      }
-      else
-      {
-        Kokkos::parallel_for (pool_size, KOKKOS_LAMBDA (const int i) {
-          IndexType k_max = ((i+1)*k_per_thread > k)? k:(i+1)*k_per_thread ;
-          auto A_sub = subview (A, Kokkos::make_pair (i*k_per_thread,  k_max), Kokkos::ALL());
-          auto B_sub = subview (B, Kokkos::ALL(), Kokkos::make_pair (i*k_per_thread,  k_max));
-          auto C_sub = subview (C_threads, i, Kokkos::ALL(), Kokkos::ALL());
-          KokkosBatched::Experimental::SerialGemm<Trans::Transpose,Trans::Transpose,Algo::Gemm::Blocked>
-            ::invoke(alpha, A_sub, B_sub, beta, C_sub); 
-
-          for (IndexType i = 0; i < m; ++i) {       
-            for (IndexType j = 0; j < n; ++j) {     
-              Kokkos::atomic_add(&C(i,j),C_sub(i,j));     
-            }
-          }
-        });         
-      }
-    }        
-  }
-  else
-  {
-    //Update: 
-    // We split the m rows of A (if transA == 'N') or the m columns of A (else) in 
-    // pool_size groups of at ceil(m/pool_size) (or possibly ceil(m/pool_size)-1 
-    // for the last one).
-    // We do the same for the rows of C.
-    const IndexType m_per_thread = ceil(((double ) m)/pool_size);
-
-
-    if (transA == 'N' || transA == 'n')
-    {
-      if (transB == 'N' || transB == 'n')
-      {
-        Kokkos::parallel_for (pool_size, KOKKOS_LAMBDA (const int i) {
-          IndexType m_max = ((i+1)*m_per_thread > m)? m:(i+1)*m_per_thread ;
-          auto A_sub = subview (A, Kokkos::make_pair (i*m_per_thread,  m_max), Kokkos::ALL());
-          auto C_sub = subview (C, Kokkos::make_pair (i*m_per_thread,  m_max), Kokkos::ALL());
-          KokkosBatched::Experimental::SerialGemm<Trans::NoTranspose,Trans::NoTranspose,Algo::Gemm::Blocked>
-            ::invoke(alpha, A_sub, B, beta, C_sub);    
-        });
-      }
-      else
-      {
-        Kokkos::parallel_for (pool_size, KOKKOS_LAMBDA (const int i) {
-          IndexType m_max = ((i+1)*m_per_thread > m)? m:(i+1)*m_per_thread ;
-          auto A_sub = subview (A, Kokkos::make_pair (i*m_per_thread,  m_max), Kokkos::ALL());
-          auto C_sub = subview (C, Kokkos::make_pair (i*m_per_thread,  m_max), Kokkos::ALL());
-          KokkosBatched::Experimental::SerialGemm<Trans::NoTranspose,Trans::Transpose,Algo::Gemm::Blocked>
-            ::invoke(alpha, A_sub, B, beta, C_sub);    
-        });
-      }
-    }
-    else   
-    {
-      if (transB == 'N' || transB == 'n')
-      {
-        Kokkos::parallel_for (pool_size, KOKKOS_LAMBDA (const int i) {
-          IndexType m_max = ((i+1)*m_per_thread > m)? m:(i+1)*m_per_thread ;
-          auto A_sub = subview (A, Kokkos::ALL(), Kokkos::make_pair (i*m_per_thread,  m_max));
-          auto C_sub = subview (C, Kokkos::make_pair (i*m_per_thread,  m_max), Kokkos::ALL());
-          KokkosBatched::Experimental::SerialGemm<Trans::Transpose,Trans::NoTranspose,Algo::Gemm::Blocked>
-            ::invoke(alpha, A_sub, B, beta, C_sub);    
-        });
-      }
-      else
-      {
-        Kokkos::parallel_for (pool_size, KOKKOS_LAMBDA (const int i) {
-          IndexType m_max = ((i+1)*m_per_thread > m)? m:(i+1)*m_per_thread ;
-          auto A_sub = subview (A, Kokkos::ALL(), Kokkos::make_pair (i*m_per_thread,  m_max));
-          auto C_sub = subview (C, Kokkos::make_pair (i*m_per_thread,  m_max), Kokkos::ALL());
-          KokkosBatched::Experimental::SerialGemm<Trans::Transpose,Trans::Transpose,Algo::Gemm::Blocked>
-            ::invoke(alpha, A_sub, B, beta, C_sub);    
-        });
-      }
-    }       
-  }
-*/
-
-  /*
-
-  using KokkosBatched::Experimental::Trans;
-  using KokkosBatched::Experimental::Algo;
-
-  if(transA == 'N' || transA == 'n')
-  {
-    if (transB == 'N' || transB == 'n')
-        KokkosBatched::Experimental::SerialGemm<Trans::NoTranspose,Trans::NoTranspose,Algo::Gemm::Blocked>
-        ::invoke(alpha, A, B, beta, C);
-    else
-        KokkosBatched::Experimental::SerialGemm<Trans::NoTranspose,Trans::Transpose,Algo::Gemm::Blocked>
-        ::invoke(alpha, A, B, beta, C);
-  }
-  else
-  {
-    if (transB == 'N' || transB == 'n')
-        KokkosBatched::Experimental::SerialGemm<Trans::Transpose,Trans::NoTranspose,Algo::Gemm::Blocked>
-        ::invoke(alpha, A, B, beta, C);
-    else
-        KokkosBatched::Experimental::SerialGemm<Trans::Transpose,Trans::Transpose,Algo::Gemm::Blocked>
-        ::invoke(alpha, A, B, beta, C);
-  }
-  */  
 }
 
 } // namespace Default
