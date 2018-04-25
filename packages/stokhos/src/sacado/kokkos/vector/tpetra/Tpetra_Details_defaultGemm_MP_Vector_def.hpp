@@ -38,6 +38,8 @@ gemm (const char transA,
   const IndexType k = (transA == 'N' || transA == 'n') ?
     A.dimension_1 () : A.dimension_0 ();
 
+  //std::cout << m << " " << n << " " << " " << k << " "  << transA << " " << transB << std::endl;
+
   using KokkosBatched::Experimental::Trans;
   using KokkosBatched::Experimental::Algo;
 
