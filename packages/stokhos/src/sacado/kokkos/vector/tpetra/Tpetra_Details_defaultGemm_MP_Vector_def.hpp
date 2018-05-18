@@ -74,7 +74,7 @@ gemm (const char transA,
       }
     });
 
-    const IndexType max_size = 10;
+    const IndexType max_size = 100;
 
     const IndexType sub_m = ceil(((double ) m)/max_size);
     const IndexType sub_k = ceil(((double ) k)/max_size);
