@@ -279,6 +279,28 @@ template<typename S>  Sacado::MP::Vector<S> operator* (Mask<Sacado::MP::Vector<S
     return mul;
 }
 
+template<typename scalar> void mask_assign(Mask<scalar> mask, scalar &dest, scalar if_true, scalar if_false)
+{
+    typedef EnsembleTraits_m<scalar> ET;
+    for(int i=0; i<ET::size; ++i){
+        if (mask[i])
+            ET::coeff(dest,i) = ET::coeff(if_true,i);
+        else
+            ET::coeff(dest,i) = ET::coeff(if_false,i);
+    }
+}
+
+template<typename scalar> void mask_div(Mask<scalar> mask, scalar &dest, scalar if_true, scalar if_true_denominator, scalar if_false)
+{
+    typedef EnsembleTraits_m<scalar> ET;
+    for(int i=0; i<ET::size; ++i){
+        if (mask[i])
+            ET::coeff(dest,i) = ET::coeff(if_true,i)/ET::coeff(if_true_denominator,i);
+        else
+            ET::coeff(dest,i) = ET::coeff(if_false,i);
+    }
+}
+
 namespace Sacado {
     namespace MP {
         template <typename S> Vector<S> copysign(Vector<S> a1,Vector<S> a2)
