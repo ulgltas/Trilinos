@@ -535,17 +535,43 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_assign)
     scalar a = (scalar) 1.;
     a[2] = -2.5;
     
-    mask_assign(a<=0.,a,(scalar) 0.,a);
+    //mask_assign(a<=0.,a,(scalar) 0.,a);
+    mask_assign(a<=0.,a) = {0.,a};
+    
     TEST_EQUALITY(a[1],1.);
     TEST_EQUALITY(a[2],0.);
     
     double b = 1.;
     
-    mask_assign(Mask<double> (b>0.5 && b<2.),b,2.*b,-1.);
+    mask_assign(b>0.5 && b<2.,b) = {2.*b,-1.};
+    
+    //mask_assign(Mask<double> (b>0.5 && b<2.),b,2.*b,-1.);
     TEST_EQUALITY(b,2.);
-    mask_assign<double>(Mask<double> (b>0.5 && b<2.),b,2.*b,-1.);
+    
+    mask_assign(b>0.5 && b<2.,b) = {2.*b,-1.};
+    //mask_assign<double>(Mask<double> (b>0.5 && b<2.),b,2.*b,-1.);
     TEST_EQUALITY(b,-1.);
     
+}
+
+TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_pointer_assign)
+{
+    constexpr int ensemble_size = 8;
+    
+    typedef Kokkos::DefaultExecutionSpace execution_space;
+    typedef Stokhos::StaticFixedStorage<int,double,ensemble_size,execution_space> storage_type;
+    typedef Sacado::MP::Vector<storage_type> scalar;
+    typedef Mask<scalar> mask;
+    
+    scalar a = (scalar) 1.;
+    a[2] = -2.5;
+    scalar *p = &a;
+
+    //mask_assign(a<=0.,a,(scalar) 0.,a);
+    mask_assign(a<=0.,*p) = {0.,a};
+    
+    TEST_EQUALITY(a[1],1.);
+    TEST_EQUALITY(a[2],0.);
 }
 
 TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_div)
@@ -559,6 +585,10 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_div)
     
     std::cout << std::endl;
     std::cout << "Test start" << std::endl;
+    
+    
+    scalar a2 = {0.,2.};
+    std::cout << a2 << std::endl;
     
     scalar a = (scalar) 1.;
     a[2] = -2.5;
@@ -576,15 +606,18 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_div)
     std::cout << (a>= 0.) << std::endl;
     std::cout << (0.<a )<< std::endl;
     std::cout << (0.<=a) << std::endl;
-    mask_div(m,a,a,(scalar) 2.,(scalar) -1.);
+    
+    mask_assign<scalar>(m,a) /= {(scalar) 2.,-1.};
+    //mask_div(m,a,a,(scalar) 2.,(scalar) -1.);
     TEST_EQUALITY(a[1],0.5);
     TEST_EQUALITY(a[2],-1.);
    
     double b = 1.;
-    
-    mask_div(Mask<double> (b>0.5),b,b,2.,-1.);
+    mask_assign(b>0.5,b) /= {2.,-1.};
+    //mask_div(Mask<double> (b>0.5),b,b,2.,-1.);
     TEST_EQUALITY(b,0.5);
-    mask_div(Mask<double> (b>0.5),b,b,2.,-1.);
+    mask_assign(b>0.5,b) /= {2.,-1.};
+    //mask_div(Mask<double> (b>0.5),b,b,2.,-1.);
     TEST_EQUALITY(b,-1.);
     
 }

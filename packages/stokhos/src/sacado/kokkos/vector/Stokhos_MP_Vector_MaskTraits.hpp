@@ -45,6 +45,7 @@
 #include "Stokhos_Sacado_Kokkos_MP_Vector.hpp"
 #include <iostream>
 #include <cmath>
+#include<tuple>
 
 template <typename T>
 struct EnsembleTraits_m {
@@ -64,6 +65,139 @@ struct EnsembleTraits_m< Sacado::MP::Vector<S> > {
   static value_type& coeff(Sacado::MP::Vector<S>& x, int i) {
     return x.fastAccessCoeff(i);
   }
+};
+
+template<typename scalar> class Mask;
+
+template<typename scalar> class MaskedAssign
+{
+    private:
+        static const int size = EnsembleTraits_m<scalar>::size;
+        scalar &data;
+        Mask<scalar> m;
+    
+    public:
+    MaskedAssign(scalar &data_, Mask<scalar> m_) : data(data_), m(m_) {};
+    
+    MaskedAssign<scalar>& operator = (const scalar s)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) = ET::coeff(s,i);
+        
+        return *this;
+    }
+    
+    MaskedAssign<scalar>& operator = (const std::tuple<scalar,scalar> st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) = ET::coeff(std::get<0>(st),i);
+            else
+                ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
+        
+        return *this;
+    }
+    
+    MaskedAssign<scalar>& operator += (const scalar s)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) += ET::coeff(s,i);
+        
+        return *this;
+    }
+    
+    MaskedAssign<scalar>& operator += (const std::tuple<scalar,scalar> st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) += ET::coeff(std::get<0>(st),i);
+            else
+                ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
+        
+        return *this;
+    }
+    
+    MaskedAssign<scalar>& operator -= (const scalar s)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) -= ET::coeff(s,i);
+        
+        return *this;
+    }
+    
+    MaskedAssign<scalar>& operator -= (const std::tuple<scalar,scalar> st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) -= ET::coeff(std::get<0>(st),i);
+            else
+                ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
+        
+        return *this;
+    }
+    
+    MaskedAssign<scalar>& operator *= (const scalar s)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) *= ET::coeff(s,i);
+        
+        return *this;
+    }
+    
+    MaskedAssign<scalar>& operator *= (const std::tuple<scalar,scalar> st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) *= ET::coeff(std::get<0>(st),i);
+            else
+                ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
+        
+        return *this;
+    }
+    
+    MaskedAssign<scalar>& operator /= (const scalar s)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) /= ET::coeff(s,i);
+        
+        return *this;
+    }
+    
+    MaskedAssign<scalar>& operator /= (const std::tuple<scalar,scalar> st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) /= ET::coeff(std::get<0>(st),i);
+            else
+                ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
+        
+        return *this;
+    }
 };
 
 template<typename scalar> class Mask 
@@ -250,6 +384,47 @@ template<typename scalar> class Mask
             return sum/size;    
         }                               
 };
+/*
+template<typename S>  MaskedAssign<Sacado::MP::Vector<S>> operator[] (Sacado::MP::Vector<S> &s, Mask<Sacado::MP::Vector<S>> m) const
+{
+    MaskedAssign<Sacado::MP::Vector<S>> maskedAssign = MaskedAssign<Sacado::MP::Vector<S>>(s,m);
+    return maskedAssign;
+}
+*/
+
+/*
+template<typename S>  MaskedAssign<Sacado::MP::Vector<S>> & operator[] (Sacado::MP::Vector<S> &s, Mask<Sacado::MP::Vector<S>> m)
+{
+    MaskedAssign<Sacado::MP::Vector<S>> maskedAssign = MaskedAssign<Sacado::MP::Vector<S>>(s,m);
+    return maskedAssign;
+}
+*/
+
+template<typename scalar>  MaskedAssign<scalar> mask_assign(bool b, scalar *s)
+{
+    Mask<scalar> m = Mask<scalar>(b);
+    MaskedAssign<scalar> maskedAssign = MaskedAssign<scalar>(*s,m);
+    return maskedAssign;
+}
+
+template<typename scalar>  MaskedAssign<scalar> mask_assign(Mask<scalar> m, scalar *s)
+{
+    MaskedAssign<scalar> maskedAssign = MaskedAssign<scalar>(*s,m);
+    return maskedAssign;
+}
+
+template<typename scalar>  MaskedAssign<scalar> mask_assign(bool b, scalar &s)
+{
+    Mask<scalar> m = Mask<scalar>(b);
+    MaskedAssign<scalar> maskedAssign = MaskedAssign<scalar>(s,m);
+    return maskedAssign;
+}
+
+template<typename scalar>  MaskedAssign<scalar> mask_assign(Mask<scalar> m, scalar &s)
+{
+    MaskedAssign<scalar> maskedAssign = MaskedAssign<scalar>(s,m);
+    return maskedAssign;
+}
 
 template<typename scalar> std::ostream &operator<<(std::ostream &os, const Mask<scalar>& m) {
     os << "[ ";
@@ -279,6 +454,7 @@ template<typename S>  Sacado::MP::Vector<S> operator* (Mask<Sacado::MP::Vector<S
     return mul;
 }
 
+/*
 template<typename scalar> void mask_assign(Mask<scalar> mask, scalar &dest, scalar if_true, scalar if_false)
 {
     typedef EnsembleTraits_m<scalar> ET;
@@ -300,6 +476,8 @@ template<typename scalar> void mask_div(Mask<scalar> mask, scalar &dest, scalar 
             ET::coeff(dest,i) = ET::coeff(if_false,i);
     }
 }
+
+ */
 
 namespace Sacado {
     namespace MP {
