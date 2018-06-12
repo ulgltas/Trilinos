@@ -608,16 +608,17 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_div)
     std::cout << (0.<=a) << std::endl;
     
     mask_assign<scalar>(m,a) /= {(scalar) 2.,-1.};
-    //mask_div(m,a,a,(scalar) 2.,(scalar) -1.);
     TEST_EQUALITY(a[1],0.5);
     TEST_EQUALITY(a[2],-1.);
-   
+    
+    mask_assign<scalar>(m,a) /= {(scalar) 4.,2.,-1.};
+    TEST_EQUALITY(a[1],2.);
+    TEST_EQUALITY(a[2],-1.);
+    
     double b = 1.;
     mask_assign(b>0.5,b) /= {2.,-1.};
-    //mask_div(Mask<double> (b>0.5),b,b,2.,-1.);
     TEST_EQUALITY(b,0.5);
     mask_assign(b>0.5,b) /= {2.,-1.};
-    //mask_div(Mask<double> (b>0.5),b,b,2.,-1.);
     TEST_EQUALITY(b,-1.);
     
 }

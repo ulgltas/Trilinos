@@ -45,7 +45,7 @@
 #include "Stokhos_Sacado_Kokkos_MP_Vector.hpp"
 #include <iostream>
 #include <cmath>
-#include<tuple>
+#include <tuple>
 
 template <typename T>
 struct EnsembleTraits_m {
@@ -79,7 +79,7 @@ private:
 public:
     MaskedAssign(scalar &data_, Mask<scalar> m_) : data(data_), m(m_) {};
     
-    MaskedAssign<scalar>& operator = (const scalar s)
+    MaskedAssign<scalar>& operator = (const scalar &s)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -90,7 +90,7 @@ public:
         return *this;
     }
     
-    MaskedAssign<scalar>& operator = (const std::tuple<scalar,scalar> st)
+    MaskedAssign<scalar>& operator = (const std::tuple<scalar,scalar> &st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -103,7 +103,7 @@ public:
         return *this;
     }
     
-    MaskedAssign<scalar>& operator += (const scalar s)
+    MaskedAssign<scalar>& operator += (const scalar &s)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -114,7 +114,7 @@ public:
         return *this;
     }
     
-    MaskedAssign<scalar>& operator += (const std::tuple<scalar,scalar> st)
+    MaskedAssign<scalar>& operator += (const std::tuple<scalar,scalar> &st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -127,7 +127,20 @@ public:
         return *this;
     }
     
-    MaskedAssign<scalar>& operator -= (const scalar s)
+    MaskedAssign<scalar>& operator += (const std::tuple<scalar,scalar,scalar> &st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)+ET::coeff(std::get<1>(st),i);
+            else
+                ET::coeff(data,i) = ET::coeff(std::get<2>(st),i);
+        
+        return *this;
+    }
+    
+    MaskedAssign<scalar>& operator -= (const scalar &s)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -138,7 +151,7 @@ public:
         return *this;
     }
     
-    MaskedAssign<scalar>& operator -= (const std::tuple<scalar,scalar> st)
+    MaskedAssign<scalar>& operator -= (const std::tuple<scalar,scalar> &st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -150,8 +163,20 @@ public:
         
         return *this;
     }
+    MaskedAssign<scalar>& operator -= (const std::tuple<scalar,scalar,scalar> &st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)-ET::coeff(std::get<1>(st),i);
+            else
+                ET::coeff(data,i) = ET::coeff(std::get<2>(st),i);
+        
+        return *this;
+    }
     
-    MaskedAssign<scalar>& operator *= (const scalar s)
+    MaskedAssign<scalar>& operator *= (const scalar &s)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -162,7 +187,7 @@ public:
         return *this;
     }
     
-    MaskedAssign<scalar>& operator *= (const std::tuple<scalar,scalar> st)
+    MaskedAssign<scalar>& operator *= (const std::tuple<scalar,scalar> &st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -175,7 +200,20 @@ public:
         return *this;
     }
     
-    MaskedAssign<scalar>& operator /= (const scalar s)
+    MaskedAssign<scalar>& operator *= (const std::tuple<scalar,scalar,scalar> &st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)*ET::coeff(std::get<1>(st),i);
+            else
+                ET::coeff(data,i) = ET::coeff(std::get<2>(st),i);
+        
+        return *this;
+    }
+    
+    MaskedAssign<scalar>& operator /= (const scalar &s)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -186,7 +224,7 @@ public:
         return *this;
     }
     
-    MaskedAssign<scalar>& operator /= (const std::tuple<scalar,scalar> st)
+    MaskedAssign<scalar>& operator /= (const std::tuple<scalar,scalar> &st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -195,6 +233,19 @@ public:
                 ET::coeff(data,i) /= ET::coeff(std::get<0>(st),i);
             else
                 ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
+        
+        return *this;
+    }
+    
+    MaskedAssign<scalar>& operator /= (const std::tuple<scalar,scalar,scalar> &st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)/ET::coeff(std::get<1>(st),i);
+            else
+                ET::coeff(data,i) = ET::coeff(std::get<2>(st),i);
         
         return *this;
     }
