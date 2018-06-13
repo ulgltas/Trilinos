@@ -142,8 +142,8 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Multiplication_8)
     scalar mul2 = m1*b;
     scalar mul3 = b*m1;
 
-    scalar mul4 = m1*2;
-    scalar mul5 = 2*m1;
+    scalar mul4 = m1*2.0;
+    scalar mul5 = 2.0*m1;
     
     std::cout << m1 << std::endl;
     std::cout << mul << std::endl;
@@ -612,11 +612,17 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_div)
     TEST_EQUALITY(a[2],-1.);
     
     /*
-     This test is working only if c++ 14 is allowed. 
+     This test is working only if c++ 14 is allowed due to the fact
+     that copy-list-initialization in the constructor of tuple is not allowed before
+     as it is an explicit one.
+     
     mask_assign<scalar>(m,a) /= {(scalar) 4.,2.,-1.};
+     */
+    std::tuple<scalar,scalar,scalar> ts {4.,2.,-1.};
+    mask_assign<scalar>(m,a) /= ts;
     TEST_EQUALITY(a[1],2.);
     TEST_EQUALITY(a[2],-1.);
-    */
+    
     
     double b = 1.;
     mask_assign(b>0.5,b) /= {2.,-1.};
