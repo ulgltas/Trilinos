@@ -611,9 +611,12 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_div)
     TEST_EQUALITY(a[1],0.5);
     TEST_EQUALITY(a[2],-1.);
     
+    /*
+     This test is working only if c++ 14 is allowed. 
     mask_assign<scalar>(m,a) /= {(scalar) 4.,2.,-1.};
     TEST_EQUALITY(a[1],2.);
     TEST_EQUALITY(a[2],-1.);
+    */
     
     double b = 1.;
     mask_assign(b>0.5,b) /= {2.,-1.};

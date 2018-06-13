@@ -46,6 +46,7 @@
 #include <iostream>
 #include <cmath>
 #include <tuple>
+#include <utility>
 
 template <typename T>
 struct EnsembleTraits_m {
@@ -90,7 +91,7 @@ public:
         return *this;
     }
     
-    MaskedAssign<scalar>& operator = (const std::tuple<scalar,scalar> &st)
+    MaskedAssign<scalar>& operator = (const std::pair<scalar,scalar> &st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -114,7 +115,7 @@ public:
         return *this;
     }
     
-    MaskedAssign<scalar>& operator += (const std::tuple<scalar,scalar> &st)
+    MaskedAssign<scalar>& operator += (const std::pair<scalar,scalar> &st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -151,7 +152,7 @@ public:
         return *this;
     }
     
-    MaskedAssign<scalar>& operator -= (const std::tuple<scalar,scalar> &st)
+    MaskedAssign<scalar>& operator -= (const std::pair<scalar,scalar> &st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -187,7 +188,7 @@ public:
         return *this;
     }
     
-    MaskedAssign<scalar>& operator *= (const std::tuple<scalar,scalar> &st)
+    MaskedAssign<scalar>& operator *= (const std::pair<scalar,scalar> &st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -224,7 +225,7 @@ public:
         return *this;
     }
     
-    MaskedAssign<scalar>& operator /= (const std::tuple<scalar,scalar> &st)
+    MaskedAssign<scalar>& operator /= (const std::pair<scalar,scalar> &st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
