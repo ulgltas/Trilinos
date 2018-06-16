@@ -84,8 +84,9 @@ public:
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma vector aligned
-        #pragma ivdep
+        #pragma omp simd
+        //#pragma vector aligned
+        //#pragma ivdep
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) = ET::coeff(s,i);
@@ -97,8 +98,9 @@ public:
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma vector aligned
-        #pragma ivdep
+        #pragma omp simd
+        //#pragma vector aligned
+        //#pragma ivdep
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i);
@@ -112,8 +114,9 @@ public:
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma vector aligned
-        #pragma ivdep
+        #pragma omp simd
+        //#pragma vector aligned
+        //#pragma ivdep
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) += ET::coeff(s,i);
@@ -125,8 +128,9 @@ public:
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma vector aligned
-        #pragma ivdep
+        #pragma omp simd
+        //#pragma vector aligned
+        //#pragma ivdep
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) += ET::coeff(std::get<0>(st),i);
@@ -140,8 +144,9 @@ public:
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma vector aligned
-        #pragma ivdep
+        #pragma omp simd
+        //#pragma vector aligned
+        //#pragma ivdep
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)+ET::coeff(std::get<1>(st),i);
@@ -155,8 +160,9 @@ public:
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma vector aligned
-        #pragma ivdep
+        #pragma omp simd
+        //#pragma vector aligned
+        //#pragma ivdep
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) -= ET::coeff(s,i);
@@ -168,8 +174,9 @@ public:
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma vector aligned
-        #pragma ivdep
+        #pragma omp simd
+        //#pragma vector aligned
+        //#pragma ivdep
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) -= ET::coeff(std::get<0>(st),i);
@@ -182,8 +189,9 @@ public:
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma vector aligned
-        #pragma ivdep
+        #pragma omp simd
+        //#pragma vector aligned
+        //#pragma ivdep
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)-ET::coeff(std::get<1>(st),i);
@@ -197,8 +205,9 @@ public:
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma vector aligned
-        #pragma ivdep
+        #pragma omp simd
+        //#pragma vector aligned
+        //#pragma ivdep
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) *= ET::coeff(s,i);
@@ -210,8 +219,9 @@ public:
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma vector aligned
-        #pragma ivdep
+        #pragma omp simd
+        //#pragma vector aligned
+        //#pragma ivdep
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) *= ET::coeff(std::get<0>(st),i);
@@ -225,8 +235,9 @@ public:
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma vector aligned
-        #pragma ivdep
+        #pragma omp simd
+        //#pragma vector aligned
+        //#pragma ivdep
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)*ET::coeff(std::get<1>(st),i);
@@ -240,8 +251,9 @@ public:
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma vector aligned
-        #pragma ivdep
+        #pragma omp simd
+        //#pragma vector aligned
+        //#pragma ivdep
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) /= ET::coeff(s,i);
@@ -268,8 +280,9 @@ public:
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma vector aligned
-        #pragma ivdep
+        #pragma omp simd
+        //#pragma vector aligned
+        //#pragma ivdep
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)/ET::coeff(std::get<1>(st),i);
