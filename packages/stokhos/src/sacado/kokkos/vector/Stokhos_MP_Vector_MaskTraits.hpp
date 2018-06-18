@@ -444,12 +444,12 @@ public:
         return v2;
     }
     
-    bool operator[] (int i) const
+    KOKKOS_INLINE_FUNCTION bool operator[] (int i) const
     {
         return this->data[i];
     }
     
-    bool & operator[] (int i)
+    KOKKOS_INLINE_FUNCTION bool & operator[] (int i)
     {
         return this->data[i];
     }
