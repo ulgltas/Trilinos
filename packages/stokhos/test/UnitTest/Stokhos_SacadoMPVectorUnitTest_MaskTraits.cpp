@@ -283,12 +283,12 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_AND)
     std::cout << m2 << std::endl;
 
     
-    TEST_EQUALITY( (AND) true, true );
-    TEST_EQUALITY( (AND) false, false );
-    TEST_EQUALITY( (AND) m1, false );
-    TEST_EQUALITY( (AND) !m1, false );
-    TEST_EQUALITY( (AND) m2, true );
-    TEST_EQUALITY( (AND) !m2, false );
+    TEST_EQUALITY( AND(true), true );
+    TEST_EQUALITY( AND(false), false );
+    TEST_EQUALITY( AND(m1), false );
+    TEST_EQUALITY( AND(!m1), false );
+    TEST_EQUALITY( AND(m2), true );
+    TEST_EQUALITY( AND(!m2), false );
 }
 
 TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_OR)
@@ -312,12 +312,12 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_OR)
     std::cout << m2 << std::endl;
     
     
-    TEST_EQUALITY( (OR) true, true );
-    TEST_EQUALITY( (OR) false, false );
-    TEST_EQUALITY( (OR) m1, true );
-    TEST_EQUALITY( (OR) !m1, true );
-    TEST_EQUALITY( (OR) m2, true );
-    TEST_EQUALITY( (OR) !m2, false );
+    TEST_EQUALITY( OR(true), true );
+    TEST_EQUALITY( OR(false), false );
+    TEST_EQUALITY( OR(m1), true );
+    TEST_EQUALITY( OR(!m1), true );
+    TEST_EQUALITY( OR(m2), true );
+    TEST_EQUALITY( OR(!m2), false );
 }
 
 TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_XOR)
@@ -340,12 +340,12 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_XOR)
     std::cout << m2 << std::endl;
     
     
-    TEST_EQUALITY( (XOR) true, true );
-    TEST_EQUALITY( (XOR) false, false );
-    TEST_EQUALITY( (XOR) m1, true );
-    TEST_EQUALITY( (XOR) !m1, false );
-    TEST_EQUALITY( (XOR) m2, false );
-    TEST_EQUALITY( (XOR) !m2, false );
+    TEST_EQUALITY( XOR(true), true );
+    TEST_EQUALITY( XOR(false), false );
+    TEST_EQUALITY( XOR(m1), true );
+    TEST_EQUALITY( XOR(!m1), false );
+    TEST_EQUALITY( XOR(m2), false );
+    TEST_EQUALITY( XOR(!m2), false );
 }
 
 TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_compared_to_double)

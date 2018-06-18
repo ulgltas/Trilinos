@@ -842,76 +842,29 @@ template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operato
 
 namespace MaskLogic{
     
-    class OR
-    {
-    private:
-        bool value;
-        
-    public:
-        OR(){
-            value = false;
-        }
-        
-        OR(bool value_){
-            value = value_;
-        }
-        
-        template<typename T> OR(T m){
-            value = (((double) m)!=0.);
-        }
-        
-        operator bool() const
-        {
-            return value;
-        }
-    };
+    template<typename T> KOKKOS_INLINE_FUNCTION bool OR(Mask<T> m){
+        return (((double) m)!=0.);
+    }
+
+    KOKKOS_INLINE_FUNCTION bool OR(bool m){
+        return m;
+    }
     
-    class XOR
-    {
-    private:
-        bool value;
-        
-    public:
-        XOR(){
-            value = false;
-        }
-        
-        XOR(bool value_){
-            value = value_;
-        }
-        
-        template<typename T> XOR(T m){
-            value = (((double) m)==1./m.getSize());
-        }
-        
-        operator bool() const
-        {
-            return value;
-        }
-    };
+    template<typename T> KOKKOS_INLINE_FUNCTION bool XOR(Mask<T> m){
+        return (((double) m)==1./m.getSize());
+    }
     
-    class AND
-    {
-    private:
-        bool value;
-        
-    public:
-        AND(){
-            value = false;
-        }
-        
-        AND(bool value_){
-            value = value_;
-        }
-        
-        template<typename T> AND(T m){
-            value = (((double) m)==1.);
-        }
-        
-        operator bool() const
-        {
-            return value;
-        }
-    };
+    KOKKOS_INLINE_FUNCTION bool XOR(bool m){
+        return m;
+    }
+    
+    template<typename T> KOKKOS_INLINE_FUNCTION bool AND(Mask<T> m){
+        return (((double) m)==1.);
+    }
+    
+    KOKKOS_INLINE_FUNCTION bool AND(bool m){
+        return m;
+    }
+    
 }
 #endif // STOKHOS_MP_VECTOR_MASKTRAITS_HPP
