@@ -45,8 +45,9 @@
 #include "Stokhos_Sacado_Kokkos_MP_Vector.hpp"
 #include <iostream>
 #include <cmath>
-#include <tuple>
-#include <utility>
+//#include <tuple>
+//#include <utility>
+#include <initializer_list>
 
 template <typename T>
 struct EnsembleTraits_m {
@@ -93,7 +94,7 @@ public:
         
         return *this;
     }
-    
+/*
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator = (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
@@ -109,6 +110,25 @@ public:
         
         return *this;
     }
+ */
+
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator = (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        auto st_array = st.begin();
+        
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) = ET::coeff(st_array[0],i);
+            else
+                ET::coeff(data,i) = ET::coeff(st_array[1],i);
+        
+        return *this;
+    }
+    
     
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator += (const scalar & KOKKOS_RESTRICT s)
     {
@@ -123,7 +143,7 @@ public:
         
         return *this;
     }
-    
+/*
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator += (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
@@ -155,6 +175,24 @@ public:
         
         return *this;
     }
+*/
+
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator += (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        auto st_array = st.begin();
+        
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) = ET::coeff(st_array[0],i)+ET::coeff(st_array[1],i);
+            else
+                ET::coeff(data,i) = ET::coeff(st_array[2],i);
+        
+        return *this;
+    }
     
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator -= (const scalar & KOKKOS_RESTRICT s)
     {
@@ -169,7 +207,7 @@ public:
         
         return *this;
     }
-    
+/*
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator -= (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
@@ -200,6 +238,24 @@ public:
         
         return *this;
     }
+ */
+
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator -= (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        auto st_array = st.begin();
+        
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) = ET::coeff(st_array[0],i)-ET::coeff(st_array[1],i);
+            else
+                ET::coeff(data,i) = ET::coeff(st_array[2],i);
+        
+        return *this;
+    }
     
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator *= (const scalar & KOKKOS_RESTRICT s)
     {
@@ -214,7 +270,8 @@ public:
         
         return *this;
     }
-    
+   
+/*
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator *= (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
@@ -246,6 +303,24 @@ public:
         
         return *this;
     }
+*/
+ 
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator *= (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        auto st_array = st.begin();
+        
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) = ET::coeff(st_array[0],i)*ET::coeff(st_array[1],i);
+            else
+                ET::coeff(data,i) = ET::coeff(st_array[2],i);
+        
+        return *this;
+    }
     
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator /= (const scalar & KOKKOS_RESTRICT s)
     {
@@ -260,7 +335,7 @@ public:
         
         return *this;
     }
-    
+/*
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator /= (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
@@ -288,6 +363,24 @@ public:
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)/ET::coeff(std::get<1>(st),i);
             else
                 ET::coeff(data,i) = ET::coeff(std::get<2>(st),i);
+        
+        return *this;
+    }
+ */
+
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator /= (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
+    {
+        typedef EnsembleTraits_m<scalar> ET;
+        auto st_array = st.begin();
+        
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
+        for(int i=0; i<size; ++i)
+            if(m[i])
+                ET::coeff(data,i) = ET::coeff(st_array[0],i)/ET::coeff(st_array[1],i);
+            else
+                ET::coeff(data,i) = ET::coeff(st_array[2],i);
         
         return *this;
     }
