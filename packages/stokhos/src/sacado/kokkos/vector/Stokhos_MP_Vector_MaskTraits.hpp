@@ -80,13 +80,13 @@ private:
 public:
     MaskedAssign(scalar &data_, Mask<scalar> m_) : data(data_), m(m_) {};
     
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator = (const scalar & KOKKOS_RESTRICT s)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator = (const scalar & KOKKOS_RESTRICT s)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma omp simd
-        //#pragma vector aligned
-        //#pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) = ET::coeff(s,i);
@@ -94,13 +94,13 @@ public:
         return *this;
     }
     
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator = (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator = (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma omp simd
-        //#pragma vector aligned
-        //#pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i);
@@ -110,13 +110,13 @@ public:
         return *this;
     }
     
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator += (const scalar & KOKKOS_RESTRICT s)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator += (const scalar & KOKKOS_RESTRICT s)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma omp simd
-        //#pragma vector aligned
-        //#pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) += ET::coeff(s,i);
@@ -124,13 +124,13 @@ public:
         return *this;
     }
     
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator += (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator += (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma omp simd
-        //#pragma vector aligned
-        //#pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) += ET::coeff(std::get<0>(st),i);
@@ -140,13 +140,13 @@ public:
         return *this;
     }
     
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator += (const std::tuple<scalar,scalar,scalar> & KOKKOS_RESTRICT st)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator += (const std::tuple<scalar,scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma omp simd
-        //#pragma vector aligned
-        //#pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)+ET::coeff(std::get<1>(st),i);
@@ -156,13 +156,13 @@ public:
         return *this;
     }
     
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator -= (const scalar & KOKKOS_RESTRICT s)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator -= (const scalar & KOKKOS_RESTRICT s)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma omp simd
-        //#pragma vector aligned
-        //#pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) -= ET::coeff(s,i);
@@ -170,13 +170,13 @@ public:
         return *this;
     }
     
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator -= (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator -= (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma omp simd
-        //#pragma vector aligned
-        //#pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) -= ET::coeff(std::get<0>(st),i);
@@ -185,13 +185,13 @@ public:
         
         return *this;
     }
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator -= (const std::tuple<scalar,scalar,scalar> & KOKKOS_RESTRICT st)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator -= (const std::tuple<scalar,scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma omp simd
-        //#pragma vector aligned
-        //#pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)-ET::coeff(std::get<1>(st),i);
@@ -201,13 +201,13 @@ public:
         return *this;
     }
     
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator *= (const scalar & KOKKOS_RESTRICT s)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator *= (const scalar & KOKKOS_RESTRICT s)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma omp simd
-        //#pragma vector aligned
-        //#pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) *= ET::coeff(s,i);
@@ -215,13 +215,13 @@ public:
         return *this;
     }
     
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator *= (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator *= (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma omp simd
-        //#pragma vector aligned
-        //#pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) *= ET::coeff(std::get<0>(st),i);
@@ -231,13 +231,13 @@ public:
         return *this;
     }
     
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator *= (const std::tuple<scalar,scalar,scalar> & KOKKOS_RESTRICT st)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator *= (const std::tuple<scalar,scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma omp simd
-        //#pragma vector aligned
-        //#pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)*ET::coeff(std::get<1>(st),i);
@@ -247,13 +247,13 @@ public:
         return *this;
     }
     
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator /= (const scalar & KOKKOS_RESTRICT s)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator /= (const scalar & KOKKOS_RESTRICT s)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma omp simd
-        //#pragma vector aligned
-        //#pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) /= ET::coeff(s,i);
@@ -261,7 +261,7 @@ public:
         return *this;
     }
     
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator /= (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator /= (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
@@ -276,13 +276,13 @@ public:
         return *this;
     }
     
-    KOKKOS_INLINE_FUNCTION MaskedAssign<scalar>& operator /= (const std::tuple<scalar,scalar,scalar> & KOKKOS_RESTRICT st)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator /= (const std::tuple<scalar,scalar,scalar> & KOKKOS_RESTRICT st)
     {
         typedef EnsembleTraits_m<scalar> ET;
         
-        #pragma omp simd
-        //#pragma vector aligned
-        //#pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
         for(int i=0; i<size; ++i)
             if(m[i])
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)/ET::coeff(std::get<1>(st),i);
@@ -444,12 +444,12 @@ public:
         return v2;
     }
     
-    KOKKOS_INLINE_FUNCTION bool operator[] (int i) const
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) bool operator[] (int i) const
     {
         return this->data[i];
     }
     
-    KOKKOS_INLINE_FUNCTION bool & operator[] (int i)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) bool & operator[] (int i)
     {
         return this->data[i];
     }
@@ -493,27 +493,27 @@ public:
  }
  */
 
-template<typename scalar> KOKKOS_INLINE_FUNCTION MaskedAssign<scalar> mask_assign(bool b, scalar *s)
+template<typename scalar> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar> mask_assign(bool b, scalar *s)
 {
     Mask<scalar> m = Mask<scalar>(b);
     MaskedAssign<scalar> maskedAssign = MaskedAssign<scalar>(*s,m);
     return maskedAssign;
 }
 
-template<typename scalar> KOKKOS_INLINE_FUNCTION MaskedAssign<scalar> mask_assign(Mask<scalar> m, scalar *s)
+template<typename scalar> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar> mask_assign(Mask<scalar> m, scalar *s)
 {
     MaskedAssign<scalar> maskedAssign = MaskedAssign<scalar>(*s,m);
     return maskedAssign;
 }
 
-template<typename scalar> KOKKOS_INLINE_FUNCTION MaskedAssign<scalar> mask_assign(bool b, scalar &s)
+template<typename scalar> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar> mask_assign(bool b, scalar &s)
 {
     Mask<scalar> m = Mask<scalar>(b);
     MaskedAssign<scalar> maskedAssign = MaskedAssign<scalar>(s,m);
     return maskedAssign;
 }
 
-template<typename scalar> KOKKOS_INLINE_FUNCTION MaskedAssign<scalar> mask_assign(Mask<scalar> m, scalar &s)
+template<typename scalar> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar> mask_assign(Mask<scalar> m, scalar &s)
 {
     MaskedAssign<scalar> maskedAssign = MaskedAssign<scalar>(s,m);
     return maskedAssign;
@@ -526,36 +526,39 @@ template<typename scalar> KOKKOS_INLINE_FUNCTION std::ostream &operator<<(std::o
     return os << "]";
 }
 
-template<typename S> KOKKOS_INLINE_FUNCTION Sacado::MP::Vector<S> operator* (const Sacado::MP::Vector<S> &a1, const Mask<Sacado::MP::Vector<S>> &m)
+template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Sacado::MP::Vector<S> operator* (const Sacado::MP::Vector<S> &a1, const Mask<Sacado::MP::Vector<S>> &m)
 {
     typedef EnsembleTraits_m<Sacado::MP::Vector<S>> ET;
     Sacado::MP::Vector<S> mul;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i){
         ET::coeff(mul,i) = ET::coeff(a1,i)*m[i];
     }
     return mul;
 }
 
-template<typename S> KOKKOS_INLINE_FUNCTION Sacado::MP::Vector<S> operator* (const typename S::value_type &a1, const Mask<Sacado::MP::Vector<S>> &m)
+template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Sacado::MP::Vector<S> operator* (const typename S::value_type &a1, const Mask<Sacado::MP::Vector<S>> &m)
 {
     Sacado::MP::Vector<S> mul;
     typedef EnsembleTraits_m<Sacado::MP::Vector<S>> ET;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i){
         ET::coeff(mul,i) = m[i]*a1;
     }
     return mul;
 }
 
-template<typename S> KOKKOS_INLINE_FUNCTION Sacado::MP::Vector<S> operator* (const Mask<Sacado::MP::Vector<S>> &m, const typename S::value_type &a1)
+template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Sacado::MP::Vector<S> operator* (const Mask<Sacado::MP::Vector<S>> &m, const typename S::value_type &a1)
 {
     Sacado::MP::Vector<S> mul;
     typedef EnsembleTraits_m<Sacado::MP::Vector<S>> ET;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i){
         ET::coeff(mul,i) = m[i]*a1;
     }
@@ -612,8 +615,9 @@ template<typename S> Mask<Sacado::MP::Vector<S> > signbit_v(const Sacado::MP::Ve
     using std::signbit;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = signbit(ET::coeff(a1,i));
     return mask;
@@ -621,73 +625,79 @@ template<typename S> Mask<Sacado::MP::Vector<S> > signbit_v(const Sacado::MP::Ve
 
 // Vector - vector comparisons
 
-template<typename S> KOKKOS_INLINE_FUNCTION  Mask<Sacado::MP::Vector<S> > operator== (const Sacado::MP::Vector<S> &a1, const Sacado::MP::Vector<S> &a2)
+template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline))  Mask<Sacado::MP::Vector<S> > operator== (const Sacado::MP::Vector<S> &a1, const Sacado::MP::Vector<S> &a2)
 {
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = ET::coeff(a1,i) == ET::coeff(a2,i);
     return mask;
 }
 
-template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operator!= (const Sacado::MP::Vector<S> &a1, const Sacado::MP::Vector<S> &a2)
+template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Mask<Sacado::MP::Vector<S> > operator!= (const Sacado::MP::Vector<S> &a1, const Sacado::MP::Vector<S> &a2)
 {
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = ET::coeff(a1,i) != ET::coeff(a2,i);
     return mask;
 }
 
-template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operator> (const Sacado::MP::Vector<S> &a1, const Sacado::MP::Vector<S> &a2)
+template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Mask<Sacado::MP::Vector<S> > operator> (const Sacado::MP::Vector<S> &a1, const Sacado::MP::Vector<S> &a2)
 {
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = ET::coeff(a1,i) > ET::coeff(a2,i);
     return mask;
 }
 
-template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operator>= (const Sacado::MP::Vector<S> &a1, const Sacado::MP::Vector<S> &a2)
+template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Mask<Sacado::MP::Vector<S> > operator>= (const Sacado::MP::Vector<S> &a1, const Sacado::MP::Vector<S> &a2)
 {
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = ET::coeff(a1,i) >= ET::coeff(a2,i);
     return mask;
 }
 
-template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operator< (const Sacado::MP::Vector<S> &a1, const Sacado::MP::Vector<S> &a2)
+template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Mask<Sacado::MP::Vector<S> > operator< (const Sacado::MP::Vector<S> &a1, const Sacado::MP::Vector<S> &a2)
 {
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = ET::coeff(a1,i) < ET::coeff(a2,i);
     return mask;
 }
 
-template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operator<= (const Sacado::MP::Vector<S> &a1, const Sacado::MP::Vector<S> &a2)
+template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Mask<Sacado::MP::Vector<S> > operator<= (const Sacado::MP::Vector<S> &a1, const Sacado::MP::Vector<S> &a2)
 {
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = ET::coeff(a1,i) <= ET::coeff(a2,i);
     return mask;
@@ -700,8 +710,9 @@ template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operato
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = ET::coeff(a1,i) == a2;
     return mask;
@@ -712,8 +723,9 @@ template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operato
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = ET::coeff(a1,i) != a2;
     return mask;
@@ -725,8 +737,9 @@ template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operato
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = ET::coeff(a1,i) > a2;
     return mask;
@@ -737,8 +750,9 @@ template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operato
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = ET::coeff(a1,i) >= a2;
     return mask;
@@ -749,8 +763,9 @@ template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operato
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = ET::coeff(a1,i) < a2;
     return mask;
@@ -761,8 +776,9 @@ template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operato
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = ET::coeff(a1,i) <= a2;
     return mask;
@@ -775,8 +791,9 @@ template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operato
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = a2 == ET::coeff(a1,i);
     return mask;
@@ -787,8 +804,9 @@ template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operato
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = a2 != ET::coeff(a1,i);
     return mask;
@@ -799,8 +817,9 @@ template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operato
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = a2 > ET::coeff(a1,i);
     return mask;
@@ -811,8 +830,9 @@ template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operato
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = a2 >= ET::coeff(a1,i);
     return mask;
@@ -823,8 +843,9 @@ template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operato
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
-    #pragma vector aligned
-    #pragma ivdep
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = a2 < ET::coeff(a1,i);
     return mask;
@@ -835,6 +856,9 @@ template<typename S> KOKKOS_INLINE_FUNCTION Mask<Sacado::MP::Vector<S> > operato
     typedef EnsembleTraits_m<Sacado::MP::Vector<S> > ET;
     
     Mask<Sacado::MP::Vector<S> > mask;
+#pragma vector aligned
+#pragma ivdep
+#pragma unroll
     for(int i=0; i<ET::size; ++i)
         mask[i] = a2 <= ET::coeff(a1,i);
     return mask;
