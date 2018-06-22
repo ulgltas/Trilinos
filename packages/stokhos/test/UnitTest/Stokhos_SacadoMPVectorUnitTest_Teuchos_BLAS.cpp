@@ -39,33 +39,54 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef STOKHOS_SACADO_KOKKOS_MP_VECTOR_HPP
-#define STOKHOS_SACADO_KOKKOS_MP_VECTOR_HPP
-
-#include "Stokhos_ConfigDefs.h"
-
-#include "Kokkos_Macros.hpp"
-
-#include "Stokhos_Sacado_Kokkos_MathFunctions.hpp"
-
-#include "Stokhos_KokkosTraits.hpp"
-#include "Stokhos_StaticFixedStorage.hpp"
-#include "Stokhos_StaticStorage.hpp"
-#include "Stokhos_DynamicStorage.hpp"
-#include "Stokhos_DynamicStridedStorage.hpp"
-#include "Stokhos_DynamicThreadedStorage.hpp"
-#include "Stokhos_ViewStorage.hpp"
-
-#include "Sacado_MP_ExpressionTraits.hpp"
-#include "Sacado_MP_VectorTraits.hpp"
-#include "Sacado_MP_Vector.hpp"
-#include "Kokkos_View_MP_Vector.hpp"
-#include "Kokkos_Atomic_MP_Vector.hpp"
+#include "Teuchos_UnitTestHarness.hpp"
+#include "Teuchos_TestingHelpers.hpp"
+#include "Teuchos_UnitTestRepository.hpp"
+#include "Teuchos_GlobalMPISession.hpp"
 
 #include "Stokhos_MP_Vector_MaskTraits.hpp"
 
-#include "Teuchos_SerialQRDenseSolver_MP_Vector.hpp"
-#include "Teuchos_BLAS_MP_Vector.hpp"
-#include "Teuchos_LAPACK_MP_Vector.hpp"
+TEUCHOS_UNIT_TEST( MP_Vector_Teuchos_BLAS, ROTG_8)
+{
+    constexpr int ensemble_size = 8;
+    
+    typedef Kokkos::DefaultExecutionSpace execution_space;
+    typedef Stokhos::StaticFixedStorage<int,double,ensemble_size,execution_space> storage_type;
+    typedef Sacado::MP::Vector<storage_type> scalar;
+    typedef ScalarTraits<scalar> STS;
+    typedef ScalarTraits<scalar::value_type> STV;
+    
+    scalar da, db, c, s;
 
-#endif // STOKHOS_SACADO_KOKKOS_MP_VECTOR_HPP
+    da = 1.589*STS::one();
+    db = -3.685*STS::one();
+    
+    da[2] = 0.;
+    db[2] = 0.;
+ 
+    da[3] *= -1;
+    db[3] *= -1;
+    
+    Teuchos::BLAS<int, scalar> blas;
+    blas.ROTG(&da,&db,&c,&s);
+    
+    TEST_EQUALITY(STV::magnitude(da[0]+4.013)<0.001,1);
+    TEST_EQUALITY(da[2],0.);
+    EST_EQUALITY(STV::magnitude(da[3]-4.013)<0.001,1);
+}
+
+int main( int argc, char* argv[] ) {
+  Teuchos::GlobalMPISession mpiSession(&argc, &argv);
+
+  Kokkos::HostSpace::execution_space::initialize();
+  if (!Kokkos::DefaultExecutionSpace::is_initialized())
+    Kokkos::DefaultExecutionSpace::initialize();
+
+  int res = Teuchos::UnitTestRepository::runUnitTestsFromMain(argc, argv);
+
+  Kokkos::HostSpace::execution_space::finalize();
+  if (Kokkos::DefaultExecutionSpace::is_initialized())
+    Kokkos::DefaultExecutionSpace::finalize();
+
+  return res;
+}

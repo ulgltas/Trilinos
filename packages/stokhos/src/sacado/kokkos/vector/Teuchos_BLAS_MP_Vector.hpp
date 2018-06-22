@@ -43,102 +43,73 @@
 #define _TEUCHOS_BLAS_MP_VECTOR_HPP_
 
 #include "Teuchos_BLAS.hpp"
-#include "Sacado_MP_Vector.hpp"
+//#include "Sacado_MP_Vector.hpp"
+
+#include "Stokhos_MP_Vector_MaskTraits.hpp"
 
 // Specialize some things used in the default BLAS implementation that
 // don't seem correct for MP::Vector scalar type
 namespace Teuchos {
-
-  namespace details {
-
-    template<typename Storage>
-    class GivensRotator<Sacado::MP::Vector<Storage>, false> {
-    public:
-      typedef Sacado::MP::Vector<Storage> ScalarType;
-      typedef ScalarType c_type;
-
-      void
-      ROTG (ScalarType* da,
-            ScalarType* db,
-            ScalarType* c,
-            ScalarType* s) const {
-
-        typedef ScalarTraits<ScalarType> STS;
-
-        // This is a straightforward translation into C++ of the
-        // reference BLAS' implementation of DROTG.  You can get
-        // the Fortran 77 source code of DROTG here:
-        //
-        // http://www.netlib.org/blas/drotg.f
-        //
-        // I used the following rules to translate Fortran types and
-        // intrinsic functions into C++:
-        //
-        // DOUBLE PRECISION -> ScalarType
-        // DABS -> STS::magnitude
-        // DSQRT -> STM::squareroot
-        // DSIGN -> SIGN (see below)
-        //
-        // DSIGN(x,y) (the old DOUBLE PRECISION type-specific form of
-        // the Fortran type-generic SIGN intrinsic) required special
-        // translation, which we did in a separate utility function in
-        // the specializaton of GivensRotator for real arithmetic.
-        // (ROTG for complex arithmetic doesn't require this function.)
-        // C99 provides a copysign() math library function, but we are
-        // not able to rely on the existence of C99 functions here.
-        ScalarType r, roe, scale, z;
-
-        roe = *db;
-        if (STS::magnitude (*da) > STS::magnitude (*db)) {
-          roe = *da;
-        }
-        scale = STS::magnitude (*da) + STS::magnitude (*db);
-        if (scale == STS::zero()) {
-          *c = STS::one();
-          *s = STS::zero();
-          r = STS::zero();
-          z = STS::zero();
-        } else {
-          // I introduced temporaries into the translated BLAS code in
-          // order to make the expression easier to read and also save
-          // a few floating-point operations.
-          const ScalarType da_scaled = *da / scale;
-          const ScalarType db_scaled = *db / scale;
-          r = scale * STS::squareroot (da_scaled*da_scaled + db_scaled*db_scaled);
-          r = SIGN (STS::one(), roe) * r;
-          *c = *da / r;
-          *s = *db / r;
-          z = STS::one();
-          if (STS::magnitude (*da) > STS::magnitude (*db)) {
-            z = *s;
-          }
-          if (STS::magnitude (*db) >= STS::magnitude (*da) && *c != STS::zero()) {
-            z = STS::one() / *c;
-          }
-        }
- 
-        *da = r;
-        *db = z;
-      }
-
-    private:
-
-      /// Return ABS(x) if y > 0 or y is +0, else -ABS(x) (if y is -0 or < 0).
-      ScalarType SIGN (ScalarType x, ScalarType y) const {
-        typedef typename ScalarType::value_type value_type;
-        typedef typename ScalarType::ordinal_type ordinal_type;
-
-        GivensRotator<value_type> value_rotator;
-        const ordinal_type sz = x.size() > y.size() ? x.size() : y.size();
-        ScalarType z(sz, 0.0);
-        for (ordinal_type i=0; i<sz; ++i)
-          z.fastAccessCoeff(i) = value_rotator.SIGN(x.coeff(i), y.coeff(i));
-        return z;
-      }
-    };
-
-  } // namespace details
-
+    
+    namespace details {
+        
+        template<typename Storage>
+        class GivensRotator<Sacado::MP::Vector<Storage>, false> {
+        public:
+            typedef Sacado::MP::Vector<Storage> ScalarType;
+            typedef ScalarType c_type;
+            
+            void
+            ROTG (ScalarType* da,
+                  ScalarType* db,
+                  ScalarType* c,
+                  ScalarType* s) const {
+                typedef ScalarTraits<ScalarType> STS;
+                
+                ScalarType r, roe, scale, z, da_scaled, db_scaled;
+                auto m_da = (STS::magnitude (*da) > STS::magnitude (*db));
+                mask_assign(m_da,roe) = {*da,*db};
+                
+                scale = STS::magnitude (*da) + STS::magnitude (*db);
+                
+                auto m_scale = scale != STS::zero();
+                
+                da_scaled = *da;
+                db_scaled = *db;
+                
+                *c = *da;
+                *s = *db;
+                
+                ScalarType tmp = STS::one();
+                mask_assign(m_scale,tmp) /= scale;
+                
+                mask_assign(m_scale,da_scaled) *= tmp;
+                mask_assign(m_scale,db_scaled) *= tmp;
+                
+                r = scale * STS::squareroot (da_scaled*da_scaled + db_scaled*db_scaled);
+                auto m_roe = roe < 0;
+                mask_assign(m_roe,r) = -r;
+                
+                tmp = STS::one();
+                mask_assign(m_scale,tmp) /= r;
+                
+                mask_assign(m_scale,*c) *= tmp;
+                mask_assign(m_scale,*s) *= tmp;
+                
+                mask_assign(!m_scale,*c) = STS::one();
+                mask_assign(!m_scale,*s) = STS::zero();
+                
+                
+                mask_assign(*c != STS::zero(),z) /= {STS::one(),*c,STS::zero()};
+                mask_assign(!m_scale,z) = STS::zero();
+                mask_assign(m_da,z) = *s;
+                
+                *da = r;
+                *db = z;
+            }
+        };
+    } // namespace details
+    
 } // namespace Teuchos
 
 #endif // _TEUCHOS_BLAS__MP_VECTOR_HPP_
