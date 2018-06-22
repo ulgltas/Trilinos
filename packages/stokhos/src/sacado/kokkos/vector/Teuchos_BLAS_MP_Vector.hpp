@@ -45,7 +45,7 @@
 #include "Teuchos_BLAS.hpp"
 //#include "Sacado_MP_Vector.hpp"
 
-#include "Stokhos_MP_Vector_MaskTraits.hpp"
+//#include "Stokhos_Sacado_Kokkos_MP_Vector.hpp"
 
 // Specialize some things used in the default BLAS implementation that
 // don't seem correct for MP::Vector scalar type

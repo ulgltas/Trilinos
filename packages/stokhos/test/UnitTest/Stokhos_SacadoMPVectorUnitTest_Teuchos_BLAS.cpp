@@ -44,7 +44,9 @@
 #include "Teuchos_UnitTestRepository.hpp"
 #include "Teuchos_GlobalMPISession.hpp"
 
-#include "Stokhos_MP_Vector_MaskTraits.hpp"
+#include "Stokhos_Sacado_Kokkos_MP_Vector.hpp"
+
+using Teuchos::ScalarTraits;
 
 TEUCHOS_UNIT_TEST( MP_Vector_Teuchos_BLAS, ROTG_8)
 {
@@ -67,12 +69,15 @@ TEUCHOS_UNIT_TEST( MP_Vector_Teuchos_BLAS, ROTG_8)
     da[3] *= -1;
     db[3] *= -1;
     
-    Teuchos::BLAS<int, scalar> blas;
-    blas.ROTG(&da,&db,&c,&s);
+    auto ma = (da > db); // This is a mask: OK
+    std::cout << ma << std::endl;
     
-    TEST_EQUALITY(STV::magnitude(da[0]+4.013)<0.001,1);
-    TEST_EQUALITY(da[2],0.);
-    EST_EQUALITY(STV::magnitude(da[3]-4.013)<0.001,1);
+    Teuchos::BLAS<int, scalar> blas;
+    blas.ROTG(&da,&db,&c,&s); // This, in the function, will use mask_assign: OK BUT comparison operators returns bool (based on first element of the ensemble instead of the mask type.
+    
+    TEST_EQUALITY(STV::magnitude(da[0]+4.013)<0.001,1); // This will be OK as it is the first element.
+    TEST_EQUALITY(da[2],0.); // This is (nan == 0.) = 0. as blas.ROTG(&da,&db,&c,&s) did not use mask.
+    TEST_EQUALITY(STV::magnitude(da[3]-4.013)<0.001,1); // This will be false too.
 }
 
 int main( int argc, char* argv[] ) {
