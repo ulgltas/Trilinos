@@ -115,6 +115,8 @@ class StatusTestResNorm: public StatusTest<ScalarType,MV,OP> {
   //! Returns a boolean indicating a loss of accuracy has been detected in computing the residual.
   virtual bool getLOADetected() const = 0;
 
+  //! Returns number of ensemble iterations
+  virtual const std::vector<int> getEnsembleIterations() const = 0;
   //@}
 
 };

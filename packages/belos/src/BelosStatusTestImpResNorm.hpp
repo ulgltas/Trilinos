@@ -278,6 +278,9 @@ public:
 
   //! Returns a boolean indicating a loss of accuracy has been detected in computing the residual.
   bool getLOADetected() const { return lossDetected_; }
+  
+  //! Returns number of ensemble iterations
+  const std::vector<int> getEnsembleIterations() const { return std::vector<int>(); }
   //@}
 
 

@@ -360,6 +360,9 @@ namespace Belos {
     ///   call this method immediately after calling \c solve().
     bool isLOADetected() const { return loaDetected_; }
 
+    //! Return the residual status test
+    Teuchos::RCP<StatusTestResNorm<ScalarType,MV,OP> >
+    getResidualStatusTest() const { return impConvTest_; }
     //@}
 
     //! @name Set methods
