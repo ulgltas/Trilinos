@@ -62,8 +62,6 @@
 #include "Kokkos_View_MP_Vector.hpp"
 #include "Kokkos_Atomic_MP_Vector.hpp"
 
-#include "Stokhos_MP_Vector_MaskTraits.hpp"
-
 #include "Teuchos_SerialQRDenseSolver_MP_Vector.hpp"
 #include "Teuchos_BLAS_MP_Vector.hpp"
 #include "Teuchos_LAPACK_MP_Vector.hpp"
