@@ -791,7 +791,19 @@ namespace Sacado {                                                      \
     operator OP (const Expr<V> &a1,                                     \
                  const Expr<V2> &a2)                                    \
     {                                                                   \
-      Mask<V> mask = a1.derived() OP a2.derived();                      \
+      const V& v1 = a1.derived();                                       \
+      const V2& v2 = a2.derived();                                      \
+      Mask<V> mask;                                                     \
+      _Pragma("vector aligned")                                         \
+      _Pragma("ivdep")                                                  \
+      if (v2.hasFastAccess(v1.size())) {                                \
+        for(int i=0; i<v1.size(); ++i)                                  \
+          mask[i] = v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i);     \
+      }                                                                 \
+      else{                                                             \
+        for(int i=0; i<v1.size(); ++i)                                  \
+          mask[i] = v1.fastAccessCoeff(i) OP v2.coeff(i);               \
+      }                                                                 \
       return mask;                                                      \
     }                                                                   \
                                                                         \
@@ -801,7 +813,19 @@ namespace Sacado {                                                      \
     operator OP (const volatile Expr<V> &a1,                            \
                  const volatile Expr<V2> &a2)                           \
     {                                                                   \
-      Mask<V> mask = a1.derived() OP a2.derived();                      \
+      const volatile V& v1 = a1.derived();                              \
+      const volatile V2& v2 = a2.derived();                             \
+      Mask<V> mask;                                                     \
+      _Pragma("vector aligned")                                         \
+      _Pragma("ivdep")                                                  \
+      if (v2.hasFastAccess(v1.size())) {                                \
+        for(int i=0; i<v1.size(); ++i)                                  \
+          mask[i] = v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i);     \
+      }                                                                 \
+      else{                                                             \
+        for(int i=0; i<v1.size(); ++i)                                  \
+          mask[i] = v1.fastAccessCoeff(i) OP v2.coeff(i);               \
+      }                                                                 \
       return mask;                                                      \
     }                                                                   \
                                                                         \
@@ -811,7 +835,19 @@ namespace Sacado {                                                      \
     operator OP (const Expr<V> &a1,                                     \
                  const volatile Expr<V2> &a2)                           \
     {                                                                   \
-      Mask<V> mask = a1.derived() OP a2.derived();                      \
+      const V& v1 = a1.derived();                                       \
+      const volatile V2& v2 = a2.derived();                             \
+      Mask<V> mask;                                                     \
+      _Pragma("vector aligned")                                         \
+      _Pragma("ivdep")                                                  \
+      if (v2.hasFastAccess(v1.size())) {                                \
+        for(int i=0; i<v1.size(); ++i)                                  \
+          mask[i] = v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i);     \
+      }                                                                 \
+      else{                                                             \
+        for(int i=0; i<v1.size(); ++i)                                  \
+          mask[i] = v1.fastAccessCoeff(i) OP v2.coeff(i);               \
+      }                                                                 \
       return mask;                                                      \
     }                                                                   \
                                                                         \
@@ -821,7 +857,19 @@ namespace Sacado {                                                      \
     operator OP (const volatile Expr<V> &a1,                            \
                  const Expr<V2> &a2)                                    \
     {                                                                   \
-      Mask<V> mask = a1.derived() OP a2.derived();                      \
+      const volatile V& v1 = a1.derived();                              \
+      const V2& v2 = a2.derived();                                      \
+      Mask<V> mask;                                                     \
+      _Pragma("vector aligned")                                         \
+      _Pragma("ivdep")                                                  \
+      if (v2.hasFastAccess(v1.size())) {                                \
+        for(int i=0; i<v1.size(); ++i)                                  \
+          mask[i] = v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i);     \
+      }                                                                 \
+      else{                                                             \
+        for(int i=0; i<v1.size(); ++i)                                  \
+          mask[i] = v1.fastAccessCoeff(i) OP v2.coeff(i);               \
+      }                                                                 \
       return mask;                                                      \
     }                                                                   \
                                                                         \
@@ -831,7 +879,12 @@ namespace Sacado {                                                      \
     operator OP (const Expr<V> &a1,                                     \
                  const typename V::value_type &a2)                      \
     {                                                                   \
-      Mask<V> mask = a1.derived() OP a2 ;                               \
+      const V& v1 = a1.derived();                                       \
+      Mask<V> mask;                                                     \
+      _Pragma("vector aligned")                                         \
+      _Pragma("ivdep")                                                  \
+      for(int i=0; i<v1.size(); ++i)                                    \
+        mask[i] = v1.fastAccessCoeff(i) OP a2;                          \
       return mask;                                                      \
     }                                                                   \
                                                                         \
@@ -841,7 +894,12 @@ namespace Sacado {                                                      \
     operator OP (const volatile Expr<V> &a1,                            \
                  const typename V::value_type &a2)                      \
     {                                                                   \
-      Mask<V> mask = a1.derived() OP a2 ;                               \
+      const volatile V& v1 = a1.derived();                              \
+      Mask<V> mask;                                                     \
+      _Pragma("vector aligned")                                         \
+      _Pragma("ivdep")                                                  \
+      for(int i=0; i<v1.size(); ++i)                                    \
+        mask[i] = v1.fastAccessCoeff(i) OP a2;                          \
       return mask;                                                      \
     }                                                                   \
                                                                         \
@@ -851,7 +909,12 @@ namespace Sacado {                                                      \
     operator OP (const typename V::value_type &a1,                      \
                  const Expr<V> &a2)                                     \
     {                                                                   \
-      Mask<V> mask = a1 OP a2.derived();                                \
+      const V& v2 = a2.derived();                                       \
+      Mask<V> mask;                                                     \
+      _Pragma("vector aligned")                                         \
+      _Pragma("ivdep")                                                  \
+      for(int i=0; i<v1.size(); ++i)                                    \
+        mask[i] = a1 OP v2.fastAccessCoeff(i);                          \
       return mask;                                                      \
     }                                                                   \
                                                                         \
@@ -861,7 +924,12 @@ namespace Sacado {                                                      \
     operator OP (const typename V::value_type &a1,                      \
                  const volatile Expr<V> &a2)                            \
     {                                                                   \
-      Mask<V> mask = a1 OP a2.derived();                                \
+      const volatile V& v2 = a2.derived();                              \
+      Mask<V> mask;                                                     \
+      _Pragma("vector aligned")                                         \
+      _Pragma("ivdep")                                                  \
+      for(int i=0; i<v1.size(); ++i)                                    \
+        mask[i] = a1 OP v2.fastAccessCoeff(i);                          \
       return mask;                                                      \
     }                                                                   \
   }                                                                     \

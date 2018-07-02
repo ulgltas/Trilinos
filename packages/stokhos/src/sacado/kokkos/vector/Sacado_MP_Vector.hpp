@@ -1983,8 +1983,8 @@ namespace Sacado {
 
 } // namespace Sacado
 
-#include "Stokhos_MP_Vector_MaskTraits.hpp"
 #include "Sacado_MP_Vector_ops.hpp"
+#include "Stokhos_MP_Vector_MaskTraits.hpp"
 
 #if STOKHOS_ALIGN_MEMORY
 
