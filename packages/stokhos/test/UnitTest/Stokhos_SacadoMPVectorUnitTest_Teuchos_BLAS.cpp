@@ -68,16 +68,88 @@ TEUCHOS_UNIT_TEST( MP_Vector_Teuchos_BLAS, ROTG_8)
  
     da[3] *= -1;
     db[3] *= -1;
+  
+    Teuchos::BLAS<int, scalar> blas;
+    blas.ROTG(&da,&db,&c,&s);
+  
+    std::cout << std::endl;
+  
+    std::cout << da << std::endl;
+    std::cout << db << std::endl;
+    std::cout << c << std::endl;
+    std::cout << s << std::endl;
+  
+    TEST_EQUALITY(STV::magnitude(da[0]+4.013)<0.001,1);
+    TEST_EQUALITY(da[2],0.);
+    TEST_EQUALITY(STV::magnitude(da[3]-4.013)<0.001,1);
+}
+
+TEUCHOS_UNIT_TEST( MP_Vector_Teuchos_BLAS, TRSM_no_transpose_upper_8)
+{
+    constexpr int ensemble_size = 8;
     
-    auto ma = (da > db); // This is a mask: OK
-    std::cout << ma << std::endl;
+    typedef Kokkos::DefaultExecutionSpace execution_space;
+    typedef Stokhos::StaticFixedStorage<int,double,ensemble_size,execution_space> storage_type;
+    typedef Sacado::MP::Vector<storage_type> scalar;
+    typedef ScalarTraits<scalar> STS;
+    typedef ScalarTraits<scalar::value_type> STV;
+    
+    scalar A[9];
+    scalar B[3];
+    
+    A[1] = STS::zero();
+    A[2] = STS::zero();
+    A[5] = STS::zero();
+    
+    A[0] = 2.*STS::one();
+    A[3] = -1.*STS::one();
+    A[6] = 3.*STS::one();
+    
+    A[4] = 2.*STS::one();
+    A[7] = -1.*STS::one();
+    
+    A[8] = 3.*STS::one();
+    
+    B[0] = 2.*STS::one();
+    B[1] = -1.*STS::one();
+    B[2] = 3.*STS::one();
+    
+    B[2][0] = 0.;
+  
+    std::cout << std::endl;
+    int lda = 3;
+    for(int i=0; i<3; ++i){
+      for(int k=0; k<3; ++k){
+        std::cout << A[k*lda + i] << " ";
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    for(int i=0; i<3; ++i){
+      std::cout << B[i] << std::endl;
+    }
+    std::cout << std::endl;
     
     Teuchos::BLAS<int, scalar> blas;
-    blas.ROTG(&da,&db,&c,&s); // This, in the function, will use mask_assign: OK BUT comparison operators returns bool (based on first element of the ensemble instead of the mask type.
+
+    blas.TRSM( Teuchos::LEFT_SIDE, Teuchos::UPPER_TRI, Teuchos::NO_TRANS,
+              Teuchos::NON_UNIT_DIAG, 3, 1, STS::one(),
+              A, 3, B, 3 );
+    for(int i=0; i<3; ++i){
+      std::cout << B[i] << std::endl;
+    }
+    std::cout << std::endl;
+    TEST_EQUALITY(B[2][0],1.);
+    TEST_EQUALITY(B[2][1],0.);
+    TEST_EQUALITY(B[2][2],1.);
     
-    TEST_EQUALITY(STV::magnitude(da[0]+4.013)<0.001,1); // This will be OK as it is the first element.
-    TEST_EQUALITY(da[2],0.); // This is (nan == 0.) = 0. as blas.ROTG(&da,&db,&c,&s) did not use mask.
-    TEST_EQUALITY(STV::magnitude(da[3]-4.013)<0.001,1); // This will be false too.
+    TEST_EQUALITY(B[1][0],0.);
+    TEST_EQUALITY(B[1][1],-0.5);
+    TEST_EQUALITY(B[1][2],0.);
+    
+    TEST_EQUALITY(B[0][0],-0.5);
+    TEST_EQUALITY(B[0][1],0.75);
+    TEST_EQUALITY(B[0][2],-0.5);
 }
 
 int main( int argc, char* argv[] ) {
