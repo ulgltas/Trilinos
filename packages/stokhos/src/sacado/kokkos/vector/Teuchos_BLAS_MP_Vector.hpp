@@ -108,8 +108,10 @@ namespace Teuchos {
     } // namespace details
 } // namespace Teuchos
 
-namespace Sacado {                                                      
-  namespace MP {
+//namespace Sacado {
+//  namespace MP {
+namespace Teuchos
+{
     //! Vector specializations for Teuchos::BLAS wrappers
     template <typename OrdinalType, typename Storage>
     class BLAS<OrdinalType,Vector<Storage>> : public Teuchos::DefaultBLASImpl<OrdinalType,Sacado::MP::Vector<Storage>> {
@@ -421,7 +423,7 @@ namespace Sacado {
           }
       };
     }; // class BLAS
-  }
+//  }
+//}
 }
-
 #endif // _TEUCHOS_BLAS__MP_VECTOR_HPP_
