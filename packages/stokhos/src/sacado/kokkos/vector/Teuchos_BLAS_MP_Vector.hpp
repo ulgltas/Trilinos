@@ -107,7 +107,7 @@ namespace Teuchos {
         };
     } // namespace details
 } // namespace Teuchos
-/*
+
 //namespace Sacado {
 //  namespace MP {
 namespace Teuchos
@@ -128,15 +128,16 @@ namespace Teuchos
     
       //! Default constructor.
       BLAS(bool use_default_impl = true,
-     bool use_dynamic = true, OrdinalType static_workspace_size = 0);
+     bool use_dynamic = true, OrdinalType static_workspace_size = 0){};
 
       //! Copy constructor.
 
-      BLAS(const BLAS& x);
+      BLAS(const BLAS& x){};
 
       //! Destructor.
-      virtual ~BLAS();
-
+      virtual ~BLAS() {};
+ 
+      //@}
 
       template <typename alpha_type, typename A_type>
       void TRSM(Teuchos::ESide side, Teuchos::EUplo uplo,
@@ -426,5 +427,5 @@ namespace Teuchos
 //}
 
 }
-*/
+
 #endif // _TEUCHOS_BLAS__MP_VECTOR_HPP_
