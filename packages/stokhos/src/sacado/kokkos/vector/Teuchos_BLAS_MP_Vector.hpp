@@ -107,7 +107,7 @@ namespace Teuchos {
         };
     } // namespace details
 } // namespace Teuchos
-
+/*
 //namespace Sacado {
 //  namespace MP {
 namespace Teuchos
@@ -424,5 +424,7 @@ namespace Teuchos
     }; // class BLAS
 //  }
 //}
+
 }
+*/
 #endif // _TEUCHOS_BLAS__MP_VECTOR_HPP_
