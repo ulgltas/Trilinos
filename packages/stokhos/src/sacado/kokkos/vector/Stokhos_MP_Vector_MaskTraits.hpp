@@ -91,7 +91,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) = ET::coeff(s,i);
 
         return *this;
@@ -105,7 +105,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i);
             else
                 ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
@@ -123,7 +123,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) = ET::coeff(st_array[0],i);
             else
                 ET::coeff(data,i) = ET::coeff(st_array[1],i);
@@ -140,7 +140,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) += ET::coeff(s,i);
 
         return *this;
@@ -154,7 +154,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) += ET::coeff(std::get<0>(st),i);
             else
                 ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
@@ -170,7 +170,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)+ET::coeff(std::get<1>(st),i);
             else
                 ET::coeff(data,i) = ET::coeff(std::get<2>(st),i);
@@ -188,7 +188,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) = ET::coeff(st_array[0],i)+ET::coeff(st_array[1],i);
             else
                 ET::coeff(data,i) = ET::coeff(st_array[2],i);
@@ -204,7 +204,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) -= ET::coeff(s,i);
 
         return *this;
@@ -218,7 +218,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) -= ET::coeff(std::get<0>(st),i);
             else
                 ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
@@ -233,7 +233,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)-ET::coeff(std::get<1>(st),i);
             else
                 ET::coeff(data,i) = ET::coeff(std::get<2>(st),i);
@@ -251,7 +251,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) = ET::coeff(st_array[0],i)-ET::coeff(st_array[1],i);
             else
                 ET::coeff(data,i) = ET::coeff(st_array[2],i);
@@ -267,7 +267,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) *= ET::coeff(s,i);
 
         return *this;
@@ -282,7 +282,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) *= ET::coeff(std::get<0>(st),i);
             else
                 ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
@@ -298,7 +298,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)*ET::coeff(std::get<1>(st),i);
             else
                 ET::coeff(data,i) = ET::coeff(std::get<2>(st),i);
@@ -316,7 +316,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) = ET::coeff(st_array[0],i)*ET::coeff(st_array[1],i);
             else
                 ET::coeff(data,i) = ET::coeff(st_array[2],i);
@@ -332,7 +332,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) /= ET::coeff(s,i);
 
         return *this;
@@ -345,7 +345,7 @@ public:
         #pragma vector aligned
         #pragma ivdep
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) /= ET::coeff(std::get<0>(st),i);
             else
                 ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
@@ -361,7 +361,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)/ET::coeff(std::get<1>(st),i);
             else
                 ET::coeff(data,i) = ET::coeff(std::get<2>(st),i);
@@ -379,7 +379,7 @@ public:
 #pragma ivdep
 #pragma unroll
         for(int i=0; i<size; ++i)
-            if(m->get(i))
+            if(m.get(i))
                 ET::coeff(data,i) = ET::coeff(st_array[0],i)/ET::coeff(st_array[1],i);
             else
                 ET::coeff(data,i) = ET::coeff(st_array[2],i);
@@ -472,7 +472,7 @@ public:
     {
         bool all = true;
         for (int i = 0; i < size; ++i) {
-            all && (this->get(i) == m2[i]);
+            all && (this->get(i) == m2.get(i));
         }
         return all;
     }
@@ -486,7 +486,7 @@ public:
     {
         Mask<scalar> m3;
         for(int i=0; i<size; ++i)
-            m3.set(i,(this->get(i) && m2->get(i)));
+            m3.set(i,(this->get(i) && m2.get(i)));
 
         return m3;
     }
@@ -495,7 +495,7 @@ public:
     {
         Mask<scalar> m3;
         for(int i=0; i<size; ++i)
-            m3.set(i,(this->get(i) || m2->get(i)));
+            m3.set(i,(this->get(i) || m2.get(i)));
 
         return m3;
     }
@@ -522,7 +522,7 @@ public:
     {
         Mask<scalar> m3;
         for(int i=0; i<size; ++i)
-            m3.set(i,(this->get(i) + m2->get(i)));
+            m3.set(i,(this->get(i) + m2.get(i)));
 
         return m3;
     }
@@ -531,7 +531,7 @@ public:
     {
         Mask<scalar> m3;
         for(int i=0; i<size; ++i)
-            m3.set(i,(this->get(i) - m2->get(i)));
+            m3.set(i,(this->get(i) - m2.get(i)));
 
         return m3;
     }
@@ -577,7 +577,7 @@ public:
     {
         Mask<scalar> m2;
         for(int i=0; i<size; ++i)
-            m2[i] = !(this->get(i));
+            m2.get(i) = !(this->get(i));
 
         return m2;
     }
@@ -641,7 +641,7 @@ template<typename scalar> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) 
 template<typename scalar> KOKKOS_INLINE_FUNCTION std::ostream &operator<<(std::ostream &os, const Mask<scalar>& m) {
     os << "[ ";
     for(int i=0; i<m.getSize(); ++i)
-        os << m->get(i) << " ";
+        os << m.get(i) << " ";
     return os << "]";
 }
 
@@ -653,7 +653,7 @@ template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Sacad
 #pragma ivdep
 #pragma unroll
     for(int i=0; i<ET::size; ++i){
-        ET::coeff(mul,i) = ET::coeff(a1,i)*m->get(i);
+        ET::coeff(mul,i) = ET::coeff(a1,i)*m.get(i);
     }
     return mul;
 }
@@ -666,7 +666,7 @@ template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Sacad
 #pragma ivdep
 #pragma unroll
     for(int i=0; i<ET::size; ++i){
-        ET::coeff(mul,i) = m->get(i)*a1;
+        ET::coeff(mul,i) = m.get(i)*a1;
     }
     return mul;
 }
@@ -679,7 +679,7 @@ template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Sacad
 #pragma ivdep
 #pragma unroll
     for(int i=0; i<ET::size; ++i){
-        ET::coeff(mul,i) = m->get(i)*a1;
+        ET::coeff(mul,i) = m.get(i)*a1;
     }
     return mul;
 }
