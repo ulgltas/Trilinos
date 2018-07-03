@@ -585,7 +585,7 @@ public:
 
     operator bool() const
     {
-        return this->data[0];
+        return this->get(0);
     }
 
     operator double() const
