@@ -44,7 +44,7 @@
 #include "Teuchos_UnitTestRepository.hpp"
 #include "Teuchos_GlobalMPISession.hpp"
 
-#include "Stokhos_MP_Vector_MaskTraits.hpp"
+#include "Stokhos_Sacado_Kokkos_MP_Vector.hpp"
 
 TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Create_8)
 {

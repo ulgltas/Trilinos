@@ -42,6 +42,8 @@
 #ifndef STOKHOS_MP_VECTOR_MASKTRAITS_HPP
 #define STOKHOS_MP_VECTOR_MASKTRAITS_HPP
 
+//#define MASK_STORED_AS_AN_ARRAY
+
 #include "Stokhos_Sacado_Kokkos_MP_Vector.hpp"
 #include <iostream>
 #include <cmath>
@@ -390,17 +392,24 @@ template<typename scalar> class Mask
 {
 private:
     static const int size = EnsembleTraits_m<scalar>::size;
+#ifdef MASK_STORED_AS_AN_ARRAY
     bool data[size] __attribute__((aligned(64)));
+#else
+    static const int SIMD_size = 8;
+    static const int size_uc = size/SIMD_size;
+    unsigned char data[size_uc];
+#endif
+
 
 public:
     Mask(){
         for(int i=0; i<size; ++i)
-            data[i]=false;
+            this->set(i,false);
     }
 
     Mask(bool a){
         for(int i=0; i<size; ++i)
-            data[i]=a;
+            this->set(i,a);
     }
 
     int getSize() const {return size;}
@@ -409,7 +418,7 @@ public:
     {
         double sum = 0;
         for(int i=0; i<size; ++i)
-            sum = sum + this->data[i];
+            sum = sum + this->get(i);
 
         return sum > v*size;
     }
@@ -418,7 +427,7 @@ public:
     {
         double sum = 0;
         for(int i=0; i<size; ++i)
-            sum = sum + this->data[i];
+            sum = sum + this->get(i);
 
         return sum < v*size;
     }
@@ -427,7 +436,7 @@ public:
     {
         double sum = 0;
         for(int i=0; i<size; ++i)
-            sum = sum + this->data[i];
+            sum = sum + this->get(i);
 
         return sum >= v*size;
     }
@@ -436,7 +445,7 @@ public:
     {
         double sum = 0;
         for(int i=0; i<size; ++i)
-            sum = sum + this->data[i];
+            sum = sum + this->get(i);
 
         return sum <= v*size;
     }
@@ -445,7 +454,7 @@ public:
     {
         double sum = 0;
         for(int i=0; i<size; ++i)
-            sum = sum + this->data[i];
+            sum = sum + this->get(i);
 
         return sum == v*size;
     }
@@ -454,7 +463,7 @@ public:
     {
         double sum = 0;
         for(int i=0; i<size; ++i)
-            sum = sum + this->data[i];
+            sum = sum + this->get(i);
 
         return sum != v*size;
     }
@@ -463,7 +472,7 @@ public:
     {
         bool all = true;
         for (int i = 0; i < size; ++i) {
-            all && (this->data[i] == m2.data[i]);
+            all && (this->get(i) == m2[i]);
         }
         return all;
     }
@@ -477,7 +486,7 @@ public:
     {
         Mask<scalar> m3;
         for(int i=0; i<size; ++i)
-            m3.data[i] = (this->data[i] && m2.data[i]);
+            m3.data[i] = (this->get(i) && m2[i]);
 
         return m3;
     }
@@ -486,7 +495,7 @@ public:
     {
         Mask<scalar> m3;
         for(int i=0; i<size; ++i)
-            m3.data[i] = (this->data[i] || m2.data[i]);
+            m3.data[i] = (this->get(i) || m2[i]);
 
         return m3;
     }
@@ -495,7 +504,7 @@ public:
     {
         Mask<scalar> m3;
         for(int i=0; i<size; ++i)
-            m3.data[i] = (this->data[i] && m2);
+            m3.data[i] = (this->get(i) && m2);
 
         return m3;
     }
@@ -504,7 +513,7 @@ public:
     {
         Mask<scalar> m3;
         for(int i=0; i<size; ++i)
-            m3.data[i] = (this->data[i] || m2);
+            m3.data[i] = (this->get(i) || m2);
 
         return m3;
     }
@@ -513,7 +522,7 @@ public:
     {
         Mask<scalar> m3;
         for(int i=0; i<size; ++i)
-            m3.data[i] = (this->data[i] + m2.data[i]);
+            m3.data[i] = (this->get(i) + m2[i]);
 
         return m3;
     }
@@ -522,7 +531,7 @@ public:
     {
         Mask<scalar> m3;
         for(int i=0; i<size; ++i)
-            m3.data[i] = (this->data[i] - m2.data[i]);
+            m3.data[i] = (this->get(i) - m2[i]);
 
         return m3;
     }
@@ -532,26 +541,43 @@ public:
         typedef EnsembleTraits_m<scalar> ET;
         scalar v2;
         for(int i=0; i<size; ++i)
-            ET::coeff(v2,i) = ET::coeff(v,i)*this->data[i];
+            ET::coeff(v2,i) = ET::coeff(v,i)*this->get(i);
 
         return v2;
     }
 
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) bool operator[] (int i) const
+#ifdef MASK_STORED_AS_AN_ARRAY
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) bool get (int i) const
     {
         return this->data[i];
     }
 
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) bool & operator[] (int i)
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) void set (int i, bool b)
     {
-        return this->data[i];
+        this->data[i] = b;
     }
+#else
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) bool get (int i) const
+    {
+        int j = floor(i/SIMD_size);
+        return (data[j] & (1 << i)) ? true : false;
+    }
+
+    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) void set (int i, bool b)
+    {
+        int j = floor(i/SIMD_size);
+        if(b)
+          data[j] |= 0x01 << i%SIMD_size;
+        else
+          data[j] &= ~(0x01 << i%SIMD_size);
+    }
+#endif
 
     Mask<scalar> operator! ()
     {
         Mask<scalar> m2;
         for(int i=0; i<size; ++i)
-            m2.data[i] = !(this->data[i]);
+            m2[i] = !(this->get(i));
 
         return m2;
     }
@@ -565,7 +591,7 @@ public:
     {
         double sum = 0;
         for(int i=0; i<size; ++i)
-            sum = sum + this->data[i];
+            sum = sum + this->get(i);
 
         return sum/size;
     }
@@ -712,7 +738,7 @@ template<typename S> Mask<Sacado::MP::Vector<S> > signbit_v(const Sacado::MP::Ve
 #pragma ivdep
 #pragma unroll
     for(int i=0; i<ET::size; ++i)
-        mask[i] = signbit(ET::coeff(a1,i));
+        mask.set(i, signbit(ET::coeff(a1,i)));
     return mask;
 }
 
@@ -731,8 +757,9 @@ namespace Sacado {                                                      \
       Mask<Vector<S> > mask;                                            \
       _Pragma("vector aligned")                                         \
       _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
       for(int i=0; i<ET::size; ++i)                                     \
-        mask[i] = ET::coeff(a1,i) OP ET::coeff(a2,i);                   \
+        mask.set(i, ET::coeff(a1,i) OP ET::coeff(a2,i));                \
       return mask;                                                      \
     }                                                                   \
                                                                         \
@@ -746,8 +773,9 @@ namespace Sacado {                                                      \
       Mask<Vector<S> > mask;                                            \
       _Pragma("vector aligned")                                         \
       _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
       for(int i=0; i<ET::size; ++i)                                     \
-        mask[i] = ET::coeff(a1,i) OP a2;                                \
+        mask.set(i, ET::coeff(a1,i) OP a2);                             \
       return mask;                                                      \
     }                                                                   \
                                                                         \
@@ -761,8 +789,9 @@ namespace Sacado {                                                      \
       Mask<Vector<S> > mask;                                            \
       _Pragma("vector aligned")                                         \
       _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
       for(int i=0; i<ET::size; ++i)                                     \
-        mask[i] = a1 OP ET::coeff(a2,i);                                \
+        mask.set(i, a1 OP ET::coeff(a2,i));                             \
       return mask;                                                      \
     }                                                                   \
   }                                                                     \
@@ -796,13 +825,14 @@ namespace Sacado {                                                      \
       Mask<V> mask;                                                     \
       _Pragma("vector aligned")                                         \
       _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
       if (v2.hasFastAccess(v1.size())) {                                \
         for(int i=0; i<v1.size(); ++i)                                  \
-          mask[i] = v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i);     \
+          mask.set(i, v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i));  \
       }                                                                 \
       else{                                                             \
         for(int i=0; i<v1.size(); ++i)                                  \
-          mask[i] = v1.fastAccessCoeff(i) OP v2.coeff(i);               \
+          mask.set(i, v1.fastAccessCoeff(i) OP v2.coeff(i));            \
       }                                                                 \
       return mask;                                                      \
     }                                                                   \
@@ -818,13 +848,14 @@ namespace Sacado {                                                      \
       Mask<V> mask;                                                     \
       _Pragma("vector aligned")                                         \
       _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
       if (v2.hasFastAccess(v1.size())) {                                \
         for(int i=0; i<v1.size(); ++i)                                  \
-          mask[i] = v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i);     \
+          mask.set(i, v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i));  \
       }                                                                 \
       else{                                                             \
         for(int i=0; i<v1.size(); ++i)                                  \
-          mask[i] = v1.fastAccessCoeff(i) OP v2.coeff(i);               \
+          mask.set(i, v1.fastAccessCoeff(i) OP v2.coeff(i));            \
       }                                                                 \
       return mask;                                                      \
     }                                                                   \
@@ -840,13 +871,14 @@ namespace Sacado {                                                      \
       Mask<V> mask;                                                     \
       _Pragma("vector aligned")                                         \
       _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
       if (v2.hasFastAccess(v1.size())) {                                \
         for(int i=0; i<v1.size(); ++i)                                  \
-          mask[i] = v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i);     \
+          mask.set(i, v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i));  \
       }                                                                 \
       else{                                                             \
         for(int i=0; i<v1.size(); ++i)                                  \
-          mask[i] = v1.fastAccessCoeff(i) OP v2.coeff(i);               \
+          mask.set(i, v1.fastAccessCoeff(i) OP v2.coeff(i));            \
       }                                                                 \
       return mask;                                                      \
     }                                                                   \
@@ -862,13 +894,14 @@ namespace Sacado {                                                      \
       Mask<V> mask;                                                     \
       _Pragma("vector aligned")                                         \
       _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
       if (v2.hasFastAccess(v1.size())) {                                \
         for(int i=0; i<v1.size(); ++i)                                  \
-          mask[i] = v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i);     \
+          mask.set(i, v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i));  \
       }                                                                 \
       else{                                                             \
         for(int i=0; i<v1.size(); ++i)                                  \
-          mask[i] = v1.fastAccessCoeff(i) OP v2.coeff(i);               \
+          mask.set(i, v1.fastAccessCoeff(i) OP v2.coeff(i));            \
       }                                                                 \
       return mask;                                                      \
     }                                                                   \
@@ -883,8 +916,9 @@ namespace Sacado {                                                      \
       Mask<V> mask;                                                     \
       _Pragma("vector aligned")                                         \
       _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
       for(int i=0; i<v1.size(); ++i)                                    \
-        mask[i] = v1.fastAccessCoeff(i) OP a2;                          \
+        mask.set(i, v1.fastAccessCoeff(i) OP a2);                       \
       return mask;                                                      \
     }                                                                   \
                                                                         \
@@ -898,8 +932,9 @@ namespace Sacado {                                                      \
       Mask<V> mask;                                                     \
       _Pragma("vector aligned")                                         \
       _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
       for(int i=0; i<v1.size(); ++i)                                    \
-        mask[i] = v1.fastAccessCoeff(i) OP a2;                          \
+        mask.set(i, v1.fastAccessCoeff(i) OP a2);                       \
       return mask;                                                      \
     }                                                                   \
                                                                         \
@@ -913,8 +948,9 @@ namespace Sacado {                                                      \
       Mask<V> mask;                                                     \
       _Pragma("vector aligned")                                         \
       _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
       for(int i=0; i<v1.size(); ++i)                                    \
-        mask[i] = a1 OP v2.fastAccessCoeff(i);                          \
+        mask.set(i, a1 OP v2.fastAccessCoeff(i));                       \
       return mask;                                                      \
     }                                                                   \
                                                                         \
@@ -928,8 +964,9 @@ namespace Sacado {                                                      \
       Mask<V> mask;                                                     \
       _Pragma("vector aligned")                                         \
       _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
       for(int i=0; i<v1.size(); ++i)                                    \
-        mask[i] = a1 OP v2.fastAccessCoeff(i);                          \
+        mask.set(i, a1 OP v2.fastAccessCoeff(i));                       \
       return mask;                                                      \
     }                                                                   \
   }                                                                     \
