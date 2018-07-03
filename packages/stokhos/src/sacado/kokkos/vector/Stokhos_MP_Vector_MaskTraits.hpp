@@ -577,7 +577,7 @@ public:
     {
         Mask<scalar> m2;
         for(int i=0; i<size; ++i)
-            m2.get(i) = !(this->get(i));
+            m2->set(i,!(this->get(i)));
 
         return m2;
     }
