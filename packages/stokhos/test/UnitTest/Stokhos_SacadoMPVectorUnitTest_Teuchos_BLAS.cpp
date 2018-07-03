@@ -139,16 +139,16 @@ TEUCHOS_UNIT_TEST( MP_Vector_Teuchos_BLAS, TRSM_no_transpose_upper_8)
       std::cout << B[i] << std::endl;
     }
     std::cout << std::endl;
-    TEST_EQUALITY(B[2][0],1.);
-    TEST_EQUALITY(B[2][1],0.);
+    TEST_EQUALITY(B[2][0],0.);
+    TEST_EQUALITY(B[2][1],1.);
     TEST_EQUALITY(B[2][2],1.);
     
-    TEST_EQUALITY(B[1][0],0.);
-    TEST_EQUALITY(B[1][1],-0.5);
+    TEST_EQUALITY(B[1][0],-0.5);
+    TEST_EQUALITY(B[1][1],0.);
     TEST_EQUALITY(B[1][2],0.);
     
-    TEST_EQUALITY(B[0][0],-0.5);
-    TEST_EQUALITY(B[0][1],0.75);
+    TEST_EQUALITY(B[0][0],0.75);
+    TEST_EQUALITY(B[0][1],-0.5);
     TEST_EQUALITY(B[0][2],-0.5);
 }
 
