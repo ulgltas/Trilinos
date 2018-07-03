@@ -398,7 +398,7 @@ private:
     static const int SIMD_size = 8;
     static const int size_uc = (size == 1 ? 1 : size/SIMD_size);
   
-    unsigned char data[size_uc] _attribute__((aligned(64)));
+    unsigned char data[size_uc] __attribute__((aligned(64)));
 #endif
 
 
@@ -561,16 +561,16 @@ public:
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) bool get (int i) const
     {
         int j = i/SIMD_size;
-        return (data[j] & (1 << i%SIMD_size)) ? true : false;
+        return (this->data[j] & (1 << i%SIMD_size)) ? true : false;
     }
 
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) void set (int i, bool b)
     {
         int j = i/SIMD_size;
         if(b)
-          data[j] |= 0x01 << i%SIMD_size;
+          this->data[j] |= 0x01 << i%SIMD_size;
         else
-          data[j] &= ~(0x01 << i%SIMD_size);
+          this->data[j] &= ~(0x01 << i%SIMD_size);
     }
 #endif
 
