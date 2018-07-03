@@ -108,11 +108,11 @@ namespace Teuchos {
     } // namespace details
 } // namespace Teuchos
 
-namespace Sacado {                                                      \
+namespace Sacado {                                                      
   namespace MP {
     //! Vector specializations for Teuchos::BLAS wrappers
     template <typename OrdinalType, typename Storage>
-    class BLAS : public Teuchos::DefaultBLASImpl<OrdinalType,Sacado::MP::Vector<Storage>> {
+    class BLAS<OrdinalType,Vector<Storage>> : public Teuchos::DefaultBLASImpl<OrdinalType,Sacado::MP::Vector<Storage>> {
       
       typedef typename Teuchos::ScalarTraits<Sacado::MP::Vector<Storage>>::magnitudeType MagnitudeType;
       typedef typename Sacado::ValueType<Sacado::MP::Vector<Storage>>::type ValueType;
