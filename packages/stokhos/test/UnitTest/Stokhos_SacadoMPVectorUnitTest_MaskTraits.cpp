@@ -65,11 +65,11 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Create_8)
     std::cout << b << std::endl;
     std::cout << m1 << std::endl;
     TEST_EQUALITY( m1.getSize(), ensemble_size );
-    TEST_EQUALITY( m1[0], true );
-    TEST_EQUALITY( m1[1], false );
-    TEST_EQUALITY( m1[2], true );
+    TEST_EQUALITY( m1.get(0), true );
+    TEST_EQUALITY( m1.get(1), false );
+    TEST_EQUALITY( m1.get(2), true );
     for (auto i=3; i<ensemble_size; ++i)
-        TEST_EQUALITY( m1[i], false );
+        TEST_EQUALITY( m1.get(i), false );
     
     TEST_EQUALITY( (double) m1, 2./ensemble_size );
 }
@@ -93,11 +93,11 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Create_16)
     std::cout << b << std::endl;
     std::cout << m1 << std::endl;
     TEST_EQUALITY( m1.getSize(), ensemble_size );
-    TEST_EQUALITY( m1[0], true );
-    TEST_EQUALITY( m1[1], false );
-    TEST_EQUALITY( m1[2], true );
+    TEST_EQUALITY( m1.get(0), true );
+    TEST_EQUALITY( m1.get(1), false );
+    TEST_EQUALITY( m1.get(2), true );
     for (auto i=3; i<ensemble_size; ++i)
-        TEST_EQUALITY( m1[i], false );
+        TEST_EQUALITY( m1.get(i), false );
     
     TEST_EQUALITY( (double) m1, 2./ensemble_size );
 }
@@ -120,7 +120,7 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Not_8)
     std::cout << m1 << std::endl;
     std::cout << m2 << std::endl;
     for (auto i=0; i<ensemble_size; ++i)
-        TEST_EQUALITY( m2[i], !m1[i] );
+        TEST_EQUALITY( m2.get(i), !m1.get(i) );
 }
 
 TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Multiplication_8)
@@ -494,7 +494,7 @@ TEUCHOS_UNIT_TEST( MP_Vector_MaskTraits, Mask_signbit_v)
     
     auto m1 = signbit_v(a);
     mask m2;
-    m2[2] = true;
+    m2.set(2,true);
     TEST_EQUALITY(m1,m2);
 }
 
