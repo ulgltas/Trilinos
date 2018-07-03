@@ -146,7 +146,6 @@ namespace Teuchos
       const A_type* A, const OrdinalType lda,
       ScalarType* B, const OrdinalType ldb) const
       {
-          static_assert ( false , "TRSM was building")
           typedef Sacado::MP::Vector<Storage> ScalarType;
         
           OrdinalType izero = OrdinalTraits<OrdinalType>::zero();
