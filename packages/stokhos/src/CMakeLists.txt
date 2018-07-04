@@ -490,6 +490,7 @@ IF (Stokhos_ENABLE_Sacado)
       sacado/kokkos/vector/Sacado_MP_Vector_ops.hpp
       sacado/kokkos/vector/Sacado_MP_ExpressionTraits.hpp
       sacado/kokkos/vector/Sacado_MP_Vector_SFS.hpp
+      sacado/kokkos/vector/Sacado_MP_Vector_SFS_ops.hpp
       sacado/kokkos/vector/Sacado_MP_Vector_SFS_unary_op_tmpl.hpp
       sacado/kokkos/vector/Sacado_MP_Vector_SFS_unary_func_tmpl.hpp
       sacado/kokkos/vector/Sacado_MP_Vector_SFS_binary_op_tmpl.hpp
