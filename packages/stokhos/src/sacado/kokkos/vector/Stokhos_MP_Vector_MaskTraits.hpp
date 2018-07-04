@@ -985,6 +985,77 @@ MP_EXPR_RELOP_MACRO(&)
 MP_EXPR_RELOP_MACRO(|)
 
 #undef MP_EXPR_RELOP_MACRO
+
+
+#if STOKHOS_USE_MP_VECTOR_SFS_SPEC
+
+#define MP_SFS_RELOP_MACRO(OP)                                          \
+namespace Sacado {                                                      \
+  namespace MP {                                                        \
+                                                                        \
+    template <typename O, typename T, int N, typename D>                \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
+    operator OP (const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
+                 const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
+    {                                                                   \
+      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
+      _Pragma("vector aligned")                                         \
+      _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
+      for(int i=0; i<a.size(); ++i)                                     \
+          mask.set(i, a.fastAccessCoeff(i) OP b.fastAccessCoeff(i));    \
+      return mask                                                       \
+    }                                                                   \
+                                                                        \
+    template <typename O, typename T, int N, typename D>                \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
+    operator OP (const typename Vector< Stokhos::StaticFixedStorage<O,T,N,D> >::value_type& a,                                            \
+                 const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
+    {                                                                   \
+      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
+      _Pragma("vector aligned")                                         \
+      _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
+      for(int i=0; i<b.size(); ++i)                                     \
+          mask.set(i, a OP b.fastAccessCoeff(i));                       \
+      return mask                                                       \
+    }                                                                   \
+                                                                        \
+    template <typename O, typename T, int N, typename D>                \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
+    operator OP (const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
+                 const typename Vector< Stokhos::StaticFixedStorage<O,T,N,D> >::value_type& b)                                            \
+    {                                                                   \
+      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
+      _Pragma("vector aligned")                                         \
+      _Pragma("ivdep")                                                  \
+      _Pragma("unroll")                                                 \
+      for(int i=0; i<a.size(); ++i)                                     \
+          mask.set(i, a.fastAccessCoeff(i) OP b);                       \
+      return mask                                                       \
+    }                                                                   \
+  }                                                                     \
+}
+
+MP_SFS_RELOP_MACRO(==)
+MP_SFS_RELOP_MACRO(!=)
+MP_SFS_RELOP_MACRO(<)
+MP_SFS_RELOP_MACRO(>)
+MP_SFS_RELOP_MACRO(<=)
+MP_SFS_RELOP_MACRO(>=)
+MP_SFS_RELOP_MACRO(<<=)
+MP_SFS_RELOP_MACRO(>>=)
+MP_SFS_RELOP_MACRO(&)
+MP_SFS_RELOP_MACRO(|)
+
+#undef MP_SFS_RELOP_MACRO
+
+#endif
+
+
 namespace MaskLogic{
 
     template<typename T> KOKKOS_INLINE_FUNCTION bool OR(Mask<T> m){

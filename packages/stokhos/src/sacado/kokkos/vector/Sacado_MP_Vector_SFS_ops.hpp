@@ -216,7 +216,7 @@ namespace Sacado {                                                      \
     }                                                                   \
   }                                                                     \
 }
-
+/*
 MP_RELOP_MACRO(==)
 MP_RELOP_MACRO(!=)
 MP_RELOP_MACRO(<)
@@ -227,7 +227,7 @@ MP_RELOP_MACRO(<<=)
 MP_RELOP_MACRO(>>=)
 MP_RELOP_MACRO(&)
 MP_RELOP_MACRO(|)
-
+*/
 #undef MP_RELOP_MACRO
 
 namespace Sacado {
