@@ -42,7 +42,7 @@
 #ifndef STOKHOS_MP_VECTOR_MASKTRAITS_HPP
 #define STOKHOS_MP_VECTOR_MASKTRAITS_HPP
 
-//#define MASK_STORED_AS_AN_ARRAY
+#define STOKHOS_MP_VECTOR_MASK_STORED_AS_AN_ARRAY
 
 #include "Stokhos_Sacado_Kokkos_MP_Vector.hpp"
 #include <iostream>
@@ -392,7 +392,7 @@ template<typename scalar> class Mask
 {
 private:
     static const int size = EnsembleTraits_m<scalar>::size;
-#ifdef MASK_STORED_AS_AN_ARRAY
+#ifdef STOKHOS_MP_VECTOR_MASK_STORED_AS_AN_ARRAY
     bool data[size] __attribute__((aligned(64)));
 #else
     static const int SIMD_size = 8;
@@ -547,7 +547,7 @@ public:
         return v2;
     }
 
-#ifdef MASK_STORED_AS_AN_ARRAY
+#ifdef STOKHOS_MP_VECTOR_MASK_STORED_AS_AN_ARRAY
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) bool get (int i) const
     {
         return this->data[i];
