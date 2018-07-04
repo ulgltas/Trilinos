@@ -131,6 +131,7 @@ public:
 
         return *this;
 #else
+        auto st_array = st.begin();
         __m512d data_ii, s1_ii, s2_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
@@ -188,6 +189,7 @@ public:
 
         return *this;
 #else
+        auto st_array = st.begin();
         __m512d data_ii, s1_ii, s2_ii, s3_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
@@ -245,6 +247,7 @@ public:
 
         return *this;
 #else
+        auto st_array = st.begin();
         __m512d data_ii, s1_ii, s2_ii, s3_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
@@ -302,6 +305,7 @@ public:
 
         return *this;
 #else
+        auto st_array = st.begin();
         __m512d data_ii, s1_ii, s2_ii, s3_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
@@ -359,6 +363,7 @@ public:
 
         return *this;
 #else
+        auto st_array = st.begin();
         __m512d data_ii, s1_ii, s2_ii, s3_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
