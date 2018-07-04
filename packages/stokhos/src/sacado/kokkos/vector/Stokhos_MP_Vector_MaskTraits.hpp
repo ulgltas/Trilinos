@@ -42,7 +42,8 @@
 #ifndef STOKHOS_MP_VECTOR_MASKTRAITS_HPP
 #define STOKHOS_MP_VECTOR_MASKTRAITS_HPP
 
-#define STOKHOS_MP_VECTOR_MASK_STORED_AS_AN_ARRAY
+//#define STOKHOS_MP_VECTOR_MASK_STORED_AS_AN_ARRAY
+#define STOKHOS_MP_VECTOR_MASK_USE_II
 
 #include "Stokhos_Sacado_Kokkos_MP_Vector.hpp"
 #include <iostream>
@@ -50,6 +51,10 @@
 //#include <tuple>
 //#include <utility>
 #include <initializer_list>
+
+#ifdef STOKHOS_MP_VECTOR_MASK_USE_II
+#include <immintrin.h>
+#endif
 
 template <typename T>
 struct EnsembleTraits_m {
@@ -85,6 +90,7 @@ public:
 
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator = (const scalar & KOKKOS_RESTRICT s)
     {
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
         typedef EnsembleTraits_m<scalar> ET;
 
 #pragma vector aligned
@@ -95,27 +101,22 @@ public:
                 ET::coeff(data,i) = ET::coeff(s,i);
 
         return *this;
-    }
-/*
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator = (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
-    {
-        typedef EnsembleTraits_m<scalar> ET;
-
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) = ET::coeff(std::get<0>(st),i);
-            else
-                ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
-
+#else
+        __m512d data_ii, s_ii;
+        for(int i=0; i<m.size_uc; ++i)
+        {
+          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
+          s_ii = _mm512_load_pd (&(s[i*m.SIMD_size]));
+          data_ii = _mm512_mask_blend_pd(m.data[i],s_ii,data_ii);
+          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+        }
         return *this;
+#endif
     }
- */
 
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator = (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
     {
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
         typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
 
@@ -129,11 +130,24 @@ public:
                 ET::coeff(data,i) = ET::coeff(st_array[1],i);
 
         return *this;
+#else
+        __m512d data_ii, s1_ii, s2_ii;
+        for(int i=0; i<m.size_uc; ++i)
+        {
+          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
+          s1_ii = _mm512_load_pd (&((st_array[0])[i*m.SIMD_size]));
+          s2_ii = _mm512_load_pd (&((st_array[1])[i*m.SIMD_size]));
+          data_ii = _mm512_mask_blend_pd(m.data[i],s1_ii,s2_ii);
+          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+        }
+        return *this;
+#endif
     }
 
 
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator += (const scalar & KOKKOS_RESTRICT s)
     {
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
         typedef EnsembleTraits_m<scalar> ET;
 
 #pragma vector aligned
@@ -144,43 +158,22 @@ public:
                 ET::coeff(data,i) += ET::coeff(s,i);
 
         return *this;
-    }
-/*
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator += (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
-    {
-        typedef EnsembleTraits_m<scalar> ET;
-
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) += ET::coeff(std::get<0>(st),i);
-            else
-                ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
-
+#else
+        __m512d data_ii, s_ii;
+        for(int i=0; i<m.size_uc; ++i)
+        {
+          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
+          s_ii = _mm512_load_pd (&(s[i*m.SIMD_size]));
+          data_ii = _mm512_mask_add_pd(data_ii,m.data[i],data_ii,s_ii);
+          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+        }
         return *this;
+#endif
     }
-
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator += (const std::tuple<scalar,scalar,scalar> & KOKKOS_RESTRICT st)
-    {
-        typedef EnsembleTraits_m<scalar> ET;
-
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)+ET::coeff(std::get<1>(st),i);
-            else
-                ET::coeff(data,i) = ET::coeff(std::get<2>(st),i);
-
-        return *this;
-    }
-*/
 
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator += (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
     {
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
         typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
 
@@ -194,10 +187,24 @@ public:
                 ET::coeff(data,i) = ET::coeff(st_array[2],i);
 
         return *this;
+#else
+        __m512d data_ii, s1_ii, s2_ii, s3_ii;
+        for(int i=0; i<m.size_uc; ++i)
+        {
+          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
+          s1_ii = _mm512_load_pd (&((st_array[0])[i*m.SIMD_size]));
+          s2_ii = _mm512_load_pd (&((st_array[1])[i*m.SIMD_size]));
+          s3_ii = _mm512_load_pd (&((st_array[2])[i*m.SIMD_size]));
+          data_ii = _mm512_mask_add_pd(s3_ii,m.data[i],s1_ii,s2_ii);
+          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+        }
+        return *this;
+#endif
     }
 
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator -= (const scalar & KOKKOS_RESTRICT s)
     {
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
         typedef EnsembleTraits_m<scalar> ET;
 
 #pragma vector aligned
@@ -208,42 +215,22 @@ public:
                 ET::coeff(data,i) -= ET::coeff(s,i);
 
         return *this;
-    }
-/*
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator -= (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
-    {
-        typedef EnsembleTraits_m<scalar> ET;
-
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) -= ET::coeff(std::get<0>(st),i);
-            else
-                ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
-
+#else
+        __m512d data_ii, s_ii;
+        for(int i=0; i<m.size_uc; ++i)
+        {
+          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
+          s_ii = _mm512_load_pd (&(s[i*m.SIMD_size]));
+          data_ii = _mm512_mask_sub_pd(data_ii,m.data[i],data_ii,s_ii);
+          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+        }
         return *this;
+#endif
     }
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator -= (const std::tuple<scalar,scalar,scalar> & KOKKOS_RESTRICT st)
-    {
-        typedef EnsembleTraits_m<scalar> ET;
-
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)-ET::coeff(std::get<1>(st),i);
-            else
-                ET::coeff(data,i) = ET::coeff(std::get<2>(st),i);
-
-        return *this;
-    }
- */
 
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator -= (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
     {
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
         typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
 
@@ -257,10 +244,24 @@ public:
                 ET::coeff(data,i) = ET::coeff(st_array[2],i);
 
         return *this;
+#else
+        __m512d data_ii, s1_ii, s2_ii, s3_ii;
+        for(int i=0; i<m.size_uc; ++i)
+        {
+          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
+          s1_ii = _mm512_load_pd (&((st_array[0])[i*m.SIMD_size]));
+          s2_ii = _mm512_load_pd (&((st_array[1])[i*m.SIMD_size]));
+          s3_ii = _mm512_load_pd (&((st_array[2])[i*m.SIMD_size]));
+          data_ii = _mm512_mask_sub_pd(s3_ii,m.data[i],s1_ii,s2_ii);
+          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+        }
+        return *this;
+#endif
     }
 
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator *= (const scalar & KOKKOS_RESTRICT s)
     {
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
         typedef EnsembleTraits_m<scalar> ET;
 
 #pragma vector aligned
@@ -271,44 +272,22 @@ public:
                 ET::coeff(data,i) *= ET::coeff(s,i);
 
         return *this;
-    }
-
-/*
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator *= (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
-    {
-        typedef EnsembleTraits_m<scalar> ET;
-
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) *= ET::coeff(std::get<0>(st),i);
-            else
-                ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
-
+#else
+        __m512d data_ii, s_ii;
+        for(int i=0; i<m.size_uc; ++i)
+        {
+          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
+          s_ii = _mm512_load_pd (&(s[i*m.SIMD_size]));
+          data_ii = _mm512_mask_mul_pd(data_ii,m.data[i],data_ii,s_ii);
+          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+        }
         return *this;
+#endif
     }
-
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator *= (const std::tuple<scalar,scalar,scalar> & KOKKOS_RESTRICT st)
-    {
-        typedef EnsembleTraits_m<scalar> ET;
-
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)*ET::coeff(std::get<1>(st),i);
-            else
-                ET::coeff(data,i) = ET::coeff(std::get<2>(st),i);
-
-        return *this;
-    }
-*/
 
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator *= (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
     {
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
         typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
 
@@ -322,10 +301,24 @@ public:
                 ET::coeff(data,i) = ET::coeff(st_array[2],i);
 
         return *this;
+#else
+        __m512d data_ii, s1_ii, s2_ii, s3_ii;
+        for(int i=0; i<m.size_uc; ++i)
+        {
+          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
+          s1_ii = _mm512_load_pd (&((st_array[0])[i*m.SIMD_size]));
+          s2_ii = _mm512_load_pd (&((st_array[1])[i*m.SIMD_size]));
+          s3_ii = _mm512_load_pd (&((st_array[2])[i*m.SIMD_size]));
+          data_ii = _mm512_mask_mul_pd(s3_ii,m.data[i],s1_ii,s2_ii);
+          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+        }
+        return *this;
+#endif
     }
 
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator /= (const scalar & KOKKOS_RESTRICT s)
     {
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
         typedef EnsembleTraits_m<scalar> ET;
 
 #pragma vector aligned
@@ -336,42 +329,22 @@ public:
                 ET::coeff(data,i) /= ET::coeff(s,i);
 
         return *this;
-    }
-/*
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator /= (const std::pair<scalar,scalar> & KOKKOS_RESTRICT st)
-    {
-        typedef EnsembleTraits_m<scalar> ET;
-
-        #pragma vector aligned
-        #pragma ivdep
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) /= ET::coeff(std::get<0>(st),i);
-            else
-                ET::coeff(data,i) = ET::coeff(std::get<1>(st),i);
-
+#else
+        __m512d data_ii, s_ii;
+        for(int i=0; i<m.size_uc; ++i)
+        {
+          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
+          s_ii = _mm512_load_pd (&(s[i*m.SIMD_size]));
+          data_ii = _mm512_mask_div_pd(data_ii,m.data[i],data_ii,s_ii);
+          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+        }
         return *this;
+#endif
     }
-
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator /= (const std::tuple<scalar,scalar,scalar> & KOKKOS_RESTRICT st)
-    {
-        typedef EnsembleTraits_m<scalar> ET;
-
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) = ET::coeff(std::get<0>(st),i)/ET::coeff(std::get<1>(st),i);
-            else
-                ET::coeff(data,i) = ET::coeff(std::get<2>(st),i);
-
-        return *this;
-    }
- */
 
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator /= (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
     {
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
         typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
 
@@ -385,6 +358,19 @@ public:
                 ET::coeff(data,i) = ET::coeff(st_array[2],i);
 
         return *this;
+#else
+        __m512d data_ii, s1_ii, s2_ii, s3_ii;
+        for(int i=0; i<m.size_uc; ++i)
+        {
+          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
+          s1_ii = _mm512_load_pd (&((st_array[0])[i*m.SIMD_size]));
+          s2_ii = _mm512_load_pd (&((st_array[1])[i*m.SIMD_size]));
+          s3_ii = _mm512_load_pd (&((st_array[2])[i*m.SIMD_size]));
+          data_ii = _mm512_mask_div_pd(s3_ii,m.data[i],s1_ii,s2_ii);
+          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+        }
+        return *this;
+#endif
     }
 };
 
@@ -395,6 +381,7 @@ private:
 #ifdef STOKHOS_MP_VECTOR_MASK_STORED_AS_AN_ARRAY
     bool data[size] __attribute__((aligned(64)));
 #else
+public:
     static const int SIMD_size = 8;
     static const int size_uc = (size == 1 ? 1 : size/SIMD_size);
   
