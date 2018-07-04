@@ -1005,7 +1005,7 @@ namespace Sacado {                                                      \
       _Pragma("unroll")                                                 \
       for(int i=0; i<a.size(); ++i)                                     \
           mask.set(i, a.fastAccessCoeff(i) OP b.fastAccessCoeff(i));    \
-      return mask                                                       \
+      return mask;                                                      \
     }                                                                   \
                                                                         \
     template <typename O, typename T, int N, typename D>                \
@@ -1020,7 +1020,7 @@ namespace Sacado {                                                      \
       _Pragma("unroll")                                                 \
       for(int i=0; i<b.size(); ++i)                                     \
           mask.set(i, a OP b.fastAccessCoeff(i));                       \
-      return mask                                                       \
+      return mask;                                                      \
     }                                                                   \
                                                                         \
     template <typename O, typename T, int N, typename D>                \
@@ -1035,7 +1035,7 @@ namespace Sacado {                                                      \
       _Pragma("unroll")                                                 \
       for(int i=0; i<a.size(); ++i)                                     \
           mask.set(i, a.fastAccessCoeff(i) OP b);                       \
-      return mask                                                       \
+      return mask;                                                      \
     }                                                                   \
   }                                                                     \
 }
