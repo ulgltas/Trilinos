@@ -102,13 +102,14 @@ public:
 
         return *this;
 #else
+        typedef EnsembleTraits_m<scalar> ET;
         __m512d data_ii, s_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
-          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
-          s_ii = _mm512_load_pd (&(s[i*m.SIMD_size]));
+          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size));
+          s_ii = _mm512_load_pd (&(ET::coeff(s,i*m.SIMD_size)));
           data_ii = _mm512_mask_blend_pd(m.data[i],s_ii,data_ii);
-          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
         }
         return *this;
 #endif
@@ -131,15 +132,16 @@ public:
 
         return *this;
 #else
+        typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
         __m512d data_ii, s1_ii, s2_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
-          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
-          s1_ii = _mm512_load_pd (&((st_array[0])[i*m.SIMD_size]));
-          s2_ii = _mm512_load_pd (&((st_array[1])[i*m.SIMD_size]));
+          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size));
+          s1_ii = _mm512_load_pd (&(ET::coeff(st_array[0],i*m.SIMD_size)));
+          s2_ii = _mm512_load_pd (&(ET::coeff(st_array[1],i*m.SIMD_size)));
           data_ii = _mm512_mask_blend_pd(m.data[i],s1_ii,s2_ii);
-          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
         }
         return *this;
 #endif
@@ -160,13 +162,14 @@ public:
 
         return *this;
 #else
+        typedef EnsembleTraits_m<scalar> ET;
         __m512d data_ii, s_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
-          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
-          s_ii = _mm512_load_pd (&(s[i*m.SIMD_size]));
+          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size));
+          s_ii = _mm512_load_pd (&(ET::coeff(s,i*m.SIMD_size)));
           data_ii = _mm512_mask_add_pd(data_ii,m.data[i],data_ii,s_ii);
-          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
         }
         return *this;
 #endif
@@ -189,16 +192,17 @@ public:
 
         return *this;
 #else
+        typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
         __m512d data_ii, s1_ii, s2_ii, s3_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
-          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
-          s1_ii = _mm512_load_pd (&((st_array[0])[i*m.SIMD_size]));
-          s2_ii = _mm512_load_pd (&((st_array[1])[i*m.SIMD_size]));
-          s3_ii = _mm512_load_pd (&((st_array[2])[i*m.SIMD_size]));
+          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size));
+          s1_ii = _mm512_load_pd (&(ET::coeff(st_array[0],i*m.SIMD_size)));
+          s2_ii = _mm512_load_pd (&(ET::coeff(st_array[1],i*m.SIMD_size)));
+          s3_ii = _mm512_load_pd (&(ET::coeff(st_array[2],i*m.SIMD_size)));
           data_ii = _mm512_mask_add_pd(s3_ii,m.data[i],s1_ii,s2_ii);
-          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
         }
         return *this;
 #endif
@@ -218,13 +222,14 @@ public:
 
         return *this;
 #else
+        typedef EnsembleTraits_m<scalar> ET;
         __m512d data_ii, s_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
-          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
-          s_ii = _mm512_load_pd (&(s[i*m.SIMD_size]));
+          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size));
+          s_ii = _mm512_load_pd (&(ET::coeff(s,i*m.SIMD_size)));
           data_ii = _mm512_mask_sub_pd(data_ii,m.data[i],data_ii,s_ii);
-          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
         }
         return *this;
 #endif
@@ -247,16 +252,17 @@ public:
 
         return *this;
 #else
+        typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
         __m512d data_ii, s1_ii, s2_ii, s3_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
-          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
-          s1_ii = _mm512_load_pd (&((st_array[0])[i*m.SIMD_size]));
-          s2_ii = _mm512_load_pd (&((st_array[1])[i*m.SIMD_size]));
-          s3_ii = _mm512_load_pd (&((st_array[2])[i*m.SIMD_size]));
+          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size));
+          s1_ii = _mm512_load_pd (&(ET::coeff(st_array[0],i*m.SIMD_size)));
+          s2_ii = _mm512_load_pd (&(ET::coeff(st_array[1],i*m.SIMD_size)));
+          s3_ii = _mm512_load_pd (&(ET::coeff(st_array[2],i*m.SIMD_size)));
           data_ii = _mm512_mask_sub_pd(s3_ii,m.data[i],s1_ii,s2_ii);
-          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
         }
         return *this;
 #endif
@@ -279,10 +285,10 @@ public:
         __m512d data_ii, s_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
-          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
-          s_ii = _mm512_load_pd (&(s[i*m.SIMD_size]));
+          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size));
+          s_ii = _mm512_load_pd (&(ET::coeff(s,i*m.SIMD_size)));
           data_ii = _mm512_mask_mul_pd(data_ii,m.data[i],data_ii,s_ii);
-          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
         }
         return *this;
 #endif
@@ -305,16 +311,17 @@ public:
 
         return *this;
 #else
+        typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
         __m512d data_ii, s1_ii, s2_ii, s3_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
-          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
-          s1_ii = _mm512_load_pd (&((st_array[0])[i*m.SIMD_size]));
-          s2_ii = _mm512_load_pd (&((st_array[1])[i*m.SIMD_size]));
-          s3_ii = _mm512_load_pd (&((st_array[2])[i*m.SIMD_size]));
+          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size));
+          s1_ii = _mm512_load_pd (&(ET::coeff(st_array[0],i*m.SIMD_size)));
+          s2_ii = _mm512_load_pd (&(ET::coeff(st_array[1],i*m.SIMD_size)));
+          s3_ii = _mm512_load_pd (&(ET::coeff(st_array[2],i*m.SIMD_size)));
           data_ii = _mm512_mask_mul_pd(s3_ii,m.data[i],s1_ii,s2_ii);
-          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
         }
         return *this;
 #endif
@@ -334,13 +341,14 @@ public:
 
         return *this;
 #else
+        typedef EnsembleTraits_m<scalar> ET;
         __m512d data_ii, s_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
-          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
-          s_ii = _mm512_load_pd (&(s[i*m.SIMD_size]));
+          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size));
+          s_ii = _mm512_load_pd (&(ET::coeff(s,i*m.SIMD_size)));
           data_ii = _mm512_mask_div_pd(data_ii,m.data[i],data_ii,s_ii);
-          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
         }
         return *this;
 #endif
@@ -363,16 +371,17 @@ public:
 
         return *this;
 #else
+        typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
         __m512d data_ii, s1_ii, s2_ii, s3_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
-          data_ii = _mm512_load_pd (&(data[i*m.SIMD_size]));
-          s1_ii = _mm512_load_pd (&((st_array[0])[i*m.SIMD_size]));
-          s2_ii = _mm512_load_pd (&((st_array[1])[i*m.SIMD_size]));
-          s3_ii = _mm512_load_pd (&((st_array[2])[i*m.SIMD_size]));
+          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size));
+          s1_ii = _mm512_load_pd (&(ET::coeff(st_array[0],i*m.SIMD_size)));
+          s2_ii = _mm512_load_pd (&(ET::coeff(st_array[1],i*m.SIMD_size)));
+          s3_ii = _mm512_load_pd (&(ET::coeff(st_array[2],i*m.SIMD_size)));
           data_ii = _mm512_mask_div_pd(s3_ii,m.data[i],s1_ii,s2_ii);
-          _mm512_store_pd (&(data[i*m.SIMD_size]), data_ii);
+          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
         }
         return *this;
 #endif
