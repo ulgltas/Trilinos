@@ -282,6 +282,7 @@ public:
 
         return *this;
 #else
+        typedef EnsembleTraits_m<scalar> ET;
         __m512d data_ii, s_ii;
         for(int i=0; i<m.size_uc; ++i)
         {
