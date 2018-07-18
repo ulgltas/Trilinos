@@ -54,14 +54,13 @@
 #ifdef STOKHOS_MP_VECTOR_MASK_USE_II
 #include <immintrin.h>
 #define STOKHOS_MASK_AVX_VECTOR_SIZE 8
-#endif
 
 template<int n, typename T>
 union fused_vector_ensemble_type {
   __m512d v[n/STOKHOS_MASK_AVX_VECTOR_SIZE];
   T ensemble;
 };
-
+#endif
 
 
 template <typename T>
@@ -701,8 +700,6 @@ template<typename S> Mask<Sacado::MP::Vector<S> > signbit_v(const Sacado::MP::Ve
     return mask;
 }
 
-#if 1
-
 #define MP_VECTOR_RELOP_MACRO(OP)                                       \
 namespace Sacado {                                                      \
   namespace MP {                                                        \
@@ -770,19 +767,22 @@ MP_VECTOR_RELOP_MACRO(|)
 
 #undef MP_VECTOR_RELOP_MACRO
 
-#else
+
+
+#ifdef STOKHOS_MP_VECTOR_MASK_USE_II
 
 #define MP_VECTOR_RELOP_MACRO(OP,imm8)                                  \
 namespace Sacado {                                                      \
   namespace MP {                                                        \
                                                                         \
-    template <typename S>                                               \
+    template <int size, typename execution_space>                       \
     KOKKOS_INLINE_FUNCTION                                              \
-    Mask<Vector<S> >                                                    \
-    operator OP (const Vector<S> &a1,                                   \
-                 const Vector<S> &a2)                                   \
+    Mask<Vector<Stokhos::StaticStorage<int,double,size,execution_space> > >                                                    \
+    operator OP (const Vector<Stokhos::StaticStorage<int,double,size,execution_space>> &a1,                                   \
+                 const Vector<Stokhos::StaticStorage<int,double,size,execution_space>> &a2)                                   \
     {                                                                   \
-      typedef fused_vector_ensemble_type<EnsembleTraits_m<Vector<S>>::size,Vector<S>> FVET;\
+      typedef Stokhos::StaticStorage<int,double,size,execution_space> S;\
+      typedef fused_vector_ensemble_type<size,Vector<S>> FVET;          \
       FVET a1_ii, a2_ii;                                                \
       Mask<Vector<S> > mask;                                            \
       a1_ii.ensemble = a1;                                              \
@@ -792,13 +792,14 @@ namespace Sacado {                                                      \
       return mask;                                                      \
     }                                                                   \
                                                                         \
-    template <typename S>                                               \
+    template <int size, typename execution_space>                       \
     KOKKOS_INLINE_FUNCTION                                              \
-    Mask<Vector<S> >                                                    \
-    operator OP (const Vector<S> &a1,                                   \
+    Mask<Vector<Stokhos::StaticStorage<int,double,size,execution_space> > >                                                    \
+    operator OP (const Vector<Stokhos::StaticStorage<int,double,size,execution_space> > &a1,                                   \
                  const double &a2)                                      \
     {                                                                   \
-      typedef fused_vector_ensemble_type<EnsembleTraits_m<Vector<S>>::size,Vector<S>> FVET;\
+      typedef Stokhos::StaticStorage<int,double,size,execution_space> S;\
+      typedef fused_vector_ensemble_type<size,Vector<S>> FVET;          \
       FVET a1_ii;                                                       \
       Mask<Vector<S> > mask;                                            \
       a1_ii.ensemble = a1;                                              \
@@ -808,13 +809,14 @@ namespace Sacado {                                                      \
       return mask;                                                      \
     }                                                                   \
                                                                         \
-    template <typename S>                                               \
+    template <int size, typename execution_space>                       \
     KOKKOS_INLINE_FUNCTION                                              \
-    Mask<Vector<S> >                                                    \
+    Mask<Vector<Stokhos::StaticStorage<int,double,size,execution_space> > >                                                    \
     operator OP (const double &a1,                                      \
-                 const Vector<S> &a2)                                   \
+                 const Vector<Stokhos::StaticStorage<int,double,size,execution_space> > &a2)                                   \
     {                                                                   \
-      typedef fused_vector_ensemble_type<EnsembleTraits_m<Vector<S>>::size,Vector<S>> FVET;\
+      typedef Stokhos::StaticStorage<int,double,size,execution_space> S;\
+      typedef fused_vector_ensemble_type<size,Vector<S>> FVET;          \
       FVET a2_ii;                                                       \
       Mask<Vector<S> > mask;                                            \
       a2_ii.ensemble = a2;                                              \
@@ -1017,7 +1019,7 @@ MP_EXPR_RELOP_MACRO(|)
 
 #if STOKHOS_USE_MP_VECTOR_SFS_SPEC
 
-#if 1
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
 
 #define MP_SFS_RELOP_MACRO(OP)                                          \
 namespace Sacado {                                                      \
