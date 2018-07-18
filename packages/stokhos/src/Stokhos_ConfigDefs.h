@@ -86,6 +86,6 @@
 
 // Whether to use the Static-Fixed-Storage specialization of Sacado::MP::Vector,
 // which does not use expression templates (default is to not)
-#define STOKHOS_USE_MP_VECTOR_SFS_SPEC 1
+#define STOKHOS_USE_MP_VECTOR_SFS_SPEC 0
 
 #endif /* STOKHOS_CONFIGDEFS_H */

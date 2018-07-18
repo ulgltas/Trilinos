@@ -42,7 +42,6 @@
 #ifndef STOKHOS_MP_VECTOR_MASKTRAITS_HPP
 #define STOKHOS_MP_VECTOR_MASKTRAITS_HPP
 
-//#define STOKHOS_MP_VECTOR_MASK_STORED_AS_AN_ARRAY
 #define STOKHOS_MP_VECTOR_MASK_USE_II
 
 #include "Stokhos_Sacado_Kokkos_MP_Vector.hpp"
@@ -54,7 +53,16 @@
 
 #ifdef STOKHOS_MP_VECTOR_MASK_USE_II
 #include <immintrin.h>
+#define STOKHOS_MASK_AVX_VECTOR_SIZE 8
 #endif
+
+template<int n, typename T>
+union fused_vector_ensemble_type {
+  __m512d v[n/STOKHOS_MASK_AVX_VECTOR_SIZE];
+  T ensemble;
+};
+
+
 
 template <typename T>
 struct EnsembleTraits_m {
@@ -102,15 +110,14 @@ public:
 
         return *this;
 #else
-        typedef EnsembleTraits_m<scalar> ET;
-        __m512d data_ii, s_ii;
+        typedef fused_vector_ensemble_type<size,scalar> FVET;
+        FVET data_ii, s_ii;
+        data_ii.ensemble = data;
+        s_ii.ensemble = s;
         for(int i=0; i<m.size_uc; ++i)
-        {
-          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size)));
-          s_ii = _mm512_load_pd (&(ET::coeff(s,i*m.SIMD_size)));
-          data_ii = _mm512_mask_blend_pd(m.data[i],s_ii,data_ii);
-          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
-        }
+          data_ii.v[i] = _mm512_mask_blend_pd(m.data[i],s_ii.v[i],data_ii.v[i]);
+      
+        data = data_ii.ensemble;
         return *this;
 #endif
     }
@@ -132,17 +139,16 @@ public:
 
         return *this;
 #else
-        typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
-        __m512d data_ii, s1_ii, s2_ii;
+        typedef fused_vector_ensemble_type<size,scalar> FVET;
+        FVET data_ii, s1_ii, s2_ii;
+        data_ii.ensemble = data;
+        s1_ii.ensemble = st_array[0];
+        s2_ii.ensemble = st_array[1];
         for(int i=0; i<m.size_uc; ++i)
-        {
-          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size)));
-          s1_ii = _mm512_load_pd (&(ET::coeff(st_array[0],i*m.SIMD_size)));
-          s2_ii = _mm512_load_pd (&(ET::coeff(st_array[1],i*m.SIMD_size)));
-          data_ii = _mm512_mask_blend_pd(m.data[i],s1_ii,s2_ii);
-          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
-        }
+          data_ii.v[i] = _mm512_mask_blend_pd(m.data[i],s1_ii.v[i],s2_ii.v[i]);
+      
+        data = data_ii.ensemble;
         return *this;
 #endif
     }
@@ -162,15 +168,14 @@ public:
 
         return *this;
 #else
-        typedef EnsembleTraits_m<scalar> ET;
-        __m512d data_ii, s_ii;
+        typedef fused_vector_ensemble_type<size,scalar> FVET;
+        FVET data_ii, s_ii;
+        data_ii.ensemble = data;
+        s_ii.ensemble = s;
         for(int i=0; i<m.size_uc; ++i)
-        {
-          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size)));
-          s_ii = _mm512_load_pd (&(ET::coeff(s,i*m.SIMD_size)));
-          data_ii = _mm512_mask_add_pd(data_ii,m.data[i],data_ii,s_ii);
-          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
-        }
+          data_ii.v[i] = _mm512_mask_add_pd(data_ii.v[i],m.data[i],data_ii.v[i],s_ii.v[i]);
+      
+        data = data_ii.ensemble;
         return *this;
 #endif
     }
@@ -192,18 +197,17 @@ public:
 
         return *this;
 #else
-        typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
-        __m512d data_ii, s1_ii, s2_ii, s3_ii;
+        typedef fused_vector_ensemble_type<size,scalar> FVET;
+        FVET data_ii, s1_ii, s2_ii, s3_ii;
+        data_ii.ensemble = data;
+        s1_ii.ensemble = st_array[0];
+        s2_ii.ensemble = st_array[1];
+        s3_ii.ensemble = st_array[2];
         for(int i=0; i<m.size_uc; ++i)
-        {
-          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size)));
-          s1_ii = _mm512_load_pd (&(ET::coeff(st_array[0],i*m.SIMD_size)));
-          s2_ii = _mm512_load_pd (&(ET::coeff(st_array[1],i*m.SIMD_size)));
-          s3_ii = _mm512_load_pd (&(ET::coeff(st_array[2],i*m.SIMD_size)));
-          data_ii = _mm512_mask_add_pd(s3_ii,m.data[i],s1_ii,s2_ii);
-          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
-        }
+          data_ii.v[i] = _mm512_mask_add_pd(s3_ii.v[i],m.data[i],s1_ii.v[i],s2_ii.v[i]);
+      
+        data = data_ii.ensemble;
         return *this;
 #endif
     }
@@ -222,15 +226,14 @@ public:
 
         return *this;
 #else
-        typedef EnsembleTraits_m<scalar> ET;
-        __m512d data_ii, s_ii;
+        typedef fused_vector_ensemble_type<size,scalar> FVET;
+        FVET data_ii, s_ii;
+        data_ii.ensemble = data;
+        s_ii.ensemble = s;
         for(int i=0; i<m.size_uc; ++i)
-        {
-          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size)));
-          s_ii = _mm512_load_pd (&(ET::coeff(s,i*m.SIMD_size)));
-          data_ii = _mm512_mask_sub_pd(data_ii,m.data[i],data_ii,s_ii);
-          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
-        }
+          data_ii.v[i] = _mm512_mask_sub_pd(data_ii.v[i],m.data[i],data_ii.v[i],s_ii.v[i]);
+      
+        data = data_ii.ensemble;
         return *this;
 #endif
     }
@@ -252,18 +255,17 @@ public:
 
         return *this;
 #else
-        typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
-        __m512d data_ii, s1_ii, s2_ii, s3_ii;
+        typedef fused_vector_ensemble_type<size,scalar> FVET;
+        FVET data_ii, s1_ii, s2_ii, s3_ii;
+        data_ii.ensemble = data;
+        s1_ii.ensemble = st_array[0];
+        s2_ii.ensemble = st_array[1];
+        s3_ii.ensemble = st_array[2];
         for(int i=0; i<m.size_uc; ++i)
-        {
-          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size)));
-          s1_ii = _mm512_load_pd (&(ET::coeff(st_array[0],i*m.SIMD_size)));
-          s2_ii = _mm512_load_pd (&(ET::coeff(st_array[1],i*m.SIMD_size)));
-          s3_ii = _mm512_load_pd (&(ET::coeff(st_array[2],i*m.SIMD_size)));
-          data_ii = _mm512_mask_sub_pd(s3_ii,m.data[i],s1_ii,s2_ii);
-          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
-        }
+          data_ii.v[i] = _mm512_mask_sub_pd(s3_ii.v[i],m.data[i],s1_ii.v[i],s2_ii.v[i]);
+      
+        data = data_ii.ensemble;
         return *this;
 #endif
     }
@@ -282,15 +284,14 @@ public:
 
         return *this;
 #else
-        typedef EnsembleTraits_m<scalar> ET;
-        __m512d data_ii, s_ii;
+        typedef fused_vector_ensemble_type<size,scalar> FVET;
+        FVET data_ii, s_ii;
+        data_ii.ensemble = data;
+        s_ii.ensemble = s;
         for(int i=0; i<m.size_uc; ++i)
-        {
-          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size)));
-          s_ii = _mm512_load_pd (&(ET::coeff(s,i*m.SIMD_size)));
-          data_ii = _mm512_mask_mul_pd(data_ii,m.data[i],data_ii,s_ii);
-          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
-        }
+          data_ii.v[i] = _mm512_mask_mul_pd(data_ii.v[i],m.data[i],data_ii.v[i],s_ii.v[i]);
+      
+        data = data_ii.ensemble;
         return *this;
 #endif
     }
@@ -312,18 +313,17 @@ public:
 
         return *this;
 #else
-        typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
-        __m512d data_ii, s1_ii, s2_ii, s3_ii;
+        typedef fused_vector_ensemble_type<size,scalar> FVET;
+        FVET data_ii, s1_ii, s2_ii, s3_ii;
+        data_ii.ensemble = data;
+        s1_ii.ensemble = st_array[0];
+        s2_ii.ensemble = st_array[1];
+        s3_ii.ensemble = st_array[2];
         for(int i=0; i<m.size_uc; ++i)
-        {
-          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size)));
-          s1_ii = _mm512_load_pd (&(ET::coeff(st_array[0],i*m.SIMD_size)));
-          s2_ii = _mm512_load_pd (&(ET::coeff(st_array[1],i*m.SIMD_size)));
-          s3_ii = _mm512_load_pd (&(ET::coeff(st_array[2],i*m.SIMD_size)));
-          data_ii = _mm512_mask_mul_pd(s3_ii,m.data[i],s1_ii,s2_ii);
-          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
-        }
+          data_ii.v[i] = _mm512_mask_mul_pd(s3_ii.v[i],m.data[i],s1_ii.v[i],s2_ii.v[i]);
+      
+        data = data_ii.ensemble;
         return *this;
 #endif
     }
@@ -342,15 +342,14 @@ public:
 
         return *this;
 #else
-        typedef EnsembleTraits_m<scalar> ET;
-        __m512d data_ii, s_ii;
+        typedef fused_vector_ensemble_type<size,scalar> FVET;
+        FVET data_ii, s_ii;
+        data_ii.ensemble = data;
+        s_ii.ensemble = s;
         for(int i=0; i<m.size_uc; ++i)
-        {
-          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size)));
-          s_ii = _mm512_load_pd (&(ET::coeff(s,i*m.SIMD_size)));
-          data_ii = _mm512_mask_div_pd(data_ii,m.data[i],data_ii,s_ii);
-          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
-        }
+          data_ii.v[i] = _mm512_mask_div_pd(data_ii.v[i],m.data[i],data_ii.v[i],s_ii.v[i]);
+      
+        data = data_ii.ensemble;
         return *this;
 #endif
     }
@@ -372,18 +371,17 @@ public:
 
         return *this;
 #else
-        typedef EnsembleTraits_m<scalar> ET;
         auto st_array = st.begin();
-        __m512d data_ii, s1_ii, s2_ii, s3_ii;
+        typedef fused_vector_ensemble_type<size,scalar> FVET;
+        FVET data_ii, s1_ii, s2_ii, s3_ii;
+        data_ii.ensemble = data;
+        s1_ii.ensemble = st_array[0];
+        s2_ii.ensemble = st_array[1];
+        s3_ii.ensemble = st_array[2];
         for(int i=0; i<m.size_uc; ++i)
-        {
-          data_ii = _mm512_load_pd (&(ET::coeff(data,i*m.SIMD_size)));
-          s1_ii = _mm512_load_pd (&(ET::coeff(st_array[0],i*m.SIMD_size)));
-          s2_ii = _mm512_load_pd (&(ET::coeff(st_array[1],i*m.SIMD_size)));
-          s3_ii = _mm512_load_pd (&(ET::coeff(st_array[2],i*m.SIMD_size)));
-          data_ii = _mm512_mask_div_pd(s3_ii,m.data[i],s1_ii,s2_ii);
-          _mm512_store_pd (&(ET::coeff(data,i*m.SIMD_size)), data_ii);
-        }
+          data_ii.v[i] = _mm512_mask_div_pd(s3_ii.v[i],m.data[i],s1_ii.v[i],s2_ii.v[i]);
+      
+        data = data_ii.ensemble;
         return *this;
 #endif
     }
@@ -393,12 +391,10 @@ template<typename scalar> class Mask
 {
 private:
     static const int size = EnsembleTraits_m<scalar>::size;
-#ifdef STOKHOS_MP_VECTOR_MASK_STORED_AS_AN_ARRAY
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
     bool data[size] __attribute__((aligned(64)));
 #else
-public:
-    static const int SIMD_size = 8;
-    static const int size_uc = (size == 1 ? 1 : size/SIMD_size);
+    static const int size_uc = (size == 1 ? 1 : size/STOKHOS_MASK_AVX_VECTOR_SIZE);
   
     unsigned char data[size_uc] __attribute__((aligned(64)));
 #endif
@@ -549,7 +545,7 @@ public:
         return v2;
     }
 
-#ifdef STOKHOS_MP_VECTOR_MASK_STORED_AS_AN_ARRAY
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) bool get (int i) const
     {
         return this->data[i];
@@ -562,17 +558,17 @@ public:
 #else
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) bool get (int i) const
     {
-        int j = i/SIMD_size;
-        return (this->data[j] & (1 << i%SIMD_size)) ? true : false;
+        int j = i/STOKHOS_MASK_AVX_VECTOR_SIZE;
+        return (this->data[j] & (1 << i%STOKHOS_MASK_AVX_VECTOR_SIZE)) ? true : false;
     }
 
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) void set (int i, bool b)
     {
-        int j = i/SIMD_size;
+        int j = i/STOKHOS_MASK_AVX_VECTOR_SIZE;
         if(b)
-          this->data[j] |= 0x01 << i%SIMD_size;
+          this->data[j] |= 0x01 << i%STOKHOS_MASK_AVX_VECTOR_SIZE;
         else
-          this->data[j] &= ~(0x01 << i%SIMD_size);
+          this->data[j] &= ~(0x01 << i%STOKHOS_MASK_AVX_VECTOR_SIZE);
     }
 #endif
 
@@ -599,21 +595,6 @@ public:
         return sum/size;
     }
 };
-/*
- template<typename S>  MaskedAssign<Sacado::MP::Vector<S>> operator[] (Sacado::MP::Vector<S> &s, Mask<Sacado::MP::Vector<S>> m) const
- {
- MaskedAssign<Sacado::MP::Vector<S>> maskedAssign = MaskedAssign<Sacado::MP::Vector<S>>(s,m);
- return maskedAssign;
- }
- */
-
-/*
- template<typename S>  MaskedAssign<Sacado::MP::Vector<S>> & operator[] (Sacado::MP::Vector<S> &s, Mask<Sacado::MP::Vector<S>> m)
- {
- MaskedAssign<Sacado::MP::Vector<S>> maskedAssign = MaskedAssign<Sacado::MP::Vector<S>>(s,m);
- return maskedAssign;
- }
- */
 
 template<typename scalar> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar> mask_assign(bool b, scalar *s)
 {
@@ -687,31 +668,6 @@ template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Sacad
     return mul;
 }
 
-/*
- template<typename scalar> void mask_assign(Mask<scalar> mask, scalar &dest, scalar if_true, scalar if_false)
- {
- typedef EnsembleTraits_m<scalar> ET;
- for(int i=0; i<ET::size; ++i){
- if (mask[i])
- ET::coeff(dest,i) = ET::coeff(if_true,i);
- else
- ET::coeff(dest,i) = ET::coeff(if_false,i);
- }
- }
-
- template<typename scalar> void mask_div(Mask<scalar> mask, scalar &dest, scalar if_true, scalar if_true_denominator, scalar if_false)
- {
- typedef EnsembleTraits_m<scalar> ET;
- for(int i=0; i<ET::size; ++i){
- if (mask[i])
- ET::coeff(dest,i) = ET::coeff(if_true,i)/ET::coeff(if_true_denominator,i);
- else
- ET::coeff(dest,i) = ET::coeff(if_false,i);
- }
- }
-
- */
-
 namespace Sacado {
     namespace MP {
         template <typename S> Vector<S> copysign(const Vector<S> &a1, const Vector<S> &a2)
@@ -745,6 +701,7 @@ template<typename S> Mask<Sacado::MP::Vector<S> > signbit_v(const Sacado::MP::Ve
     return mask;
 }
 
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
 
 #define MP_VECTOR_RELOP_MACRO(OP)                                       \
 namespace Sacado {                                                      \
@@ -812,6 +769,75 @@ MP_VECTOR_RELOP_MACRO(&)
 MP_VECTOR_RELOP_MACRO(|)
 
 #undef MP_VECTOR_RELOP_MACRO
+
+#else
+
+#define MP_VECTOR_RELOP_MACRO(OP,imm8)                                  \
+namespace Sacado {                                                      \
+  namespace MP {                                                        \
+                                                                        \
+    template <typename S>                                               \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask<Vector<S> >                                                    \
+    operator OP (const Vector<S> &a1,                                   \
+                 const Vector<S> &a2)                                   \
+    {                                                                   \
+      typedef fused_vector_ensemble_type<S::static_size,Vector<S>> FVET;\
+      FVET a1_ii, a2_ii;                                                \
+      Mask<Vector<S> > mask;                                            \
+      a1_ii.ensemble = a1;                                              \
+      a2_ii.ensemble = a2;                                              \
+      for(int i=0; i<mask.size_uc; ++i)                                 \
+        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii.v[i],imm8);  \
+      return mask;                                                      \
+    }                                                                   \
+                                                                        \
+    template <typename S>                                               \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask<Vector<S> >                                                    \
+    operator OP (const Vector<S> &a1,                                   \
+                 const double &a2)                                      \
+    {                                                                   \
+      typedef fused_vector_ensemble_type<S::static_size,Vector<S>> FVET;\
+      FVET a1_ii;                                                       \
+      Mask<Vector<S> > mask;                                            \
+      a1_ii.ensemble = a1;                                              \
+      __m512d a2_ii = _mm512_set1_pd(a2);                               \
+      for(int i=0; i<mask.size_uc; ++i)                                 \
+        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii,imm8);       \
+      return mask;                                                      \
+    }                                                                   \
+                                                                        \
+    template <typename S>                                               \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask<Vector<S> >                                                    \
+    operator OP (const double &a1,                                      \
+                 const Vector<S> &a2)                                   \
+    {                                                                   \
+      typedef fused_vector_ensemble_type<S::static_size,Vector<S>> FVET;\
+      FVET a2_ii;                                                       \
+      Mask<Vector<S> > mask;                                            \
+      a2_ii.ensemble = a2;                                              \
+      __m512d a1_ii = _mm512_set1_pd(a1);                               \
+      for(int i=0; i<mask.size_uc; ++i)                                 \
+        mask.data[i] = _mm512_cmp_pd_mask(a1_ii,a2_ii.v[i],imm8);       \
+      return mask;                                                      \
+    }                                                                   \
+  }                                                                     \
+}
+
+MP_VECTOR_RELOP_MACRO(==,16) //_CMP_EQ_OS
+MP_VECTOR_RELOP_MACRO(!=,28) //_CMP_NEQ_OS
+MP_VECTOR_RELOP_MACRO(>,14) //_CMP_GT_OS
+MP_VECTOR_RELOP_MACRO(>=,13) //_CMP_GE_OS
+MP_VECTOR_RELOP_MACRO(<,1) //_CMP_LT_OS
+MP_VECTOR_RELOP_MACRO(<=,2) //_CMP_LE_OS
+
+#undef MP_VECTOR_RELOP_MACRO
+
+#endif
+
+
 
 #define MP_EXPR_RELOP_MACRO(OP)                                         \
 namespace Sacado {                                                      \
@@ -991,6 +1017,8 @@ MP_EXPR_RELOP_MACRO(|)
 
 #if STOKHOS_USE_MP_VECTOR_SFS_SPEC
 
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
+
 #define MP_SFS_RELOP_MACRO(OP)                                          \
 namespace Sacado {                                                      \
   namespace MP {                                                        \
@@ -1130,6 +1158,154 @@ MP_SFS_RELOP_MACRO(|)
 
 #undef MP_SFS_RELOP_MACRO
 
+#else
+
+#define MP_SFS_RELOP_MACRO(OP,imm8)                                     \
+namespace Sacado {                                                      \
+  namespace MP {                                                        \
+                                                                        \
+    template <typename O, typename T, int N, typename D>                \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
+    operator OP (const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
+                 const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
+    {                                                                   \
+      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
+      FVET a1_ii, a2_ii;                                                \
+      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
+      a1_ii.ensemble = a;                                               \
+      a2_ii.ensemble = b;                                               \
+      for(int i=0; i<mask.size_uc; ++i)                                 \
+        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii.v[i],imm8);  \
+      return mask;                                                      \
+    }                                                                   \
+                                                                        \
+    template <typename O, typename T, int N, typename D>                \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
+    operator OP (const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
+                 const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
+    {                                                                   \
+      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
+      FVET a1_ii, a2_ii;                                                \
+      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
+      a1_ii.ensemble = a;                                               \
+      a2_ii.ensemble = b;                                               \
+      for(int i=0; i<mask.size_uc; ++i)                                 \
+        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii.v[i],imm8);  \
+      return mask;                                                      \
+    }                                                                   \
+                                                                        \
+    template <typename O, typename T, int N, typename D>                \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
+    operator OP (const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
+                 const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
+    {                                                                   \
+      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
+      FVET a1_ii, a2_ii;                                                \
+      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
+      a1_ii.ensemble = a;                                               \
+      a2_ii.ensemble = b;                                               \
+      for(int i=0; i<mask.size_uc; ++i)                                 \
+        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii.v[i],imm8);  \
+      return mask;                                                      \
+    }                                                                   \
+                                                                        \
+    template <typename O, typename T, int N, typename D>                \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
+    operator OP (const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
+                 const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
+    {                                                                   \
+      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
+      FVET a1_ii, a2_ii;                                                \
+      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
+      a1_ii.ensemble = a;                                               \
+      a2_ii.ensemble = b;                                               \
+      for(int i=0; i<mask.size_uc; ++i)                                 \
+        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii.v[i],imm8);  \
+      return mask;                                                      \
+    }                                                                   \
+                                                                        \
+    template <typename O, typename T, int N, typename D>                \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
+    operator OP (const double & a,                                      \
+                 const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
+    {                                                                   \
+      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
+      FVET a2_ii;                                                       \
+      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
+      __m512d a1_ii = _mm512_set1_pd(a);                                \
+      a2_ii.ensemble = b;                                               \
+      for(int i=0; i<mask.size_uc; ++i)                                 \
+        mask.data[i] = _mm512_cmp_pd_mask(a1_ii,a2_ii.v[i],imm8);       \
+      return mask;                                                      \
+    }                                                                   \
+                                                                        \
+    template <typename O, typename T, int N, typename D>                \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
+    operator OP (const double& a,                                       \
+                 const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
+    {                                                                   \
+      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
+      FVET a2_ii;                                                       \
+      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
+      __m512d a1_ii = _mm512_set1_pd(a);                                \
+      a2_ii.ensemble = b;                                               \
+      for(int i=0; i<mask.size_uc; ++i)                                 \
+        mask.data[i] = _mm512_cmp_pd_mask(a1_ii,a2_ii.v[i],imm8);       \
+      return mask;                                                      \
+    }                                                                   \
+                                                                        \
+    template <typename O, typename T, int N, typename D>                \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
+    operator OP (const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
+                 const double& b)                                       \
+    {                                                                   \
+      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
+      FVET a1_ii;                                                       \
+      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
+      __m512d a2_ii = _mm512_set1_pd(b);                                \
+      a1_ii.ensemble = a;                                               \
+      for(int i=0; i<mask.size_uc; ++i)                                 \
+        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii,imm8);       \
+      return mask;                                                      \
+    }                                                                   \
+                                                                        \
+    template <typename O, typename T, int N, typename D>                \
+    KOKKOS_INLINE_FUNCTION                                              \
+    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
+    operator OP (const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
+                 const double& b)                                       \
+    {                                                                   \
+      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
+      FVET a1_ii;                                                       \
+      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
+      __m512d a2_ii = _mm512_set1_pd(b);                                \
+      a1_ii.ensemble = a;                                               \
+      for(int i=0; i<mask.size_uc; ++i)                                 \
+        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii,imm8);       \
+      return mask;                                                      \
+    }                                                                   \
+  }                                                                     \
+}
+
+
+MP_SFS_RELOP_MACRO(==,16) //_CMP_EQ_OS
+MP_SFS_RELOP_MACRO(!=,28) //_CMP_NEQ_OS
+MP_SFS_RELOP_MACRO(>,14) //_CMP_GT_OS
+MP_SFS_RELOP_MACRO(>=,13) //_CMP_GE_OS
+MP_SFS_RELOP_MACRO(<,1) //_CMP_LT_OS
+MP_SFS_RELOP_MACRO(<=,2) //_CMP_LE_OS
+
+#undef MP_SFS_RELOP_MACRO
+
+#endif
+
 #endif
 
 
@@ -1160,4 +1336,5 @@ namespace MaskLogic{
     }
 
 }
+
 #endif // STOKHOS_MP_VECTOR_MASKTRAITS_HPP
