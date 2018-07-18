@@ -782,7 +782,7 @@ namespace Sacado {                                                      \
     operator OP (const Vector<S> &a1,                                   \
                  const Vector<S> &a2)                                   \
     {                                                                   \
-      typedef fused_vector_ensemble_type<S::static_size,Vector<S>> FVET;\
+      typedef fused_vector_ensemble_type<EnsembleTraits_m<Vector<S>>::size,Vector<S>> FVET;\
       FVET a1_ii, a2_ii;                                                \
       Mask<Vector<S> > mask;                                            \
       a1_ii.ensemble = a1;                                              \
@@ -798,7 +798,7 @@ namespace Sacado {                                                      \
     operator OP (const Vector<S> &a1,                                   \
                  const double &a2)                                      \
     {                                                                   \
-      typedef fused_vector_ensemble_type<S::static_size,Vector<S>> FVET;\
+      typedef fused_vector_ensemble_type<EnsembleTraits_m<Vector<S>>::size,Vector<S>> FVET;\
       FVET a1_ii;                                                       \
       Mask<Vector<S> > mask;                                            \
       a1_ii.ensemble = a1;                                              \
@@ -814,7 +814,7 @@ namespace Sacado {                                                      \
     operator OP (const double &a1,                                      \
                  const Vector<S> &a2)                                   \
     {                                                                   \
-      typedef fused_vector_ensemble_type<S::static_size,Vector<S>> FVET;\
+      typedef fused_vector_ensemble_type<EnsembleTraits_m<Vector<S>>::size,Vector<S>> FVET;\
       FVET a2_ii;                                                       \
       Mask<Vector<S> > mask;                                            \
       a2_ii.ensemble = a2;                                              \
