@@ -701,7 +701,7 @@ template<typename S> Mask<Sacado::MP::Vector<S> > signbit_v(const Sacado::MP::Ve
     return mask;
 }
 
-#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
+#if 1
 
 #define MP_VECTOR_RELOP_MACRO(OP)                                       \
 namespace Sacado {                                                      \
@@ -1017,7 +1017,7 @@ MP_EXPR_RELOP_MACRO(|)
 
 #if STOKHOS_USE_MP_VECTOR_SFS_SPEC
 
-#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
+#if 1
 
 #define MP_SFS_RELOP_MACRO(OP)                                          \
 namespace Sacado {                                                      \
