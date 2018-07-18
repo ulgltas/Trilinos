@@ -394,8 +394,8 @@ private:
 #ifndef STOKHOS_MP_VECTOR_MASK_USE_II
     bool data[size] __attribute__((aligned(64)));
 #else
+public:
     static const int size_uc = (size == 1 ? 1 : size/STOKHOS_MASK_AVX_VECTOR_SIZE);
-  
     unsigned char data[size_uc] __attribute__((aligned(64)));
 #endif
 
