@@ -72,6 +72,22 @@ template void gemm<VT,VT,VT,STORAGE,int> (const char transA,
 #undef SCALAR    
 #undef STORAGE
 
+#define STORAGE Stokhos::StaticFixedStorage<int,double,24,Kokkos::OpenMP>
+#define SCALAR Sacado::MP::Vector<STORAGE>
+#define VT Kokkos::View<SCALAR**, Kokkos::LayoutLeft, Kokkos::Device<Kokkos::OpenMP, Kokkos::HostSpace>, Kokkos::MemoryTraits<(unsigned int)0>>
+
+template void gemm<VT,VT,VT,STORAGE,int> (const char transA,
+      const char transB,
+      const SCALAR& alpha,
+      const VT& A,
+      const VT& B,
+      const SCALAR& beta,
+      const VT& C);
+
+#undef VT
+#undef SCALAR
+#undef STORAGE
+
 #define STORAGE Stokhos::StaticFixedStorage<int,double,32,Kokkos::OpenMP>
 #define SCALAR Sacado::MP::Vector<STORAGE>
 #define VT Kokkos::View<SCALAR**, Kokkos::LayoutLeft, Kokkos::Device<Kokkos::OpenMP, Kokkos::HostSpace>, Kokkos::MemoryTraits<(unsigned int)0>>
@@ -135,6 +151,22 @@ template void gemm<VT,VT,VT,STORAGE,int> (const char transA,
 
 #undef VT
 #undef SCALAR    
+#undef STORAGE
+
+#define STORAGE Stokhos::StaticFixedStorage<int,double,24,Kokkos::Serial>
+#define SCALAR Sacado::MP::Vector<STORAGE>
+#define VT Kokkos::View<SCALAR**, Kokkos::LayoutLeft, Kokkos::Device<Kokkos::Serial, Kokkos::HostSpace>, Kokkos::MemoryTraits<(unsigned int)0>>
+
+template void gemm<VT,VT,VT,STORAGE,int> (const char transA,
+      const char transB,
+      const SCALAR& alpha,
+      const VT& A,
+      const VT& B,
+      const SCALAR& beta,
+      const VT& C);
+
+#undef VT
+#undef SCALAR
 #undef STORAGE
 
 #define STORAGE Stokhos::StaticFixedStorage<int,double,32,Kokkos::Serial>
