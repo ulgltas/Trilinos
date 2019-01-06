@@ -63,7 +63,7 @@ MOERTEL::Solver::Solver(Epetra_Comm& comm, int outlevel) :
   b_(Teuchos::null),
   linearproblem_(Teuchos::null),
   amesossolver_(Teuchos::null),
-  mlprec_(Teuchos::null),
+  //mlprec_(Teuchos::null),
   aztecsolver_(Teuchos::null),
   origmatrix_(Teuchos::null),
   WT_(Teuchos::null),
@@ -316,7 +316,7 @@ bool MOERTEL::Solver::Solve_MLAztec(Teuchos::ParameterList& mlparams,
   WT_->Multiply(false,*b_,xtmp);
   B_->Multiply(false,xtmp,xtmp2);
   b_->Update(-1.0,xtmp2,1.0);
-
+/*
   if (preconditioner=="AZ_user_precond")
     if (mlprec_==Teuchos::null || matrixisnew_)
     {
@@ -338,7 +338,7 @@ bool MOERTEL::Solver::Solve_MLAztec(Teuchos::ParameterList& mlparams,
   aztecsolver_->SetParameters(aztecparams,true);
   if (mlprec_ != Teuchos::null)
     aztecsolver_->SetPrecOperator(mlprec_.get());
-
+*/
   // solve it
   double tol  = aztecparams.get("AZ_tol",1.0e-05);
   int maxiter = aztecparams.get("AZ_max_iter",1000);

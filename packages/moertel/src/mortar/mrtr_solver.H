@@ -89,7 +89,7 @@
 
 //#include "mrtr_manager.H"
 #include "mrtr_utils.H"
-#include "mrtr_ml_preconditioner.H"
+//#include "mrtr_ml_preconditioner.H"
 
 /*!
 \brief MOERTEL: namespace of the Moertel package
@@ -209,7 +209,7 @@ private:
   
   Teuchos::RCP<Epetra_LinearProblem>                 linearproblem_; // the linear system
   Teuchos::RCP<Amesos_BaseSolver>                    amesossolver_;  // the amesos solver
-  Teuchos::RCP<MOERTEL::Mortar_ML_Preconditioner>    mlprec_;        // the ml preconditioner
+  //Teuchos::RCP<MOERTEL::Mortar_ML_Preconditioner>    mlprec_;        // the ml preconditioner
   //Teuchos::RCP<ML_Epetra::MultiLevelPreconditioner>  mlprec_;        // the ml preconditioner
   Teuchos::RCP<AztecOO>                              aztecsolver_;   // the aztec solver
 
