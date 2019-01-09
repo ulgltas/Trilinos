@@ -970,7 +970,7 @@ namespace std {
     using std::isfinite;
     const typename Sacado::MP::Expr<T>::derived_type& x = xx.derived();
     for (int i=0; i<x.size(); i++)
-      if (!isfinite(x.coeff[i]))
+      if (!isfinite(x.coeff(i)))
         return false;
       return true;
   }
