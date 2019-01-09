@@ -966,8 +966,9 @@ namespace Sacado {
 //-------------------------- Standard library -----------------------
 namespace std {
   template <typename T>
-  bool isfinite(const Sacado::MP::Expr<T>& x) {
+  bool isfinite(const Sacado::MP::Expr<T>& xx) {
     using std::isfinite;
+    const typename Sacado::MP::Expr<T>::derived_type& x = xx.derived();
     for (int i=0; i<x.size(); i++)
       if (!isfinite(x.coeff[i]))
         return false;
