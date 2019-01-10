@@ -76,7 +76,7 @@
 #include "Kokkos_Random_MP_Vector.hpp"
 #endif
 
-#include "Tpetra_Details_defaultGemm_MP_Vector.hpp"
+#include "KokkosBlas_MP_Vector.hpp"
 
 namespace Stokhos {
 
