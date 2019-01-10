@@ -150,7 +150,7 @@ bool MOERTEL::Projector::ProjectNodetoSegment_NodalNormal(MOERTEL::Node& node,
       {
             std::cout << "----- Projector: Node " << node.Id() << " Segment " << seg.Id() << std::endl;
             std::cout << "Node " << node << std::endl;
-            const double* n = node.N();
+            const double* n = node.Normal();
             std::cout << "Normal " << n[0] << " " << n[1] << " " << n[2] << std::endl;
             std::cout << "Segment " << seg << std::endl;
             MOERTEL::Node** nodes = seg.Nodes();
