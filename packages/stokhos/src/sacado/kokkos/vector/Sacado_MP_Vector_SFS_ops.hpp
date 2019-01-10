@@ -109,6 +109,7 @@
 #define OPNAME sinh
 #include "Sacado_MP_Vector_SFS_unary_func_tmpl.hpp"
 #undef OPNAME
+<<<<<<< HEAD
 
 #define OPNAME tanh
 #include "Sacado_MP_Vector_SFS_unary_func_tmpl.hpp"
@@ -174,6 +175,73 @@
 #include "Sacado_MP_Vector_SFS_binary_func_tmpl.hpp"
 #undef OPNAME
 
+=======
+
+#define OPNAME tanh
+#include "Sacado_MP_Vector_SFS_unary_func_tmpl.hpp"
+#undef OPNAME
+
+#define OPNAME acosh
+#include "Sacado_MP_Vector_SFS_unary_func_tmpl.hpp"
+#undef OPNAME
+
+#define OPNAME asinh
+#include "Sacado_MP_Vector_SFS_unary_func_tmpl.hpp"
+#undef OPNAME
+
+#define OPNAME atanh
+#include "Sacado_MP_Vector_SFS_unary_func_tmpl.hpp"
+#undef OPNAME
+
+#define OPNAME abs
+#include "Sacado_MP_Vector_SFS_unary_func_tmpl.hpp"
+#undef OPNAME
+
+#define OPNAME fabs
+#include "Sacado_MP_Vector_SFS_unary_func_tmpl.hpp"
+#undef OPNAME
+
+#define OPNAME operator+
+#define OPER +
+#include "Sacado_MP_Vector_SFS_binary_op_tmpl.hpp"
+#undef OPNAME
+#undef OPER
+
+#define OPNAME operator-
+#define OPER -
+#include "Sacado_MP_Vector_SFS_binary_op_tmpl.hpp"
+#undef OPNAME
+#undef OPER
+
+#define OPNAME operator*
+#define OPER *
+#include "Sacado_MP_Vector_SFS_binary_op_tmpl.hpp"
+#undef OPNAME
+#undef OPER
+
+#define OPNAME operator/
+#define OPER /
+#include "Sacado_MP_Vector_SFS_binary_op_tmpl.hpp"
+#undef OPNAME
+#undef OPER
+
+#define OPNAME atan2
+#include "Sacado_MP_Vector_SFS_binary_func_tmpl.hpp"
+#undef OPNAME
+
+#define OPNAME pow
+#include "Sacado_MP_Vector_SFS_binary_func_tmpl.hpp"
+#undef OPNAME
+
+#define OPNAME max
+#include "Sacado_MP_Vector_SFS_binary_func_tmpl.hpp"
+#undef OPNAME
+
+#define OPNAME min
+#include "Sacado_MP_Vector_SFS_binary_func_tmpl.hpp"
+#undef OPNAME
+
+>>>>>>> origin/kim
 //#ifdef __CUDACC__
 //MP_BINARYOP_MACRO(max, ::max)
 //MP_BINARYOP_MACRO(min, ::min)
@@ -216,7 +284,7 @@ namespace Sacado {                                                      \
     }                                                                   \
   }                                                                     \
 }
-
+/*
 MP_RELOP_MACRO(==)
 MP_RELOP_MACRO(!=)
 MP_RELOP_MACRO(<)
@@ -227,7 +295,7 @@ MP_RELOP_MACRO(<<=)
 MP_RELOP_MACRO(>>=)
 MP_RELOP_MACRO(&)
 MP_RELOP_MACRO(|)
-
+*/
 #undef MP_RELOP_MACRO
 
 namespace Sacado {

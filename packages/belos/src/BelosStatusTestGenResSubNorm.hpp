@@ -235,6 +235,8 @@ class StatusTestGenResSubNorm: public StatusTestResNorm<ScalarType,MV,OP> {
   //! \note This status test does not check for loss of accuracy, so this method will always return false.
   bool getLOADetected() const { return false; }
 
+  //! Returns number of ensemble iterations
+  const std::vector<int> getEnsembleIterations() const { return std::vector<int>(); }
   //@}
 
 
@@ -615,6 +617,8 @@ class StatusTestGenResSubNorm<ScalarType,Thyra::MultiVectorBase<ScalarType>,Thyr
   //! \note This status test does not check for loss of accuracy, so this method will always return false.
   bool getLOADetected() const { return false; }
 
+  //! Returns number of ensemble iterations
+  const std::vector<int> getEnsembleIterations() const { return std::vector<int>(); }
   //@}
 
 

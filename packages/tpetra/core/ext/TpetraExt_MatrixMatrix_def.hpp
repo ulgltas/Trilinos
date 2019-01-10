@@ -1709,8 +1709,8 @@ void mult_A_B(
     for (k = Arowptr[i]; k < Arowptr[i+1]; ++k) {
       LocalOrdinal Ak = Acol2Brow[Acolind[k]];
       const Scalar Aval = Avals[k];
-      if (Aval == STS::zero())
-        continue;
+      //if (Aval == STS::zero())
+      //  continue;
 
       if (Ak == LO_INVALID)
         continue;
@@ -1750,8 +1750,8 @@ void mult_A_B(
     for (k = Arowptr[i]; k < Arowptr[i+1]; ++k) {
       LocalOrdinal Ak = Acol2Brow[Acolind[k]];
       const Scalar Aval = Avals[k];
-      if (Aval == STS::zero())
-        continue;
+      //if (Aval == STS::zero())
+      //  continue;
 
       if (Ak!=LO_INVALID) continue;
 
@@ -2117,8 +2117,8 @@ void KernelWrappers<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalOrdinalViewType>
     for (size_t k = Arowptr[i]; k < Arowptr[i+1]; k++) {
       LO Aik  = Acolind[k]; // local column index of current entry of A
       const SC Aval = Avals[k];   // value of current entry of A
-      if (Aval == SC_ZERO)
-        continue; // skip explicitly stored zero values in A
+      //if (Aval == SC_ZERO)
+      //  continue; // skip explicitly stored zero values in A
 
       if (targetMapToOrigRow[Aik] != LO_INVALID) {
         // mfh 27 Sep 2016: If the entry of targetMapToOrigRow
@@ -2418,8 +2418,8 @@ void KernelWrappers<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalOrdinalViewType>
     for (size_t k = Arowptr[i]; k < Arowptr[i+1]; k++) {
       LO Aik  = Acolind[k];
       const SC Aval = Avals[k];
-      if (Aval == SC_ZERO)
-        continue;
+      //if (Aval == SC_ZERO)
+      //  continue;
 
       if (targetMapToOrigRow[Aik] != LO_INVALID) {
         // Local matrix
@@ -2750,8 +2750,8 @@ void KernelWrappers2<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalOrdinalViewType
     // Entries of B
     for (size_t j = Browptr[i]; j < Browptr[i+1]; j++) {
       Scalar Bval = Bvals[j];
-      if (Bval == SC_ZERO)
-        continue;
+      //if (Bval == SC_ZERO)
+      //  continue;
       LO Bij = Bcolind[j];
       LO Cij = Bcol2Ccol[Bij];
 
@@ -2766,8 +2766,8 @@ void KernelWrappers2<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalOrdinalViewType
     for (size_t k = Arowptr[i]; k < Arowptr[i+1]; k++) {
       LO Aik  = Acolind[k];
       const SC Aval = Avals[k];
-      if (Aval == SC_ZERO)
-        continue;
+      //if (Aval == SC_ZERO)
+      //  continue;
 
       if (targetMapToOrigRow[Aik] != LO_INVALID) {
         // Local matrix
@@ -3070,8 +3070,8 @@ void KernelWrappers2<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalOrdinalViewType
     // Entries of B
     for (size_t j = Browptr[i]; j < Browptr[i+1]; j++) {
       Scalar Bval = Bvals[j];
-      if (Bval == SC_ZERO)
-        continue;
+      //if (Bval == SC_ZERO)
+      //  continue;
       LO Bij = Bcolind[j];
       LO Cij = Bcol2Ccol[Bij];
 
@@ -3085,8 +3085,8 @@ void KernelWrappers2<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalOrdinalViewType
     for (size_t k = Arowptr[i]; k < Arowptr[i+1]; k++) {
       LO Aik  = Acolind[k];
       const SC Aval = Avals[k];
-      if (Aval == SC_ZERO)
-        continue;
+      //if (Aval == SC_ZERO)
+      //  continue;
 
       if (targetMapToOrigRow[Aik] != LO_INVALID) {
         // Local matrix

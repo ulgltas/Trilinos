@@ -123,8 +123,10 @@ template<class Scalar>
 bool generic_real_isnaninf(const Scalar &x)
 {
 #ifdef HAVE_TEUCHOSCORE_CXX11
-  if (std::isnan(x)) return true;
-  if (std::isinf(x)) return true;
+  using std::isnan;
+  using std::isinf;
+  if (isnan(x)) return true;
+  if (isinf(x)) return true;
   return false;
 #else
   typedef std::numeric_limits<Scalar> STD_NL;
