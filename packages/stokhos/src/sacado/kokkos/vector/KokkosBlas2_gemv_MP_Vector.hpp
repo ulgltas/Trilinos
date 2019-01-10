@@ -19,8 +19,8 @@ template<class DA, class ... PA,
          class DX, class ... PX,
          class DY, class ... PY>
 typename std::enable_if< Kokkos::is_view_mp_vector< Kokkos::View<DA,PA...> >::value &&
-                         Kokkos::is_view_mp_vector< Kokkos::View<DB,PB...> >::value &&
-                         Kokkos::is_view_mp_vector< Kokkos::View<DC,PC...> >::value >::type
+                         Kokkos::is_view_mp_vector< Kokkos::View<DX,PX...> >::value &&
+                         Kokkos::is_view_mp_vector< Kokkos::View<DY,PY...> >::value >::type
 gemv (const char trans[],
       typename Kokkos::View<DA,PA...>::const_value_type& alpha,
       const Kokkos::View<DA,PA...>& A,
