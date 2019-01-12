@@ -24,6 +24,6 @@ gemv (const char trans[],
   const size_t m = y.dimension_0 ();
   const size_t n = x.dimension_0 ();
   
-  static_assert( false, "Error: building gemv" );
+  //static_assert( false, "Error: building gemv" );
 }
 }
