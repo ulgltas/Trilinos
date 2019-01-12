@@ -2,8 +2,11 @@
 #define KOKKOSBLAS2_GEMV_MP_VECTOR_HPP_
 
 #include <type_traits>
+#include "Sacado_ConfigDefs.h"
+
 #include "Sacado_MP_Vector.hpp"
 #include "Kokkos_View_MP_Vector.hpp"
+#include "KokkosBlas.hpp"
 
 namespace KokkosBlas {
 template<typename DA, typename ... PA,
