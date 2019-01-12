@@ -1,9 +1,9 @@
 #ifndef KOKKOSBLAS3_GEMM_MP_VECTOR_HPP_
 #define KOKKOSBLAS3_GEMM_MP_VECTOR_HPP_
 
-template<class DA, class ... PA,
-         class DB, class ... PB,
-         class DC, class ... PC>
+template<typename DA, typename ... PA,
+         typename DB, typename ... PB,
+         typename DC, typename ... PC>
 typename std::enable_if< Kokkos::is_view_mp_vector< Kokkos::View<DA,PA...> >::value &&
                          Kokkos::is_view_mp_vector< Kokkos::View<DB,PB...> >::value &&
                          Kokkos::is_view_mp_vector< Kokkos::View<DC,PC...> >::value >::type

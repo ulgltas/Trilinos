@@ -1,8 +1,8 @@
 #include "KokkosBlas2_gemv_MP_Vector.hpp"
 
-template<class DA, class ... PA,
-         class DX, class ... PX,
-         class DY, class ... PY>
+template<typename DA, typename ... PA,
+         typename DX, typename ... PX,
+         typename DY, typename ... PY>
 typename std::enable_if< Kokkos::is_view_mp_vector< Kokkos::View<DA,PA...> >::value &&
                          Kokkos::is_view_mp_vector< Kokkos::View<DX,PX...> >::value &&
                          Kokkos::is_view_mp_vector< Kokkos::View<DY,PY...> >::value >::type
