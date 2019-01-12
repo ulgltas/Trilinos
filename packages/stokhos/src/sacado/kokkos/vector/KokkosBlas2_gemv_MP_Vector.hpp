@@ -21,8 +21,8 @@ KokkosBlas::gemv (const char trans[],
   static_assert (Kokkos::View<DY,PY...>::rank == 1, "GEMM: y must have rank 1 (be a vector).");
   
   // Get the dimensions
-  const IndexType m = y.dimension_0 ();
-  const IndexType n = x.dimension_0 ();
+  const size_t m = y.dimension_0 ();
+  const size_t n = x.dimension_0 ();
   
 }
 #endif

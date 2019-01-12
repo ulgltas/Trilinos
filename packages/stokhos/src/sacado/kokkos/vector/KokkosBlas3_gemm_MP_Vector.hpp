@@ -21,11 +21,13 @@ KokkosBlas::gemm (const char transA[],
   static_assert (Kokkos::View<DC,PC...>::rank == 2, "GEMM: C must have rank 2 (be a matrix).");
   
   if (C.dimension_1 () == 1)
+  {  
     auto x = Kokkos::subview (B, Kokkos::ALL, 0);
     auto y = Kokkos::subview (C, Kokkos::ALL, 0);
     KokkosBlas::gemv(transA,alpha,A,x,beta,y);
+  }
   else
-    throw_error("GEMM");
+    TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, "GEMM:  Not implemented for Sacado::MP::Vector scalar type!");
 }
 
 #endif
