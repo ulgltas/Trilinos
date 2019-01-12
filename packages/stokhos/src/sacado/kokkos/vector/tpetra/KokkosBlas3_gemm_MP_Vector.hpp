@@ -1,13 +1,16 @@
 #ifndef KOKKOSBLAS3_GEMM_MP_VECTOR_HPP_
 #define KOKKOSBLAS3_GEMM_MP_VECTOR_HPP_
 
+#include <type_traits>
+
+namespace KokkosBlas {
 template<typename DA, typename ... PA,
          typename DB, typename ... PB,
          typename DC, typename ... PC>
 typename std::enable_if< Kokkos::is_view_mp_vector< Kokkos::View<DA,PA...> >::value &&
                          Kokkos::is_view_mp_vector< Kokkos::View<DB,PB...> >::value &&
                          Kokkos::is_view_mp_vector< Kokkos::View<DC,PC...> >::value >::type
-KokkosBlas::gemm (const char transA[],
+gemm (const char transA[],
       const char transB[],
       typename Kokkos::View<DA,PA...>::const_value_type& alpha,
       const Kokkos::View<DA,PA...>& A,
@@ -29,5 +32,5 @@ KokkosBlas::gemm (const char transA[],
   else
     TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, "GEMM:  Not implemented for Sacado::MP::Vector scalar type!");
 }
-
+}
 #endif
