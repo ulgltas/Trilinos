@@ -79,22 +79,6 @@ KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) void M512D_ENSEMBLE_STORE(
   //double * p = &(ensemble[i*STOKHOS_MASK_AVX_VECTOR_SIZE]);
   _mm512_store_pd(&(ensemble[i*STOKHOS_MASK_AVX_VECTOR_SIZE]), value);
 }
-/*
-template<>
-KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) __m512d M512D_ENSEMBLE_LOAD<double>(const double &ensemble,const int &i)
-{
-  //static_assert(false, "M512D_ENSEMBLE_LOAD<double> want to be compiled");
-  return _mm512_set1_pd(ensemble);
-}
-
-template<>
-KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) void M512D_ENSEMBLE_STORE<double>(double & ensemble, const int &i, const __m512d &value)
-{
-  //static_assert(false, "M512D_ENSEMBLE_STORE<double> want to be compiled");
-  double * p = &ensemble;
-  _mm512_store_pd(p, value);
-}
-*/
 
 template <typename T>
 struct EnsembleTraits_m {
@@ -224,266 +208,7 @@ public:
     }
 };
 
-
-
 template<typename scalar> class Mask;
-/*
-template<typename scalar> class MaskedAssign
-{
-private:
-    static const int size = EnsembleTraits_m<scalar>::size;
-    scalar &data;
-    Mask<scalar> m;
-
-public:
-    MaskedAssign(scalar &data_, Mask<scalar> m_) : data(data_), m(m_) {};
-
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator = (const scalar & KOKKOS_RESTRICT s)
-    {
-#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-        typedef EnsembleTraits_m<scalar> ET;
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) = ET::coeff(s,i);
-#else
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<m.size_uc; ++i)
-            M512D_ENSEMBLE_STORE(data,i,_mm512_mask_blend_pd(m.data[i],
-                                                             M512D_ENSEMBLE_LOAD(data,i),
-                                                             M512D_ENSEMBLE_LOAD(s,i)));
-#endif
-      return *this;
-    }
-
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator = (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
-    {
-        auto st_array = st.begin();
-#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-        typedef EnsembleTraits_m<scalar> ET;
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) = ET::coeff(st_array[0],i);
-            else
-                ET::coeff(data,i) = ET::coeff(st_array[1],i);
-#else
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<m.size_uc; ++i)
-            M512D_ENSEMBLE_STORE(data,i,_mm512_mask_blend_pd(m.data[i],
-                                                             M512D_ENSEMBLE_LOAD(st_array[1],i),
-                                                             M512D_ENSEMBLE_LOAD(st_array[0],i)));
-      
-#endif
-        return *this;
-    }
-
-
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator += (const scalar & KOKKOS_RESTRICT s)
-    {
-#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-        typedef EnsembleTraits_m<scalar> ET;
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) += ET::coeff(s,i);
-#else
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<m.size_uc; ++i)
-            M512D_ENSEMBLE_STORE(data,i,_mm512_mask_add_pd(M512D_ENSEMBLE_LOAD(data,i),
-                                                           m.data[i],
-                                                           M512D_ENSEMBLE_LOAD(data,i),
-                                                           M512D_ENSEMBLE_LOAD(s,i)));
-#endif
-        return *this;
-    }
-
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator += (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
-    {
-        auto st_array = st.begin();
-#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-        typedef EnsembleTraits_m<scalar> ET;
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) = ET::coeff(st_array[0],i)+ET::coeff(st_array[1],i);
-            else
-                ET::coeff(data,i) = ET::coeff(st_array[2],i);
-#else
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<m.size_uc; ++i)
-            M512D_ENSEMBLE_STORE(data,i,_mm512_mask_add_pd(M512D_ENSEMBLE_LOAD(st_array[2],i),
-                                                           m.data[i],
-                                                           M512D_ENSEMBLE_LOAD(st_array[0],i),
-                                                           M512D_ENSEMBLE_LOAD(st_array[1],i)));
-#endif
-        return *this;
-    }
-
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator -= (const scalar & KOKKOS_RESTRICT s)
-    {
-#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-        typedef EnsembleTraits_m<scalar> ET;
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) -= ET::coeff(s,i);
-#else
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<m.size_uc; ++i)
-            M512D_ENSEMBLE_STORE(data,i,_mm512_mask_sub_pd(M512D_ENSEMBLE_LOAD(data,i),
-                                                           m.data[i],
-                                                           M512D_ENSEMBLE_LOAD(data,i),
-                                                           M512D_ENSEMBLE_LOAD(s,i)));
-#endif
-        return *this;
-    }
-
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator -= (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
-    {
-        auto st_array = st.begin();
-#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-        typedef EnsembleTraits_m<scalar> ET;
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) = ET::coeff(st_array[0],i)-ET::coeff(st_array[1],i);
-            else
-                ET::coeff(data,i) = ET::coeff(st_array[2],i);
-#else
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<m.size_uc; ++i)
-            M512D_ENSEMBLE_STORE(data,i,_mm512_mask_sub_pd(M512D_ENSEMBLE_LOAD(st_array[2],i),
-                                                           m.data[i],
-                                                           M512D_ENSEMBLE_LOAD(st_array[0],i),
-                                                           M512D_ENSEMBLE_LOAD(st_array[1],i)));
-#endif
-        return *this;
-    }
-
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator *= (const scalar & KOKKOS_RESTRICT s)
-    {
-#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-        typedef EnsembleTraits_m<scalar> ET;
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) *= ET::coeff(s,i);
-#else
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<m.size_uc; ++i)
-            M512D_ENSEMBLE_STORE(data,i,_mm512_mask_mul_pd(M512D_ENSEMBLE_LOAD(data,i),
-                                                           m.data[i],
-                                                           M512D_ENSEMBLE_LOAD(data,i),
-                                                           M512D_ENSEMBLE_LOAD(s,i)));
-#endif
-        return *this;
-    }
-
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator *= (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
-    {
-        auto st_array = st.begin();
-#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-        typedef EnsembleTraits_m<scalar> ET;
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) = ET::coeff(st_array[0],i)*ET::coeff(st_array[1],i);
-            else
-                ET::coeff(data,i) = ET::coeff(st_array[2],i);
-#else
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<m.size_uc; ++i)
-            M512D_ENSEMBLE_STORE(data,i,_mm512_mask_mul_pd(M512D_ENSEMBLE_LOAD(st_array[2],i),
-                                                           m.data[i],
-                                                           M512D_ENSEMBLE_LOAD(st_array[0],i),
-                                                           M512D_ENSEMBLE_LOAD(st_array[1],i)));
-#endif
-        return *this;
-    }
-
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator /= (const scalar & KOKKOS_RESTRICT s)
-    {
-#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-        typedef EnsembleTraits_m<scalar> ET;
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) /= ET::coeff(s,i);
-#else
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<m.size_uc; ++i)
-            M512D_ENSEMBLE_STORE(data,i,_mm512_mask_div_pd(M512D_ENSEMBLE_LOAD(data,i),
-                                                           m.data[i],
-                                                           M512D_ENSEMBLE_LOAD(data,i),
-                                                           M512D_ENSEMBLE_LOAD(s,i)));
-#endif
-        return *this;
-    }
-
-    KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator /= (const std::initializer_list<scalar> & KOKKOS_RESTRICT st)
-    {
-        auto st_array = st.begin();
-#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-        typedef EnsembleTraits_m<scalar> ET;
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<size; ++i)
-            if(m.get(i))
-                ET::coeff(data,i) = ET::coeff(st_array[0],i)/ET::coeff(st_array[1],i);
-            else
-                ET::coeff(data,i) = ET::coeff(st_array[2],i);
-#else
-#pragma vector aligned
-#pragma ivdep
-#pragma unroll
-        for(int i=0; i<m.size_uc; ++i)
-            M512D_ENSEMBLE_STORE(data,i,_mm512_mask_div_pd(M512D_ENSEMBLE_LOAD(st_array[2],i),
-                                                           m.data[i],
-                                                           M512D_ENSEMBLE_LOAD(st_array[0],i),
-                                                           M512D_ENSEMBLE_LOAD(st_array[1],i)));
-#endif
-        return *this;
-    }
-};
-*/
 
 template<typename S> class MaskedAssign< Sacado::MP::Vector<S> >
 {
@@ -499,16 +224,28 @@ public:
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator = (const scalar & KOKKOS_RESTRICT s)
     {
 #ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<size; ++i)
             if(m.data[i])
                 data[i] = s[i];
 #else
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<m.size_uc; ++i)
             M512D_ENSEMBLE_STORE(data,i,_mm512_mask_blend_pd(m.data[i],
                                                              M512D_ENSEMBLE_LOAD(data,i),
@@ -521,18 +258,30 @@ public:
     {
         auto st_array = st.begin();
 #ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<size; ++i)
             if(m.data[i])
                 data[i] = st_array[0][i];
             else
                 data[i] = st_array[1][i];
 #else
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<m.size_uc; ++i)
             M512D_ENSEMBLE_STORE(data,i,_mm512_mask_blend_pd(m.data[i],
                                                              M512D_ENSEMBLE_LOAD(st_array[1],i),
@@ -546,16 +295,28 @@ public:
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator += (const scalar & KOKKOS_RESTRICT s)
     {
 #ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<size; ++i)
             if(m.data[i])
                 data[i] += s[i];
 #else
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<m.size_uc; ++i)
             M512D_ENSEMBLE_STORE(data,i,_mm512_mask_add_pd(M512D_ENSEMBLE_LOAD(data,i),
                                                            m.data[i],
@@ -569,18 +330,30 @@ public:
     {
         auto st_array = st.begin();
 #ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<size; ++i)
             if(m.data[i])
                 data[i] = st_array[0][i]+st_array[1][i];
             else
                 data[i] = st_array[2][i];
 #else
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<m.size_uc; ++i)
             M512D_ENSEMBLE_STORE(data,i,_mm512_mask_add_pd(M512D_ENSEMBLE_LOAD(st_array[2],i),
                                                            m.data[i],
@@ -593,16 +366,28 @@ public:
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator -= (const scalar & KOKKOS_RESTRICT s)
     {
 #ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<size; ++i)
             if(m.data[i])
                 data[i] -= s[i];
 #else
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<m.size_uc; ++i)
             M512D_ENSEMBLE_STORE(data,i,_mm512_mask_sub_pd(M512D_ENSEMBLE_LOAD(data,i),
                                                            m.data[i],
@@ -616,18 +401,30 @@ public:
     {
         auto st_array = st.begin();
 #ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<size; ++i)
             if(m.data[i])
                 data[i] = st_array[0][i]-st_array[1][i];
             else
                 data[i] = st_array[2][i];
 #else
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<m.size_uc; ++i)
             M512D_ENSEMBLE_STORE(data,i,_mm512_mask_sub_pd(M512D_ENSEMBLE_LOAD(st_array[2],i),
                                                            m.data[i],
@@ -640,16 +437,28 @@ public:
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator *= (const scalar & KOKKOS_RESTRICT s)
     {
 #ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<size; ++i)
             if(m.data[i])
                 data[i] *= s[i];
 #else
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<m.size_uc; ++i)
             M512D_ENSEMBLE_STORE(data,i,_mm512_mask_mul_pd(M512D_ENSEMBLE_LOAD(data,i),
                                                            m.data[i],
@@ -663,18 +472,30 @@ public:
     {
         auto st_array = st.begin();
 #ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<size; ++i)
             if(m.data[i])
                 data[i] = st_array[0][i]*st_array[1][i];
             else
                 data[i] = st_array[2][i];
 #else
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<m.size_uc; ++i)
             M512D_ENSEMBLE_STORE(data,i,_mm512_mask_mul_pd(M512D_ENSEMBLE_LOAD(st_array[2],i),
                                                            m.data[i],
@@ -687,16 +508,28 @@ public:
     KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) MaskedAssign<scalar>& operator /= (const scalar & KOKKOS_RESTRICT s)
     {
 #ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<size; ++i)
             if(m.data[i])
                 data[i] /= s[i];
 #else
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<m.size_uc; ++i)
             M512D_ENSEMBLE_STORE(data,i,_mm512_mask_div_pd(M512D_ENSEMBLE_LOAD(data,i),
                                                            m.data[i],
@@ -710,18 +543,30 @@ public:
     {
         auto st_array = st.begin();
 #ifndef STOKHOS_MP_VECTOR_MASK_USE_II
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<size; ++i)
             if(m.data[i])
                 data[i] = st_array[0][i]/st_array[1][i];
             else
                 data[i] = st_array[2][i];
 #else
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
         for(int i=0; i<m.size_uc; ++i)
             M512D_ENSEMBLE_STORE(data,i,_mm512_mask_div_pd(M512D_ENSEMBLE_LOAD(st_array[2],i),
                                                            m.data[i],
@@ -1000,9 +845,15 @@ template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Sacad
 {
     typedef EnsembleTraits_m<Sacado::MP::Vector<S>> ET;
     Sacado::MP::Vector<S> mul;
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
     for(int i=0; i<ET::size; ++i){
         ET::coeff(mul,i) = ET::coeff(a1,i)*m.get(i);
     }
@@ -1013,9 +864,15 @@ template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Sacad
 {
     Sacado::MP::Vector<S> mul;
     typedef EnsembleTraits_m<Sacado::MP::Vector<S>> ET;
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
     for(int i=0; i<ET::size; ++i){
         ET::coeff(mul,i) = m.get(i)*a1;
     }
@@ -1026,9 +883,15 @@ template<typename S> KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) Sacad
 {
     Sacado::MP::Vector<S> mul;
     typedef EnsembleTraits_m<Sacado::MP::Vector<S>> ET;
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
     for(int i=0; i<ET::size; ++i){
         ET::coeff(mul,i) = m.get(i)*a1;
     }
@@ -1059,9 +922,15 @@ template<typename S> Mask<Sacado::MP::Vector<S> > signbit_v(const Sacado::MP::Ve
     using std::signbit;
 
     Mask<Sacado::MP::Vector<S> > mask;
-#pragma vector aligned
+#ifdef STOKHOS_HAVE_PRAGMA_IVDEP
 #pragma ivdep
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_VECTOR_ALIGNED
+#pragma vector aligned
+#endif
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
 #pragma unroll
+#endif
     for(int i=0; i<ET::size; ++i)
         mask.set(i, signbit(ET::coeff(a1,i)));
     return mask;
