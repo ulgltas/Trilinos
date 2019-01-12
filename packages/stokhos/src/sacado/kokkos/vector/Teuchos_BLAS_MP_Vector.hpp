@@ -421,7 +421,7 @@ namespace Teuchos
                   }
               }
           }
-      };
+      }
     }; // class BLAS
 //  }
 //}
