@@ -47,11 +47,8 @@
 #include "Stokhos_Sacado_Kokkos_MP_Vector.hpp"
 #include <iostream>
 #include <cmath>
-//#include <tuple>
-//#include <utility>
 #include <initializer_list>
 
-//#ifdef STOKHOS_MP_VECTOR_MASK_USE_II
 #include <immintrin.h>
 #define STOKHOS_MASK_AVX_VECTOR_SIZE 8
 
@@ -61,22 +58,15 @@ union fused_vector_ensemble_type {
   T ensemble __attribute__((aligned(64)));
 };
 
-//#define M512D_ENSEMBLE_LOAD(ensemble,i) _mm512_load_pd(&((ensemble)[i*STOKHOS_MASK_AVX_VECTOR_SIZE]))
-//#define M512D_ENSEMBLE_LOAD_2(ensemble,i) _mm512_load_pd(&(ensemble[i*STOKHOS_MASK_AVX_VECTOR_SIZE]))
-//#define M512D_ENSEMBLE_STORE(ensemble,i,value) _mm512_store_pd(&((ensemble)[i*STOKHOS_MASK_AVX_VECTOR_SIZE]), value)
-//#endif
-
 template<typename S>
 KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) __m512d M512D_ENSEMBLE_LOAD(const Sacado::MP::Vector<S>  &ensemble,const int &i)
 {
-  //const double * p = &(ensemble[i*STOKHOS_MASK_AVX_VECTOR_SIZE]);
   return _mm512_load_pd(&(ensemble[i*STOKHOS_MASK_AVX_VECTOR_SIZE]));
 }
 
 template<typename S>
 KOKKOS_INLINE_FUNCTION __attribute__((always_inline)) void M512D_ENSEMBLE_STORE(Sacado::MP::Vector<S>  & ensemble, const int &i, const __m512d &value)
 {
-  //double * p = &(ensemble[i*STOKHOS_MASK_AVX_VECTOR_SIZE]);
   _mm512_store_pd(&(ensemble[i*STOKHOS_MASK_AVX_VECTOR_SIZE]), value);
 }
 
@@ -936,524 +926,127 @@ template<typename S> Mask<Sacado::MP::Vector<S> > signbit_v(const Sacado::MP::Ve
     return mask;
 }
 
+// Relation operations for vector:
 
 #define OPNAME ==
 #define imm8 16
-#include "Stokhos_MP_Vector_MaskTraits_rel_ops_tmpl.hpp"
+#include "Stokhos_MP_Vector_MaskTraits_vector_relops_tmpl.hpp"
 #undef OPNAME
 #undef imm8
 
 #define OPNAME !=
 #define imm8 28
-#include "Stokhos_MP_Vector_MaskTraits_rel_ops_tmpl.hpp"
+#include "Stokhos_MP_Vector_MaskTraits_vector_relops_tmpl.hpp"
 #undef OPNAME
 #undef imm8
 
 #define OPNAME >
 #define imm8 14
-#include "Stokhos_MP_Vector_MaskTraits_rel_ops_tmpl.hpp"
+#include "Stokhos_MP_Vector_MaskTraits_vector_relops_tmpl.hpp"
 #undef OPNAME
 #undef imm8
 
 #define OPNAME >=
 #define imm8 13
-#include "Stokhos_MP_Vector_MaskTraits_rel_ops_tmpl.hpp"
+#include "Stokhos_MP_Vector_MaskTraits_vector_relops_tmpl.hpp"
 #undef OPNAME
 #undef imm8
 
 #define OPNAME <
 #define imm8 1
-#include "Stokhos_MP_Vector_MaskTraits_rel_ops_tmpl.hpp"
+#include "Stokhos_MP_Vector_MaskTraits_vector_relops_tmpl.hpp"
 #undef OPNAME
 #undef imm8
 
 #define OPNAME <=
 #define imm8 2
-#include "Stokhos_MP_Vector_MaskTraits_rel_ops_tmpl.hpp"
+#include "Stokhos_MP_Vector_MaskTraits_vector_relops_tmpl.hpp"
 #undef OPNAME
 #undef imm8
 
+// Relation operations for expressions:
 
-/*
-MP_VECTOR_RELOP_MACRO(==,16) //_CMP_EQ_OS
-MP_VECTOR_RELOP_MACRO(!=,28) //_CMP_NEQ_OS
-MP_VECTOR_RELOP_MACRO(>,14) //_CMP_GT_OS
-MP_VECTOR_RELOP_MACRO(>=,13) //_CMP_GE_OS
-MP_VECTOR_RELOP_MACRO(<,1) //_CMP_LT_OS
-MP_VECTOR_RELOP_MACRO(<=,2) //_CMP_LE_OS
-*/
+#define OPNAME ==
+#include "Stokhos_MP_Vector_MaskTraits_expr_relops_tmpl.hpp"
+#undef OPNAME
 
+#define OPNAME !=
+#include "Stokhos_MP_Vector_MaskTraits_expr_relops_tmpl.hpp"
+#undef OPNAME
 
+#define OPNAME <
+#include "Stokhos_MP_Vector_MaskTraits_expr_relops_tmpl.hpp"
+#undef OPNAME
 
-#define MP_EXPR_RELOP_MACRO(OP)                                         \
-namespace Sacado {                                                      \
-  namespace MP {                                                        \
-                                                                        \
-    template <typename V, typename V2>                                  \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask<V>                                                             \
-    operator OP (const Expr<V> &a1,                                     \
-                 const Expr<V2> &a2)                                    \
-    {                                                                   \
-      const V& v1 = a1.derived();                                       \
-      const V2& v2 = a2.derived();                                      \
-      Mask<V> mask;                                                     \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      if (v2.hasFastAccess(v1.size())) {                                \
-        for(int i=0; i<v1.size(); ++i)                                  \
-          mask.set(i, v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i));  \
-      }                                                                 \
-      else{                                                             \
-        for(int i=0; i<v1.size(); ++i)                                  \
-          mask.set(i, v1.fastAccessCoeff(i) OP v2.coeff(i));            \
-      }                                                                 \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename V, typename V2>                                  \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask<V>                                                             \
-    operator OP (const volatile Expr<V> &a1,                            \
-                 const volatile Expr<V2> &a2)                           \
-    {                                                                   \
-      const volatile V& v1 = a1.derived();                              \
-      const volatile V2& v2 = a2.derived();                             \
-      Mask<V> mask;                                                     \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      if (v2.hasFastAccess(v1.size())) {                                \
-        for(int i=0; i<v1.size(); ++i)                                  \
-          mask.set(i, v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i));  \
-      }                                                                 \
-      else{                                                             \
-        for(int i=0; i<v1.size(); ++i)                                  \
-          mask.set(i, v1.fastAccessCoeff(i) OP v2.coeff(i));            \
-      }                                                                 \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename V, typename V2>                                  \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask<V>                                                             \
-    operator OP (const Expr<V> &a1,                                     \
-                 const volatile Expr<V2> &a2)                           \
-    {                                                                   \
-      const V& v1 = a1.derived();                                       \
-      const volatile V2& v2 = a2.derived();                             \
-      Mask<V> mask;                                                     \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      if (v2.hasFastAccess(v1.size())) {                                \
-        for(int i=0; i<v1.size(); ++i)                                  \
-          mask.set(i, v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i));  \
-      }                                                                 \
-      else{                                                             \
-        for(int i=0; i<v1.size(); ++i)                                  \
-          mask.set(i, v1.fastAccessCoeff(i) OP v2.coeff(i));            \
-      }                                                                 \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename V, typename V2>                                  \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask<V>                                                             \
-    operator OP (const volatile Expr<V> &a1,                            \
-                 const Expr<V2> &a2)                                    \
-    {                                                                   \
-      const volatile V& v1 = a1.derived();                              \
-      const V2& v2 = a2.derived();                                      \
-      Mask<V> mask;                                                     \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      if (v2.hasFastAccess(v1.size())) {                                \
-        for(int i=0; i<v1.size(); ++i)                                  \
-          mask.set(i, v1.fastAccessCoeff(i) OP v2.fastAccessCoeff(i));  \
-      }                                                                 \
-      else{                                                             \
-        for(int i=0; i<v1.size(); ++i)                                  \
-          mask.set(i, v1.fastAccessCoeff(i) OP v2.coeff(i));            \
-      }                                                                 \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename V>                                               \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask<V>                                                             \
-    operator OP (const Expr<V> &a1,                                     \
-                 const typename V::value_type &a2)                      \
-    {                                                                   \
-      const V& v1 = a1.derived();                                       \
-      Mask<V> mask;                                                     \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      for(int i=0; i<v1.size(); ++i)                                    \
-        mask.set(i, v1.fastAccessCoeff(i) OP a2);                       \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename V>                                               \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask<V>                                                             \
-    operator OP (const volatile Expr<V> &a1,                            \
-                 const typename V::value_type &a2)                      \
-    {                                                                   \
-      const volatile V& v1 = a1.derived();                              \
-      Mask<V> mask;                                                     \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      for(int i=0; i<v1.size(); ++i)                                    \
-        mask.set(i, v1.fastAccessCoeff(i) OP a2);                       \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename V>                                               \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask<V>                                                             \
-    operator OP (const typename V::value_type &a1,                      \
-                 const Expr<V> &a2)                                     \
-    {                                                                   \
-      const V& v2 = a2.derived();                                       \
-      Mask<V> mask;                                                     \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      for(int i=0; i<v2.size(); ++i)                                    \
-        mask.set(i, a1 OP v2.fastAccessCoeff(i));                       \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename V>                                               \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask<V>                                                             \
-    operator OP (const typename V::value_type &a1,                      \
-                 const volatile Expr<V> &a2)                            \
-    {                                                                   \
-      const volatile V& v2 = a2.derived();                              \
-      Mask<V> mask;                                                     \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      for(int i=0; i<v1.size(); ++i)                                    \
-        mask.set(i, a1 OP v2.fastAccessCoeff(i));                       \
-      return mask;                                                      \
-    }                                                                   \
-  }                                                                     \
-}
+#define OPNAME >
+#include "Stokhos_MP_Vector_MaskTraits_expr_relops_tmpl.hpp"
+#undef OPNAME
 
-MP_EXPR_RELOP_MACRO(==)
-MP_EXPR_RELOP_MACRO(!=)
-MP_EXPR_RELOP_MACRO(<)
-MP_EXPR_RELOP_MACRO(>)
-MP_EXPR_RELOP_MACRO(<=)
-MP_EXPR_RELOP_MACRO(>=)
-MP_EXPR_RELOP_MACRO(<<=)
-MP_EXPR_RELOP_MACRO(>>=)
-MP_EXPR_RELOP_MACRO(&)
-MP_EXPR_RELOP_MACRO(|)
+#define OPNAME <=
+#include "Stokhos_MP_Vector_MaskTraits_expr_relops_tmpl.hpp"
+#undef OPNAME
 
-#undef MP_EXPR_RELOP_MACRO
+#define OPNAME >=
+#include "Stokhos_MP_Vector_MaskTraits_expr_relops_tmpl.hpp"
+#undef OPNAME
 
+#define OPNAME <<=
+#include "Stokhos_MP_Vector_MaskTraits_expr_relops_tmpl.hpp"
+#undef OPNAME
+
+#define OPNAME >>=
+#include "Stokhos_MP_Vector_MaskTraits_expr_relops_tmpl.hpp"
+#undef OPNAME
+
+#define OPNAME &
+#include "Stokhos_MP_Vector_MaskTraits_expr_relops_tmpl.hpp"
+#undef OPNAME
+
+#define OPNAME |
+#include "Stokhos_MP_Vector_MaskTraits_expr_relops_tmpl.hpp"
+#undef OPNAME
 
 #if STOKHOS_USE_MP_VECTOR_SFS_SPEC
 
-#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
+// Relation operations for static fixed storage:
 
-#define MP_SFS_RELOP_MACRO(OP)                                          \
-namespace Sacado {                                                      \
-  namespace MP {                                                        \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
-                 const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
-    {                                                                   \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      for(int i=0; i<a.size(); ++i)                                     \
-          mask.set(i, a.fastAccessCoeff(i) OP b.fastAccessCoeff(i));    \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
-                 const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
-    {                                                                   \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      for(int i=0; i<a.size(); ++i)                                     \
-          mask.set(i, a.fastAccessCoeff(i) OP b.fastAccessCoeff(i));    \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
-                 const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
-    {                                                                   \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      for(int i=0; i<a.size(); ++i)                                     \
-          mask.set(i, a.fastAccessCoeff(i) OP b.fastAccessCoeff(i));    \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
-                 const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
-    {                                                                   \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      for(int i=0; i<a.size(); ++i)                                     \
-          mask.set(i, a.fastAccessCoeff(i) OP b.fastAccessCoeff(i));    \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const typename Vector< Stokhos::StaticFixedStorage<O,T,N,D> >::value_type& a, \
-                 const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
-    {                                                                   \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      for(int i=0; i<b.size(); ++i)                                     \
-          mask.set(i, a OP b.fastAccessCoeff(i));                       \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const typename Vector< Stokhos::StaticFixedStorage<O,T,N,D> >::value_type& a, \
-                 const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
-    {                                                                   \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      for(int i=0; i<b.size(); ++i)                                     \
-          mask.set(i, a OP b.fastAccessCoeff(i));                       \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
-                 const typename Vector< Stokhos::StaticFixedStorage<O,T,N,D> >::value_type& b) \
-    {                                                                   \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      for(int i=0; i<a.size(); ++i)                                     \
-          mask.set(i, a.fastAccessCoeff(i) OP b);                       \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
-                 const typename Vector< Stokhos::StaticFixedStorage<O,T,N,D> >::value_type& b) \
-    {                                                                   \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      _Pragma("vector aligned")                                         \
-      _Pragma("ivdep")                                                  \
-      _Pragma("unroll")                                                 \
-      for(int i=0; i<a.size(); ++i)                                     \
-          mask.set(i, a.fastAccessCoeff(i) OP b);                       \
-      return mask;                                                      \
-    }                                                                   \
-  }                                                                     \
-}
+#define OPNAME ==
+#define imm8 16
+#include "Stokhos_MP_Vector_MaskTraits_sfs_relops_tmpl.hpp"
+#undef OPNAME
+#undef imm8
 
-MP_SFS_RELOP_MACRO(==)
-MP_SFS_RELOP_MACRO(!=)
-MP_SFS_RELOP_MACRO(<)
-MP_SFS_RELOP_MACRO(>)
-MP_SFS_RELOP_MACRO(<=)
-MP_SFS_RELOP_MACRO(>=)
-MP_SFS_RELOP_MACRO(<<=)
-MP_SFS_RELOP_MACRO(>>=)
-MP_SFS_RELOP_MACRO(&)
-MP_SFS_RELOP_MACRO(|)
+#define OPNAME !=
+#define imm8 28
+#include "Stokhos_MP_Vector_MaskTraits_sfs_relops_tmpl.hpp"
+#undef OPNAME
+#undef imm8
 
-#undef MP_SFS_RELOP_MACRO
+#define OPNAME >
+#define imm8 14
+#include "Stokhos_MP_Vector_MaskTraits_sfs_relops_tmpl.hpp"
+#undef OPNAME
+#undef imm8
 
-#else
+#define OPNAME >=
+#define imm8 13
+#include "Stokhos_MP_Vector_MaskTraits_sfs_relops_tmpl.hpp"
+#undef OPNAME
+#undef imm8
 
-#define MP_SFS_RELOP_MACRO(OP,imm8)                                     \
-namespace Sacado {                                                      \
-  namespace MP {                                                        \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
-                 const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
-    {                                                                   \
-      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
-      FVET a1_ii, a2_ii;                                                \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      a1_ii.ensemble = a;                                               \
-      a2_ii.ensemble = b;                                               \
-      for(int i=0; i<mask.size_uc; ++i)                                 \
-        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii.v[i],imm8);  \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
-                 const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
-    {                                                                   \
-      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
-      FVET a1_ii, a2_ii;                                                \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      a1_ii.ensemble = a;                                               \
-      a2_ii.ensemble = b;                                               \
-      for(int i=0; i<mask.size_uc; ++i)                                 \
-        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii.v[i],imm8);  \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
-                 const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
-    {                                                                   \
-      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
-      FVET a1_ii, a2_ii;                                                \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      a1_ii.ensemble = a;                                               \
-      a2_ii.ensemble = b;                                               \
-      for(int i=0; i<mask.size_uc; ++i)                                 \
-        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii.v[i],imm8);  \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
-                 const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
-    {                                                                   \
-      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
-      FVET a1_ii, a2_ii;                                                \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      a1_ii.ensemble = a;                                               \
-      a2_ii.ensemble = b;                                               \
-      for(int i=0; i<mask.size_uc; ++i)                                 \
-        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii.v[i],imm8);  \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const double & a,                                      \
-                 const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
-    {                                                                   \
-      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
-      FVET a2_ii;                                                       \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      __m512d a1_ii = _mm512_set1_pd(a);                                \
-      a2_ii.ensemble = b;                                               \
-      for(int i=0; i<mask.size_uc; ++i)                                 \
-        mask.data[i] = _mm512_cmp_pd_mask(a1_ii,a2_ii.v[i],imm8);       \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const double& a,                                       \
-                 const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& b) \
-    {                                                                   \
-      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
-      FVET a2_ii;                                                       \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      __m512d a1_ii = _mm512_set1_pd(a);                                \
-      a2_ii.ensemble = b;                                               \
-      for(int i=0; i<mask.size_uc; ++i)                                 \
-        mask.data[i] = _mm512_cmp_pd_mask(a1_ii,a2_ii.v[i],imm8);       \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
-                 const double& b)                                       \
-    {                                                                   \
-      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
-      FVET a1_ii;                                                       \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      __m512d a2_ii = _mm512_set1_pd(b);                                \
-      a1_ii.ensemble = a;                                               \
-      for(int i=0; i<mask.size_uc; ++i)                                 \
-        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii,imm8);       \
-      return mask;                                                      \
-    }                                                                   \
-                                                                        \
-    template <typename O, typename T, int N, typename D>                \
-    KOKKOS_INLINE_FUNCTION                                              \
-    Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > >              \
-    operator OP (const volatile Vector< Stokhos::StaticFixedStorage<O,T,N,D> >& a, \
-                 const double& b)                                       \
-    {                                                                   \
-      typedef fused_vector_ensemble_type<Stokhos::StaticFixedStorage<O,T,N,D>::static_size,Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > FVET; \
-      FVET a1_ii;                                                       \
-      Mask< Vector< Stokhos::StaticFixedStorage<O,T,N,D> > > mask;      \
-      __m512d a2_ii = _mm512_set1_pd(b);                                \
-      a1_ii.ensemble = a;                                               \
-      for(int i=0; i<mask.size_uc; ++i)                                 \
-        mask.data[i] = _mm512_cmp_pd_mask(a1_ii.v[i],a2_ii,imm8);       \
-      return mask;                                                      \
-    }                                                                   \
-  }                                                                     \
-}
+#define OPNAME <
+#define imm8 1
+#include "Stokhos_MP_Vector_MaskTraits_sfs_relops_tmpl.hpp"
+#undef OPNAME
+#undef imm8
 
-
-MP_SFS_RELOP_MACRO(==,16) //_CMP_EQ_OS
-MP_SFS_RELOP_MACRO(!=,28) //_CMP_NEQ_OS
-MP_SFS_RELOP_MACRO(>,14) //_CMP_GT_OS
-MP_SFS_RELOP_MACRO(>=,13) //_CMP_GE_OS
-MP_SFS_RELOP_MACRO(<,1) //_CMP_LT_OS
-MP_SFS_RELOP_MACRO(<=,2) //_CMP_LE_OS
-
-#undef MP_SFS_RELOP_MACRO
+#define OPNAME <=
+#define imm8 2
+#include "Stokhos_MP_Vector_MaskTraits_sfs_relops_tmpl.hpp"
+#undef OPNAME
+#undef imm8
 
 #endif
-
-#endif
-
 
 namespace MaskLogic{
 

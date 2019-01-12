@@ -485,7 +485,9 @@ IF (Stokhos_ENABLE_Sacado)
     LIST(APPEND SACADO_HEADERS
       sacado/kokkos/vector/Stokhos_Sacado_Kokkos_MP_Vector.hpp
       sacado/kokkos/vector/Stokhos_MP_Vector_MaskTraits.hpp
-      sacado/kokkos/vector/Stokhos_MP_Vector_MaskTraits_rel_ops_tmpl.hpp
+      sacado/kokkos/vector/Stokhos_MP_Vector_MaskTraits_vector_relops_tmpl.hpp
+      sacado/kokkos/vector/Stokhos_MP_Vector_MaskTraits_expr_relops_tmpl.hpp
+      sacado/kokkos/vector/Stokhos_MP_Vector_MaskTraits_sfs_relops_tmpl.hpp
       sacado/kokkos/vector/KokkosBlas_MP_Vector.hpp
       sacado/kokkos/vector/KokkosBlas3_gemm_MP_Vector.hpp
       sacado/kokkos/vector/KokkosBlas2_gemv_MP_Vector.hpp
