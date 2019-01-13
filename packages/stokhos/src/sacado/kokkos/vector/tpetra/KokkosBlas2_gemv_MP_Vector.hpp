@@ -7,6 +7,7 @@
 #include "Stokhos_ViewStorage.hpp"
 #include "Sacado_MP_Vector.hpp"
 #include "Kokkos_View_MP_Vector.hpp"
+#include "Kokkos_ArithTraits_MP_Vector.hpp"
 #include "KokkosBlas.hpp"
 
 namespace KokkosBlas {
