@@ -26,7 +26,7 @@ gemv (const char trans[],
       typename Kokkos::View<DY,PY...>::const_value_type& beta,
       const Kokkos::View<DY,PY...>& y)
 {
-  typedef typename Kokkos::View<DA,PA...>::const_value_type Scalar;
+  typedef typename Kokkos::View<DA,PA...>::value_type Scalar;
   typedef Kokkos::View<DA,PA...> VA;
   typedef Kokkos::View<DX,PX...> VX;
   typedef Kokkos::View<DY,PY...> VY;
