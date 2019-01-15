@@ -38,7 +38,7 @@ void update_kernel<Sacado::MP::Vector<Storage>>(
 
 #if n_vectors==2
 template<> KOKKOS_INLINE_FUNCTION
-void update_fused_inner_kernel_II_1<Sacado::MP::Vector<Storage>>(
+void update_kernel<Sacado::MP::Vector<Storage>>(
       Sacado::MP::Vector<Storage> * A,
       Sacado::MP::Vector<Storage> alpha,
       Sacado::MP::Vector<Storage> * b,
@@ -62,7 +62,7 @@ void update_fused_inner_kernel_II_1<Sacado::MP::Vector<Storage>>(
 
 #if n_vectors==3
 template<> KOKKOS_INLINE_FUNCTION
-void update_fused_inner_kernel_II_1<Sacado::MP::Vector<Storage>>(
+void update_kernel<Sacado::MP::Vector<Storage>>(
       Sacado::MP::Vector<Storage> * A,
       Sacado::MP::Vector<Storage> alpha,
       Sacado::MP::Vector<Storage> * b,
@@ -90,7 +90,7 @@ void update_fused_inner_kernel_II_1<Sacado::MP::Vector<Storage>>(
 
 #if n_vectors==4
 template<> KOKKOS_INLINE_FUNCTION
-void update_fused_inner_kernel_II_1<Sacado::MP::Vector<Storage>>(
+void update_kernel<Sacado::MP::Vector<Storage>>(
       Sacado::MP::Vector<Storage> * A,
       Sacado::MP::Vector<Storage> alpha,
       Sacado::MP::Vector<Storage> * b,
