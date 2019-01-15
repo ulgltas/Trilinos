@@ -493,6 +493,8 @@ IF (Stokhos_ENABLE_Sacado)
       sacado/kokkos/vector/tpetra/KokkosBlas2_gemv_MP_Vector.hpp
       sacado/kokkos/vector/tpetra/Stokhos_my_gemv_MP_Vector_def.hpp
       sacado/kokkos/vector/tpetra/Stokhos_my_gemv_MP_Vector_decl.hpp
+      sacado/kokkos/vector/tpetra/Stokhos_MP_Vector_update_inner_kernel.hpp
+      sacado/kokkos/vector/tpetra/Stokhos_MP_Vector_inner_product_inner_kernel.hpp
       sacado/kokkos/vector/Sacado_MP_Vector.hpp
       sacado/kokkos/vector/Sacado_MP_VectorTraits.hpp
       sacado/kokkos/vector/Sacado_MP_ScalarTraitsImp.hpp
