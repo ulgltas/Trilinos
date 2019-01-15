@@ -1,13 +1,13 @@
 #ifndef STOKHOS_MP_VECTOR_MASK_USE_II
 template<> KOKKOS_INLINE_FUNCTION
-void inner_product_kernel<Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>>>(
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * A,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> alpha,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * b,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * c,
+void inner_product_kernel<Sacado::MP::Vector<Storage>>(
+      Sacado::MP::Vector<Storage> * A,
+      Sacado::MP::Vector<Storage> alpha,
+      Sacado::MP::Vector<Storage> * b,
+      Sacado::MP::Vector<Storage> * c,
       int i_max)
 {
-  Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> alphab;
+  Sacado::MP::Vector<Storage> alphab;
   alphab = alpha*b[0];
   
   for ( int i=0; i<i_max; ++i )
@@ -18,11 +18,11 @@ void inner_product_kernel<Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,dou
 #else
 #if n_vectors==1
 template<> KOKKOS_INLINE_FUNCTION
-void inner_product_kernel<Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>>>(
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * A,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> alpha,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * b,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * c,
+void inner_product_kernel<Sacado::MP::Vector<Storage>>(
+      Sacado::MP::Vector<Storage> * A,
+      Sacado::MP::Vector<Storage> alpha,
+      Sacado::MP::Vector<Storage> * b,
+      Sacado::MP::Vector<Storage> * c,
       int i_max)
 {
   __m512d alphab_0 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],0),M512D_ENSEMBLE_LOAD(alpha,0));
@@ -38,11 +38,11 @@ void inner_product_kernel<Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,dou
 
 #if n_vectors==2
 template<> KOKKOS_INLINE_FUNCTION
-void update_fused_inner_kernel_II_1<Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>>>(
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * A,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> alpha,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * b,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * c,
+void inner_product_kernel<Sacado::MP::Vector<Storage>>(
+      Sacado::MP::Vector<Storage> * A,
+      Sacado::MP::Vector<Storage> alpha,
+      Sacado::MP::Vector<Storage> * b,
+      Sacado::MP::Vector<Storage> * c,
       int i_max)
 {
   __m512d alphab_0 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],0),M512D_ENSEMBLE_LOAD(alpha,0));
@@ -62,11 +62,11 @@ void update_fused_inner_kernel_II_1<Sacado::MP::Vector<Stokhos::StaticFixedStora
 
 #if n_vectors==3
 template<> KOKKOS_INLINE_FUNCTION
-void update_fused_inner_kernel_II_1<Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>>>(
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * A,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> alpha,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * b,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * c,
+void inner_product_kernel<Sacado::MP::Vector<Storage>>(
+      Sacado::MP::Vector<Storage> * A,
+      Sacado::MP::Vector<Storage> alpha,
+      Sacado::MP::Vector<Storage> * b,
+      Sacado::MP::Vector<Storage> * c,
       int i_max)
 {
   __m512d alphab_0 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],0),M512D_ENSEMBLE_LOAD(alpha,0));
@@ -90,11 +90,11 @@ void update_fused_inner_kernel_II_1<Sacado::MP::Vector<Stokhos::StaticFixedStora
 
 #if n_vectors==4
 template<> KOKKOS_INLINE_FUNCTION
-void update_fused_inner_kernel_II_1<Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>>>(
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * A,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> alpha,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * b,
-      Sacado::MP::Vector<Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>> * c,
+void inner_product_kernel<Sacado::MP::Vector<Storage>>(
+      Sacado::MP::Vector<Storage> * A,
+      Sacado::MP::Vector<Storage> alpha,
+      Sacado::MP::Vector<Storage> * b,
+      Sacado::MP::Vector<Storage> * c,
       int i_max)
 {
   __m512d alphab_0 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],0),M512D_ENSEMBLE_LOAD(alpha,0));

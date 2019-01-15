@@ -1,4 +1,9 @@
 #include "Stokhos_my_gemv_MP_Vector_decl.hpp"
+#include "Stokhos_Sacado_Kokkos_MP_Vector.hpp"
+
+#ifdef STOKHOS_MP_VECTOR_MASK_USE_II
+#include <immintrin.h>
+#endif
 
 #define Sacado_MP_Vector_GEMV_Unrolling_Factor(size)                  \
 {                                                                     \
@@ -27,38 +32,76 @@
                 1 ))))                                                \
 }
 
+template< typename T>
+KOKKOS_INLINE_FUNCTION
+void update_kernel(T * A, T alpha, T * b, T * c, int i_max);
+
+template< typename T>
+KOKKOS_INLINE_FUNCTION
+void inner_product_kernel(T * A, T alpha, T * b, T * c, int i_max);
+
 #define size 4
 #define n_vectors 1
+#define Storage Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>
 #include "Stokhos_MP_Vector_inner_product_inner_kernel.hpp"
 #include "Stokhos_MP_Vector_update_inner_kernel.hpp"
+#undef Storage
+#define Storage Stokhos::StaticFixedStorage<int,double,size,Kokkos::Serial>
+#include "Stokhos_MP_Vector_inner_product_inner_kernel.hpp"
+#include "Stokhos_MP_Vector_update_inner_kernel.hpp"
+#undef Storage
 #undef size
 #undef n_vectors
 
 #define size 8
 #define n_vectors 1
+#define Storage Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>
 #include "Stokhos_MP_Vector_inner_product_inner_kernel.hpp"
 #include "Stokhos_MP_Vector_update_inner_kernel.hpp"
+#undef Storage
+#define Storage Stokhos::StaticFixedStorage<int,double,size,Kokkos::Serial>
+#include "Stokhos_MP_Vector_inner_product_inner_kernel.hpp"
+#include "Stokhos_MP_Vector_update_inner_kernel.hpp"
+#undef Storage
 #undef size
 #undef n_vectors
 
 #define size 16
 #define n_vectors 2
+#define Storage Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>
 #include "Stokhos_MP_Vector_inner_product_inner_kernel.hpp"
 #include "Stokhos_MP_Vector_update_inner_kernel.hpp"
+#undef Storage
+#define Storage Stokhos::StaticFixedStorage<int,double,size,Kokkos::Serial>
+#include "Stokhos_MP_Vector_inner_product_inner_kernel.hpp"
+#include "Stokhos_MP_Vector_update_inner_kernel.hpp"
+#undef Storage
 #undef size
 #undef n_vectors
 
 #define size 24
 #define n_vectors 3
+#define Storage Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>
 #include "Stokhos_MP_Vector_inner_product_inner_kernel.hpp"
 #include "Stokhos_MP_Vector_update_inner_kernel.hpp"
+#undef Storage
+#define Storage Stokhos::StaticFixedStorage<int,double,size,Kokkos::Serial>
+#include "Stokhos_MP_Vector_inner_product_inner_kernel.hpp"
+#include "Stokhos_MP_Vector_update_inner_kernel.hpp"
+#undef Storage
 #undef size
 #undef n_vectors
 
 #define size 32
 #define n_vectors 4
+#define Storage Stokhos::StaticFixedStorage<int,double,size,Kokkos::OpenMP>
 #include "Stokhos_MP_Vector_inner_product_inner_kernel.hpp"
 #include "Stokhos_MP_Vector_update_inner_kernel.hpp"
+#undef Storage
+#define Storage Stokhos::StaticFixedStorage<int,double,size,Kokkos::Serial>
+#include "Stokhos_MP_Vector_inner_product_inner_kernel.hpp"
+#include "Stokhos_MP_Vector_update_inner_kernel.hpp"
+#undef Storage
 #undef size
 #undef n_vectors
 
@@ -79,28 +122,34 @@ void my_update (
   
   typedef Sacado::MP::Vector<Storage> Scalar;
   
-  const size_t u   = Sacado_MP_Vector_GEMV_Unrolling_Factor(sizeof(Scalar));
   const size_t m_c = Sacado_MP_Vector_GEMV_Tile_Size(sizeof(Scalar));
   const size_t n_vectors = Sacado_MP_Vector_GEMV_Number_Vectors(sizeof(Scalar));
 
-  const size_t n_tiles = ceil(((double) m)/m_c);
+  const int n_tiles = ceil(((double) m)/m_c);
 
-  Kokkos::parallel_for (n_tiles, KOKKOS_LAMBDA (const int i_tile)
+  //Kokkos::parallel_for (n_tiles, KOKKOS_LAMBDA (const int i_tile)
+  for (size_t i_tile = 0; i_tile<n_tiles; ++i_tile)
   {
-    IndexType i_min = m_c*i_tile;
+    size_t i_min = m_c*i_tile;
     bool last_tile = (i_tile==(n_tiles-1));
-    IndexType i_max = (last_tile) ? m : (i_min+m_c);
-    IndexType i_max_u = i_min + (i_max-i_min) - (i_max-i_min)%u;
+    size_t i_max = (last_tile) ? m : (i_min+m_c);
 
     #pragma unroll
-    for ( IndexType i=i_min; i<i_max; ++i )
+    for ( size_t i=i_min; i<i_max; ++i )
+    {
+#ifndef STOKHOS_MP_VECTOR_MASK_USE_II
+      y(i) = beta*y(i);
+#else
       #pragma unroll (n_vectors)
-      for ( int ell=0; ell<n_vectors; ++ell )
-        M512D_ENSEMBLE_STORE(c(i,0),ell,_mm512_mul_pd(M512D_ENSEMBLE_LOAD<Scalar>(c(i,0),ell),M512D_ENSEMBLE_LOAD<Scalar>(beta,ell)));
+      for ( size_t ell=0; ell<n_vectors; ++ell )
+        M512D_ENSEMBLE_STORE(y(i),ell,_mm512_mul_pd(M512D_ENSEMBLE_LOAD<Scalar>(y(i),ell),M512D_ENSEMBLE_LOAD<Scalar>(beta,ell)));
+#endif
+    }
     
-    for ( IndexType j=0; j<n; ++j )
-      update_kernel<Scalar>(&A(i_min,j),alpha,&b(j,0),&c(i_min,0),m,i_max-i_min);
-  });
+    for ( size_t j=0; j<n; ++j )
+      update_kernel<Scalar>(&A(i_min,j),alpha,&x(j),&y(i_min),i_max-i_min);
+  }
+  //);
 }
 
 template<class Storage,
@@ -136,7 +185,7 @@ void my_gemv (const char trans[],
   static_assert (VX::rank == 1, "GEMM: x must have rank 1 (be a vector).");
   static_assert (VY::rank == 1, "GEMM: y must have rank 1 (be a vector).");
   
-  if (trans=='n'||trans=='N')
+  if (trans[0]=='n'||trans[0]=='N')
   {
     my_update<Storage,VA,VX,VY>(alpha,A,x,beta,y);
   }
