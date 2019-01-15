@@ -38,7 +38,7 @@ void update_kernel(T * A, T alpha, T * b, T * c, int i_max);
 
 template< typename T>
 KOKKOS_INLINE_FUNCTION
-void inner_product_kernel(T * A, T alpha, T * b, T * c, int i_max);
+void inner_product_kernel(T * A, T * b, T * c);
 
 #define size 4
 #define n_vectors 1
@@ -191,7 +191,7 @@ void my_inner_product (
     for ( int i=i_min; i<m; ++i ){
       Scalar tmp = 0.;
       Kokkos::parallel_reduce (TeamThreadRange (team_member, j_max-j_min),[=] (int jj, Scalar& tmp_sum){
-        tmp_sum += A(jj+j_min,i) * x(jj+j_min);
+        inner_product_kernel<Scalar>(&A(jj+j_min,i), &x(jj+j_min), &tmp_sum);
       },tmp);
       tmp *= alpha;
       if ( team_member.team_rank () == 0) {

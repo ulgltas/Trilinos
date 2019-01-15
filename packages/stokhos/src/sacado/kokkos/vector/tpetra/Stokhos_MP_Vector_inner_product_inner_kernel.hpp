@@ -2,37 +2,23 @@
 template<> KOKKOS_INLINE_FUNCTION
 void inner_product_kernel<Sacado::MP::Vector<Storage>>(
       Sacado::MP::Vector<Storage> * A,
-      Sacado::MP::Vector<Storage> alpha,
       Sacado::MP::Vector<Storage> * b,
-      Sacado::MP::Vector<Storage> * c,
-      int i_max)
+      Sacado::MP::Vector<Storage> * c)
 {
-  Sacado::MP::Vector<Storage> alphab;
-  alphab = alpha*b[0];
-  
-  for ( int i=0; i<i_max; ++i )
-  {
-    c[i] += alphab*A[i];
-  }
+  c[0] += b[0]*A[0];
 }
 #else
 #if n_vectors==1
 template<> KOKKOS_INLINE_FUNCTION
 void inner_product_kernel<Sacado::MP::Vector<Storage>>(
       Sacado::MP::Vector<Storage> * A,
-      Sacado::MP::Vector<Storage> alpha,
       Sacado::MP::Vector<Storage> * b,
-      Sacado::MP::Vector<Storage> * c,
-      int i_max)
+      Sacado::MP::Vector<Storage> * c)
 {
-  __m512d alphab_0 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],0),M512D_ENSEMBLE_LOAD(alpha,0));
-  
-  for ( int i=0; i<i_max; ++i )
-  {
-    __m512d c_m_0 = M512D_ENSEMBLE_LOAD(c[i],0);
-    c_m_0 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[i],0),alphab_0,c_m_0);
-    M512D_ENSEMBLE_STORE(c[i],0,c_m_0);
-  }
+  __m512d c_m_0 = M512D_ENSEMBLE_LOAD(c[0],0);
+  __m512d b_m_0 = M512D_ENSEMBLE_LOAD(b[0],0);
+  c_m_0 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[0],0),b_m_0,c_m_0);
+  M512D_ENSEMBLE_STORE(c[0],0,c_m_0);
 }
 #endif
 
@@ -40,23 +26,17 @@ void inner_product_kernel<Sacado::MP::Vector<Storage>>(
 template<> KOKKOS_INLINE_FUNCTION
 void inner_product_kernel<Sacado::MP::Vector<Storage>>(
       Sacado::MP::Vector<Storage> * A,
-      Sacado::MP::Vector<Storage> alpha,
       Sacado::MP::Vector<Storage> * b,
-      Sacado::MP::Vector<Storage> * c,
-      int i_max)
+      Sacado::MP::Vector<Storage> * c)
 {
-  __m512d alphab_0 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],0),M512D_ENSEMBLE_LOAD(alpha,0));
-  __m512d alphab_1 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],1),M512D_ENSEMBLE_LOAD(alpha,1));
-  
-  for ( int i=0; i<i_max; ++i )
-  {
-    __m512d c_m_0 = M512D_ENSEMBLE_LOAD(c[i],0);
-    __m512d c_m_1 = M512D_ENSEMBLE_LOAD(c[i],1);
-    c_m_0 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[i],0),alphab_0,c_m_0);
-    c_m_1 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[i],1),alphab_1,c_m_1);
-    M512D_ENSEMBLE_STORE(c[i],0,c_m_0);
-    M512D_ENSEMBLE_STORE(c[i],1,c_m_1);
-  }
+  __m512d c_m_0 = M512D_ENSEMBLE_LOAD(c[0],0);
+  __m512d c_m_1 = M512D_ENSEMBLE_LOAD(c[0],1);
+  __m512d b_m_0 = M512D_ENSEMBLE_LOAD(b[0],0);
+  __m512d b_m_1 = M512D_ENSEMBLE_LOAD(b[0],1);
+  c_m_0 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[0],0),b_m_0,c_m_0);
+  c_m_1 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[0],1),b_m_1,c_m_1);
+  M512D_ENSEMBLE_STORE(c[0],0,c_m_0);
+  M512D_ENSEMBLE_STORE(c[0],1,c_m_1);
 }
 #endif
 
@@ -64,27 +44,21 @@ void inner_product_kernel<Sacado::MP::Vector<Storage>>(
 template<> KOKKOS_INLINE_FUNCTION
 void inner_product_kernel<Sacado::MP::Vector<Storage>>(
       Sacado::MP::Vector<Storage> * A,
-      Sacado::MP::Vector<Storage> alpha,
       Sacado::MP::Vector<Storage> * b,
-      Sacado::MP::Vector<Storage> * c,
-      int i_max)
+      Sacado::MP::Vector<Storage> * c)
 {
-  __m512d alphab_0 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],0),M512D_ENSEMBLE_LOAD(alpha,0));
-  __m512d alphab_1 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],1),M512D_ENSEMBLE_LOAD(alpha,1));
-  __m512d alphab_2 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],2),M512D_ENSEMBLE_LOAD(alpha,2));
-  
-  for ( int i=0; i<i_max; ++i )
-  {
-    __m512d c_m_0 = M512D_ENSEMBLE_LOAD(c[i],0);
-    __m512d c_m_1 = M512D_ENSEMBLE_LOAD(c[i],1);
-    __m512d c_m_2 = M512D_ENSEMBLE_LOAD(c[i],2);
-    c_m_0 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[i],0),alphab_0,c_m_0);
-    c_m_1 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[i],1),alphab_1,c_m_1);
-    c_m_2 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[i],2),alphab_2,c_m_2);
-    M512D_ENSEMBLE_STORE(c[i],0,c_m_0);
-    M512D_ENSEMBLE_STORE(c[i],1,c_m_1);
-    M512D_ENSEMBLE_STORE(c[i],2,c_m_2);
-  }
+  __m512d c_m_0 = M512D_ENSEMBLE_LOAD(c[0],0);
+  __m512d c_m_1 = M512D_ENSEMBLE_LOAD(c[0],1);
+  __m512d c_m_2 = M512D_ENSEMBLE_LOAD(c[0],2);
+  __m512d b_m_0 = M512D_ENSEMBLE_LOAD(b[0],0);
+  __m512d b_m_1 = M512D_ENSEMBLE_LOAD(b[0],1);
+  __m512d b_m_2 = M512D_ENSEMBLE_LOAD(b[0],2);
+  c_m_0 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[0],0),b_m_0,c_m_0);
+  c_m_1 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[0],1),b_m_1,c_m_1);
+  c_m_2 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[0],2),b_m_2,c_m_2);
+  M512D_ENSEMBLE_STORE(c[0],0,c_m_0);
+  M512D_ENSEMBLE_STORE(c[0],1,c_m_1);
+  M512D_ENSEMBLE_STORE(c[0],2,c_m_2);
 }
 #endif
 
@@ -92,31 +66,25 @@ void inner_product_kernel<Sacado::MP::Vector<Storage>>(
 template<> KOKKOS_INLINE_FUNCTION
 void inner_product_kernel<Sacado::MP::Vector<Storage>>(
       Sacado::MP::Vector<Storage> * A,
-      Sacado::MP::Vector<Storage> alpha,
       Sacado::MP::Vector<Storage> * b,
-      Sacado::MP::Vector<Storage> * c,
-      int i_max)
+      Sacado::MP::Vector<Storage> * c)
 {
-  __m512d alphab_0 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],0),M512D_ENSEMBLE_LOAD(alpha,0));
-  __m512d alphab_1 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],1),M512D_ENSEMBLE_LOAD(alpha,1));
-  __m512d alphab_2 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],2),M512D_ENSEMBLE_LOAD(alpha,2));
-  __m512d alphab_3 = _mm512_mul_pd(M512D_ENSEMBLE_LOAD(b[0],3),M512D_ENSEMBLE_LOAD(alpha,3));
-  
-  for ( int i=0; i<i_max; ++i )
-  {
-    __m512d c_m_0 = M512D_ENSEMBLE_LOAD(c[i],0);
-    __m512d c_m_1 = M512D_ENSEMBLE_LOAD(c[i],1);
-    __m512d c_m_2 = M512D_ENSEMBLE_LOAD(c[i],2);
-    __m512d c_m_3 = M512D_ENSEMBLE_LOAD(c[i],3);
-    c_m_0 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[i],0),alphab_0,c_m_0);
-    c_m_1 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[i],1),alphab_1,c_m_1);
-    c_m_2 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[i],2),alphab_2,c_m_2);
-    c_m_3 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[i],3),alphab_3,c_m_3);
-    M512D_ENSEMBLE_STORE(c[i],0,c_m_0);
-    M512D_ENSEMBLE_STORE(c[i],1,c_m_1);
-    M512D_ENSEMBLE_STORE(c[i],2,c_m_2);
-    M512D_ENSEMBLE_STORE(c[i],3,c_m_3);
-  }
+  __m512d c_m_0 = M512D_ENSEMBLE_LOAD(c[0],0);
+  __m512d c_m_1 = M512D_ENSEMBLE_LOAD(c[0],1);
+  __m512d c_m_2 = M512D_ENSEMBLE_LOAD(c[0],2);
+  __m512d c_m_3 = M512D_ENSEMBLE_LOAD(c[0],3);
+  __m512d b_m_0 = M512D_ENSEMBLE_LOAD(b[0],0);
+  __m512d b_m_1 = M512D_ENSEMBLE_LOAD(b[0],1);
+  __m512d b_m_2 = M512D_ENSEMBLE_LOAD(b[0],2);
+  __m512d b_m_3 = M512D_ENSEMBLE_LOAD(b[0],3);
+  c_m_0 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[0],0),b_m_0,c_m_0);
+  c_m_1 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[0],1),b_m_1,c_m_1);
+  c_m_2 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[0],2),b_m_2,c_m_2);
+  c_m_3 = _mm512_fmadd_pd(M512D_ENSEMBLE_LOAD(A[0],3),b_m_3,c_m_3);
+  M512D_ENSEMBLE_STORE(c[0],0,c_m_0);
+  M512D_ENSEMBLE_STORE(c[0],1,c_m_1);
+  M512D_ENSEMBLE_STORE(c[0],2,c_m_2);
+  M512D_ENSEMBLE_STORE(c[0],3,c_m_3);
 }
 #endif
 #endif
