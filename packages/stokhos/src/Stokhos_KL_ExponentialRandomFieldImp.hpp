@@ -57,6 +57,7 @@ ExponentialRandomField(Teuchos::ParameterList& solverParams)
   Teuchos::Array<double> domain_upper_bound_double;
   Teuchos::Array<double> domain_lower_bound_double;
   Teuchos::Array<double> correlation_length_double;
+  Teuchos::Array<int> num_KL_per_dim;
 
   // Get Domain Upper Bounds
   if (solverParams.isType<std::string>("Domain Upper Bounds"))
@@ -100,20 +101,47 @@ ExponentialRandomField(Teuchos::ParameterList& solverParams)
   for (int i=0; i<correlation_length.size(); i++)
     correlation_length[i]=correlation_length_double[i];
 
+  // Get Number of KL Terms per dimension
+  if (solverParams.isParameter("Number of KL Terms per dimension")){
+    if (solverParams.isType<std::string>("Number of KL Terms per dimension"))
+      num_KL_per_dim =
+        Teuchos::getArrayFromStringParameter<int>(
+          solverParams, "Number of KL Terms per dimension");
+    else
+      num_KL_per_dim =
+        solverParams.get< Teuchos::Array<int> >("Number of KL Terms per dimension");
+  }
+  else{
+    for (int i=0; i<dim; i++)
+      num_KL_per_dim[i] = num_KL;
+  }
+
+  int num_prod = 1;
+  for (int i=0; i<dim; i++)
+    num_prod *= num_KL_per_dim[i];
+  
+  if (num_prod <= 0)
+    for (int i=0; i<dim; i++)
+      TEUCHOS_TEST_FOR_EXCEPTION(num_KL_per_dim[i] >= 1, std::logic_error,
+      "Number of KL Terms for dimension " << i << " must be greater or equal to 1." << std::endl <<
+      "num_KL_per_dim[i] = " << num_KL_per_dim[i] << std::endl)
+  
+  if (num_KL==-1 || num_KL>num_prod )
+    num_KL = num_prod;
+  
   // Compute 1-D eigenfunctions for each dimension
   dim = domain_upper_bound.size();
   Teuchos::Array< Teuchos::Array< one_d_eigen_pair_type > > eig_pairs(dim);
   for (int i=0; i<dim; i++) {
-    eig_pairs[i].resize(num_KL);
+    eig_pairs[i].resize(num_KL_per_dim[i]);
     OneDExponentialCovarianceFunction<value_type> cov_func(
-      num_KL, domain_lower_bound[i], domain_upper_bound[i],
+      num_KL_per_dim[i], domain_lower_bound[i], domain_upper_bound[i],
       correlation_length[i], i, solverParams);
     eig_pairs[i] = cov_func.getEigenPairs();
   }
 
   // Compute all possible tensor product combinations of 1-D eigenfunctions
-  int num_prod = static_cast<int>(std::pow(static_cast<double>(num_KL),
-                                           static_cast<double>(dim)));
+  
   Teuchos::Array<product_eigen_pair_type> product_eig_pairs(num_prod);
   Teuchos::Array<int> index(dim, 0);
   int cnt = 0;
@@ -140,14 +168,14 @@ ExponentialRandomField(Teuchos::ParameterList& solverParams)
 
   // Copy eigenpairs into view
   product_eigen_funcs =
-    eigen_func_array_type("product eigen functions", num_prod, dim);
+    eigen_func_array_type("product eigen functions", num_KL, dim);
   product_eigen_values =
-    eigen_value_array_type("product eigen vvalues", num_prod);
+    eigen_value_array_type("product eigen vvalues", num_KL);
   typename eigen_func_array_type::HostMirror host_product_eigen_funcs =
     Kokkos::create_mirror_view(product_eigen_funcs);
   typename eigen_value_array_type::HostMirror host_product_eigen_values =
     Kokkos::create_mirror_view(product_eigen_values);
-  for (int i=0; i<num_prod; ++i) {
+  for (int i=0; i<num_KL; ++i) {
     host_product_eigen_values(i) = 1.0;
     for (int j=0; j<dim; ++j) {
       host_product_eigen_values(i) *= product_eig_pairs[i].eig_pairs[j].eig_val;
