@@ -102,6 +102,7 @@ ExponentialRandomField(Teuchos::ParameterList& solverParams)
     correlation_length[i]=correlation_length_double[i];
 
   // Get Number of KL Terms per dimension
+  dim = domain_upper_bound.size();
   if (solverParams.isParameter("Number of KL Terms per dimension")){
     if (solverParams.isType<std::string>("Number of KL Terms per dimension"))
       num_KL_per_dim =
@@ -111,10 +112,8 @@ ExponentialRandomField(Teuchos::ParameterList& solverParams)
       num_KL_per_dim =
         solverParams.get< Teuchos::Array<int> >("Number of KL Terms per dimension");
   }
-  else{
-    for (int i=0; i<dim; i++)
-      num_KL_per_dim[i] = num_KL;
-  }
+  else
+    num_KL_per_dim = Teuchos::Array<int>(dim,num_KL);
 
   int num_prod = 1;
   for (int i=0; i<dim; i++)
@@ -130,7 +129,6 @@ ExponentialRandomField(Teuchos::ParameterList& solverParams)
     num_KL = num_prod;
   
   // Compute 1-D eigenfunctions for each dimension
-  dim = domain_upper_bound.size();
   Teuchos::Array< Teuchos::Array< one_d_eigen_pair_type > > eig_pairs(dim);
   for (int i=0; i<dim; i++) {
     eig_pairs[i].resize(num_KL_per_dim[i]);
