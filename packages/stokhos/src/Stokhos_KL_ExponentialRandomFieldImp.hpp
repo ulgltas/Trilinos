@@ -152,7 +152,7 @@ ExponentialRandomField(Teuchos::ParameterList& solverParams)
     product_eig_pairs[cnt].set(eigs);
     ++index[0];
     int j = 0;
-    while (j < dim-1 && index[j] == num_KL) {
+    while (j < dim-1 && index[j] == num_KL_per_dim[j]) {
       index[j] = 0;
       ++j;
       ++index[j];
