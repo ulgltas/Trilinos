@@ -125,8 +125,7 @@ void my_update (
 
   const int n_tiles = ceil(((double) m)/m_c);
 
-  Kokkos::parallel_for (n_tiles, KOKKOS_LAMBDA (const int i_tile)
-  {
+  Kokkos::parallel_for (n_tiles, KOKKOS_LAMBDA (const int i_tile){
     int i_min = m_c*i_tile;
     bool last_tile = (i_tile==(n_tiles-1));
     int i_max = (last_tile) ? m : (i_min+m_c);
@@ -181,20 +180,29 @@ void my_inner_product (
       y(i) *= beta;
   });
 
-  Kokkos::parallel_for (policy, KOKKOS_LAMBDA (member_type team_member)
-  {
+  Kokkos::parallel_for (policy, KOKKOS_LAMBDA (member_type team_member){
     const int j = team_member.league_rank();
     const int j_min = n_per_tile2*j;
-    const int j_max = (j_min+n_per_tile2 > n) ? n : j_min+n_per_tile2;
-    const int i_min = (j<m) ? j:(j%m);
+    const int nj = (j_min+n_per_tile2 > n) ? (n-j_min) : n_per_tile2;
+    const int i_min = j%m;
 
     for ( int i=i_min; i<m; ++i ){
       Scalar tmp = 0.;
-      Kokkos::parallel_reduce (TeamThreadRange (team_member, j_max-j_min),[=] (int jj, Scalar& tmp_sum){
+      Kokkos::parallel_reduce (TeamThreadRange (team_member, nj),[=] (int jj, Scalar& tmp_sum){
         inner_product_kernel<Scalar>(&A(jj+j_min,i), &x(jj+j_min), &tmp_sum);
       },tmp);
-      tmp *= alpha;
       if ( team_member.team_rank () == 0) {
+        tmp *= alpha;
+        Kokkos::atomic_add(&y(i),tmp);
+      }
+    }
+    for ( int i=0; i<i_min; ++i ){
+      Scalar tmp = 0.;
+      Kokkos::parallel_reduce (TeamThreadRange (team_member, nj),[=] (int jj, Scalar& tmp_sum){
+        inner_product_kernel<Scalar>(&A(jj+j_min,i), &x(jj+j_min), &tmp_sum);
+      },tmp);
+      if ( team_member.team_rank () == 0) {
+        tmp *= alpha;
         Kokkos::atomic_add(&y(i),tmp);
       }
     }
@@ -218,12 +226,10 @@ void my_gemv (const char trans[],
   static_assert (VX::rank == 1, "GEMM: x must have rank 1 (be a vector).");
   static_assert (VY::rank == 1, "GEMM: y must have rank 1 (be a vector).");
   
-  if (trans[0]=='n'||trans[0]=='N')
-  {
+  if (trans[0]=='n'||trans[0]=='N'){
     my_update<Scalar,VA,VX,VY>(alpha,A,x,beta,y);
   }
-  else
-  {
+  else{
     my_inner_product<Scalar,VA,VX,VY>(alpha,A,x,beta,y);
   }
 }
