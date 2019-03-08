@@ -121,14 +121,15 @@ void my_update (
   const size_t n = x.dimension_0 ();
   
   const size_t m_c = Sacado_MP_Vector_GEMV_Tile_Size(sizeof(Scalar));
+#ifdef STOKHOS_MP_VECTOR_MASK_USE_II
   const size_t n_vectors = Sacado_MP_Vector_GEMV_Number_Vectors(sizeof(Scalar));
-
-  const int n_tiles = ceil(((double) m)/m_c);
+#endif
+  const size_t n_tiles = ceil(((double) m)/m_c);
 
   Kokkos::parallel_for (n_tiles, KOKKOS_LAMBDA (const int i_tile){
-    int i_min = m_c*i_tile;
+    size_t i_min = m_c*i_tile;
     bool last_tile = (i_tile==(n_tiles-1));
-    int i_max = (last_tile) ? m : (i_min+m_c);
+    size_t i_max = (last_tile) ? m : (i_min+m_c);
 
     #pragma unroll
     for ( size_t i=i_min; i<i_max; ++i )
@@ -162,14 +163,14 @@ void my_inner_product (
   const size_t m = y.dimension_0 ();
   const size_t n = x.dimension_0 ();
 
-  const int pool_size = Kokkos::DefaultExecutionSpace::thread_pool_size();
+  const size_t pool_size = Kokkos::DefaultExecutionSpace::thread_pool_size();
 
-  const int team_size = 4;
+  const size_t team_size = 4;
 
   const size_t m_c = Sacado_MP_Vector_GEMV_Tile_Size(sizeof(Scalar));
-  const int n_per_tile2 = m_c*team_size;
+  const size_t n_per_tile2 = m_c*team_size;
 
-  const int n_i2 = ceil(((double) n)/n_per_tile2);
+  const size_t n_i2 = ceil(((double) n)/n_per_tile2);
   using Kokkos::TeamThreadRange;
 
   Kokkos::TeamPolicy<> policy = Kokkos::TeamPolicy<>( n_i2, team_size);
@@ -181,12 +182,12 @@ void my_inner_product (
   });
 
   Kokkos::parallel_for (policy, KOKKOS_LAMBDA (member_type team_member){
-    const int j = team_member.league_rank();
-    const int j_min = n_per_tile2*j;
-    const int nj = (j_min+n_per_tile2 > n) ? (n-j_min) : n_per_tile2;
-    const int i_min = j%m;
+    const size_t j = team_member.league_rank();
+    const size_t j_min = n_per_tile2*j;
+    const size_t nj = (j_min+n_per_tile2 > n) ? (n-j_min) : n_per_tile2;
+    const size_t i_min = j%m;
 
-    for ( int i=i_min; i<m; ++i ){
+    for ( size_t i=i_min; i<m; ++i ){
       Scalar tmp = 0.;
       Kokkos::parallel_reduce (TeamThreadRange (team_member, nj),[=] (int jj, Scalar& tmp_sum){
         inner_product_kernel<Scalar>(&A(jj+j_min,i), &x(jj+j_min), &tmp_sum);
@@ -196,7 +197,7 @@ void my_inner_product (
         Kokkos::atomic_add(&y(i),tmp);
       }
     }
-    for ( int i=0; i<i_min; ++i ){
+    for ( size_t i=0; i<i_min; ++i ){
       Scalar tmp = 0.;
       Kokkos::parallel_reduce (TeamThreadRange (team_member, nj),[=] (int jj, Scalar& tmp_sum){
         inner_product_kernel<Scalar>(&A(jj+j_min,i), &x(jj+j_min), &tmp_sum);
