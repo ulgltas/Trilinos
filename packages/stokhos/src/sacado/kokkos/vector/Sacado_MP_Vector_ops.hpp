@@ -975,6 +975,6 @@ namespace std {
     for (int i=0; i<x.size(); i++)
       if (!isfinite(x.coeff(i)))
         return false;
-      return true;
+    return true;
   }
 }

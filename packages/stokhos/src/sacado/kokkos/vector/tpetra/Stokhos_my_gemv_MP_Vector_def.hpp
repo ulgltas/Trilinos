@@ -124,20 +124,24 @@ void my_update (
 #ifdef STOKHOS_MP_VECTOR_MASK_USE_II
   const size_t n_vectors = Sacado_MP_Vector_GEMV_Number_Vectors(sizeof(Scalar));
 #endif
-  const size_t n_tiles = ceil(((double) m)/m_c);
+  const int n_tiles = ceil(((double) m)/m_c);
 
   Kokkos::parallel_for (n_tiles, KOKKOS_LAMBDA (const int i_tile){
     size_t i_min = m_c*i_tile;
     bool last_tile = (i_tile==(n_tiles-1));
     size_t i_max = (last_tile) ? m : (i_min+m_c);
 
-    #pragma unroll
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
+#pragma unroll
+#endif
     for ( size_t i=i_min; i<i_max; ++i )
     {
 #ifndef STOKHOS_MP_VECTOR_MASK_USE_II
       y(i) = beta*y(i);
 #else
-      #pragma unroll (n_vectors)
+#ifdef STOKHOS_HAVE_PRAGMA_UNROLL
+#pragma unroll (n_vectors)
+#endif
       for ( size_t ell=0; ell<n_vectors; ++ell )
         M512D_ENSEMBLE_STORE(y(i),ell,_mm512_mul_pd(M512D_ENSEMBLE_LOAD<Scalar>(y(i),ell),M512D_ENSEMBLE_LOAD<Scalar>(beta,ell)));
 #endif
@@ -162,8 +166,6 @@ void my_inner_product (
   // Get the dimensions
   const size_t m = y.dimension_0 ();
   const size_t n = x.dimension_0 ();
-
-  const size_t pool_size = Kokkos::DefaultExecutionSpace::thread_pool_size();
 
   const size_t team_size = 4;
 
