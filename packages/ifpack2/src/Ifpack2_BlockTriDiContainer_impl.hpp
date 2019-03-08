@@ -1035,11 +1035,9 @@ namespace Ifpack2 {
       using impl_type = ImplType<MatrixType>;
       using execution_space = typename impl_type::execution_space;
       using local_ordinal_type = typename impl_type::local_ordinal_type;
-      using size_type = typename impl_type::size_type;
-
+      
       using size_type_1d_view = typename impl_type::size_type_1d_view;
-      using vector_type_3d_view = typename impl_type::vector_type_3d_view;
-
+      
       const ConstUnmanaged<size_type_1d_view> pack_td_ptr(btdm.pack_td_ptr);
       const local_ordinal_type blocksize = btdm.values.extent(1);
 
