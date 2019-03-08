@@ -581,7 +581,7 @@ namespace Tpetra {
             const Teuchos::RCP<const map_type>& colMap,
             const typename local_graph_type::row_map_type& rowPointers,
             const typename local_graph_type::entries_type::non_const_type& columnIndices,
-            const Teuchos::RCP<Teuchos::ParameterList>& params) :
+            const Teuchos::RCP<Teuchos::ParameterList>& /* params */) :
     dist_object_type (rowMap)
     , rowMap_(rowMap)
     , colMap_(colMap)
@@ -617,7 +617,7 @@ namespace Tpetra {
             const Teuchos::RCP<const map_type>& colMap,
             const Teuchos::ArrayRCP<size_t>& rowPointers,
             const Teuchos::ArrayRCP<LocalOrdinal> & columnIndices,
-            const Teuchos::RCP<Teuchos::ParameterList>& params) :
+            const Teuchos::RCP<Teuchos::ParameterList>& /* params */) :
     dist_object_type (rowMap)
     , rowMap_ (rowMap)
     , colMap_ (colMap)
@@ -5366,9 +5366,9 @@ namespace Tpetra {
           RCP<ParameterList> importSublist = sublist (params, "Import", true);
           if (useRemotePIDs) {
             RCP<import_type> newImp =
-              rcp (new import_type (domainMap_, colMap_, remotePIDs));
-            newImp->setParameterList (importSublist); // nonconst method
-            importer_ = newImp; // assign nonconst to const
+              rcp (new import_type (domainMap_, colMap_, remotePIDs,
+                                    importSublist));
+            importer_ = newImp;
           }
           else {
             importer_ = rcp (new import_type (domainMap_, colMap_, importSublist));
@@ -5551,7 +5551,7 @@ namespace Tpetra {
   void
   CrsGraph<LocalOrdinal, GlobalOrdinal, Node>::
   copyAndPermute (const SrcDistObject& source,
-                  size_t numSameIDs,
+                  const size_t numSameIDs,
                   const Teuchos::ArrayView<const LocalOrdinal> &permuteToLIDs,
                   const Teuchos::ArrayView<const LocalOrdinal> &permuteFromLIDs)
   {
@@ -6046,9 +6046,9 @@ namespace Tpetra {
   unpackAndCombine (const Teuchos::ArrayView<const LocalOrdinal> &importLIDs,
                     const Teuchos::ArrayView<const GlobalOrdinal> &imports,
                     const Teuchos::ArrayView<size_t> &numPacketsPerLID,
-                    size_t constantNumPackets,
-                    Distributor& distor,
-                    CombineMode CM)
+                    size_t /* constantNumPackets */,
+                    Distributor& /* distor */,
+                    CombineMode /* CM */)
   {
     const char tfecfFuncName[] = "unpackAndCombine: ";
     typedef LocalOrdinal LO;
@@ -6897,7 +6897,7 @@ namespace Tpetra {
       // elements) how many incoming elements we expect, so we can
       // resize the buffer accordingly.
       const size_t rbufLen = RemoteLIDs.size() * constantNumPackets;
-      destGraph->reallocImportsIfNeeded(rbufLen);
+      destGraph->reallocImportsIfNeeded(rbufLen, false, nullptr);
     }
 
     {
@@ -6939,7 +6939,7 @@ namespace Tpetra {
 
           // Reallocation MUST go before setting the modified flag,
           // because it may clear out the flags.
-          destGraph->reallocImportsIfNeeded(totalImportPackets);
+          destGraph->reallocImportsIfNeeded(totalImportPackets, false, nullptr);
           destGraph->imports_.modify_host();
           Teuchos::ArrayView<packet_type> hostImports =
             getArrayViewFromDualView(destGraph->imports_);
@@ -6987,7 +6987,7 @@ namespace Tpetra {
 
           // Reallocation MUST go before setting the modified flag,
           // because it may clear out the flags.
-          destGraph->reallocImportsIfNeeded(totalImportPackets);
+          destGraph->reallocImportsIfNeeded(totalImportPackets, false, nullptr);
           destGraph->imports_.modify_host();
           Teuchos::ArrayView<packet_type> hostImports =
             getArrayViewFromDualView(destGraph->imports_);

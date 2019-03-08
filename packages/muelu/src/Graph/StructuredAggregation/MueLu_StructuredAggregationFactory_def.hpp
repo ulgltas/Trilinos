@@ -79,25 +79,14 @@ namespace MueLu {
     SET_VALID_ENTRY("aggregation: allow user-specified singletons");
     SET_VALID_ENTRY("aggregation: error on nodes with no on-rank neighbors");
     SET_VALID_ENTRY("aggregation: phase3 avoid singletons");
-#undef  SET_VALID_ENTRY
 
     // general variables needed in StructuredAggregationFactory
-    validParamList->set<std::string>            ("aggregation: mesh layout","Global Lexicographic",
-                                                 "Type of mesh ordering");
-    validParamList->set<std::string>            ("aggregation: coupling","coupled",
-                                                 "aggregation coupling mode: coupled or uncoupled");
-    validParamList->set<std::string>            ("aggregation: output type", "Aggregates",
-                                                 "Type of object holding the aggregation data: Aggregtes or CrsGraph");
-    validParamList->set<std::string>            ("aggregation: coarsening rate", "{3}",
-                                                 "Coarsening rate per spatial dimensions");
-    validParamList->set<int>                    ("aggregation: number of spatial dimensions", 3,
-                                                  "The number of spatial dimensions in the problem");
-    validParamList->set<int>                    ("aggregation: coarsening order", 0,
-                                                  "The interpolation order used to construct grid transfer operators based off these aggregates.");
-
-    validParamList->set<RCP<const FactoryBase> >("aggregation: mesh data",  Teuchos::null,
-                                                 "Mesh ordering associated data");
-
+    SET_VALID_ENTRY("aggregation: mesh layout");
+    SET_VALID_ENTRY("aggregation: mode");
+    SET_VALID_ENTRY("aggregation: output type");
+    SET_VALID_ENTRY("aggregation: coarsening rate");
+    SET_VALID_ENTRY("aggregation: coarsening order");
+#undef  SET_VALID_ENTRY
     validParamList->set<RCP<const FactoryBase> >("Graph",                   Teuchos::null,
                                                  "Graph of the matrix after amalgamation but without dropping.");
     validParamList->set<RCP<const FactoryBase> >("numDimensions",           Teuchos::null,
@@ -106,17 +95,20 @@ namespace MueLu {
                                                  "Global number of nodes per spatial dimension provided by CoordinatesTransferFactory.");
     validParamList->set<RCP<const FactoryBase> >("lNodesPerDim",            Teuchos::null,
                                                  "Local number of nodes per spatial dimension provided by CoordinatesTransferFactory.");
+    validParamList->set<RCP<const FactoryBase> >("DofsPerNode",             Teuchos::null,
+                                                 "Generating factory for variable \'DofsPerNode\', usually the same as the \'Graph\' factory");
 
     return validParamList;
-  } // GetValidParameterList
+  } // GetValidParameterList()
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   void StructuredAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::
   DeclareInput(Level& currentLevel) const {
     Input(currentLevel, "Graph");
+    Input(currentLevel, "DofsPerNode");
 
     ParameterList pL = GetParameterList();
-    std::string coupling = pL.get<std::string>("aggregation: coupling");
+    std::string coupling = pL.get<std::string>("aggregation: mode");
     const bool coupled = (coupling == "coupled" ? true : false);
     if(coupled) {
       // Request the global number of nodes per dimensions
@@ -153,7 +145,7 @@ namespace MueLu {
       Input(currentLevel, "numDimensions");
       Input(currentLevel, "lNodesPerDim");
     }
-  } // DeclareInput
+  } // DeclareInput()
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   void StructuredAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::
@@ -174,20 +166,21 @@ namespace MueLu {
     bDefinitionPhase_ = false;  // definition phase is finished, now all aggregation algorithm information is fixed
 
     // General problem informations are gathered from data stored in the problem matix.
-    RCP<const GraphBase> graph = Get< RCP<GraphBase> >(currentLevel, "Graph");
-    RCP<const Map> fineMap      = graph->GetDomainMap();
-    const int myRank            = fineMap->getComm()->getRank();
-    const int numRanks          = fineMap->getComm()->getSize();
-    const GO  minGlobalIndex    = fineMap->getMinGlobalIndex();
+    RCP<const GraphBase> graph  = Get< RCP<GraphBase> >(currentLevel, "Graph");
+    RCP<const Map> fineMap     = graph->GetDomainMap();
+    const int myRank           = fineMap->getComm()->getRank();
+    const int numRanks         = fineMap->getComm()->getSize();
+    const GO  minGlobalIndex   = fineMap->getMinGlobalIndex();
+    const LO  dofsPerNode      = Get<LO>(currentLevel, "DofsPerNode");
 
     // Since we want to operate on nodes and not dof, we need to modify the rowMap in order to
     // obtain a nodeMap.
     const int interpolationOrder = pL.get<int>("aggregation: coarsening order");
-    std::string meshLayout = pL.get<std::string>("aggregation: mesh layout");
-    std::string coupling = pL.get<std::string>("aggregation: coupling");
-    const bool coupled = (coupling == "coupled" ? true : false);
-    std::string outputType = pL.get<std::string>("aggregation: output type");
-    const bool outputAggregates = (outputType == "Aggregates" ? true : false);
+    std::string meshLayout       = pL.get<std::string>("aggregation: mesh layout");
+    std::string coupling         = pL.get<std::string>("aggregation: mode");
+    const bool coupled           = (coupling == "coupled" ? true : false);
+    std::string outputType       = pL.get<std::string>("aggregation: output type");
+    const bool outputAggregates  = (outputType == "Aggregates" ? true : false);
     int numDimensions;
     Array<GO> gFineNodesPerDir(3);
     Array<LO> lFineNodesPerDir(3);
@@ -332,8 +325,8 @@ namespace MueLu {
     } else {
       // Create Coarse Data
       RCP<CrsGraph> myGraph;
-      myStructuredAlgorithm->BuildGraph(*graph, geoData, myGraph, coarseCoordinatesFineMap,
-                                        coarseCoordinatesMap);
+      myStructuredAlgorithm->BuildGraph(*graph, geoData, dofsPerNode, myGraph,
+                                        coarseCoordinatesFineMap, coarseCoordinatesMap);
       Set(currentLevel, "prolongatorGraph", myGraph);
     }
 
@@ -344,9 +337,8 @@ namespace MueLu {
     Set(currentLevel, "coarseCoordinatesFineMap", coarseCoordinatesFineMap);
     Set(currentLevel, "coarseCoordinatesMap", coarseCoordinatesMap);
     Set(currentLevel, "interpolationOrder", interpolationOrder);
-    // Set(currentLevel, "coarseNumDimensions", numDimensions);
 
-  } // Build
+  } // Build()
 } //namespace MueLu
 
 

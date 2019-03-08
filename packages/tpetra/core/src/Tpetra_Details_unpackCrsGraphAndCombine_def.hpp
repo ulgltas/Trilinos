@@ -358,7 +358,6 @@ unpackAndCombine(
   // Resize row pointers and indices to accommodate incoming data
   auto padding = computeCrsPadding<NumPacketsView,ImportLidsView,Device>(
     num_packets_per_lid, import_lids, unpack_pids);
-  using padding_type = decltype(padding);
   padCrsArrays(row_ptrs_beg, row_ptrs_end, indices, padding);
 
   // Get the offsets
@@ -400,7 +399,7 @@ unpackAndCombineWithOwningPIDsCount(
   const Kokkos::View<const typename LocalGraph::data_type*,
                      typename LocalGraph::device_type,
                      Kokkos::MemoryUnmanaged> permute_from_lids,
-  const Kokkos::View<const Packet*, BufferDevice>& imports,
+  const Kokkos::View<const Packet*, BufferDevice>& /* imports */,
   const Kokkos::View<const size_t*, BufferDevice>& num_packets_per_lid,
   const size_t num_same_ids)
 {
@@ -461,7 +460,7 @@ void
 setupRowPointersForRemotes(
   const Kokkos::View<size_t*, Device>& tgt_rowptr,
   const Kokkos::View<const LO*, Device>& import_lids,
-  const Kokkos::View<const Packet*, BufferDevice>& imports,
+  const Kokkos::View<const Packet*, BufferDevice>& /* imports */,
   const Kokkos::View<const size_t*, BufferDevice>& num_packets_per_lid)
 {
   using Kokkos::parallel_reduce;
@@ -617,7 +616,7 @@ unpackAndCombineIntoCrsArrays2(
     const Kokkos::View<const typename LocalMap::local_ordinal_type*, typename LocalMap::device_type>& import_lids,
     const Kokkos::View<const Packet*, BufferDevice>& imports,
     const Kokkos::View<const size_t*, BufferDevice>& num_packets_per_lid,
-    const LocalGraph& local_graph,
+    const LocalGraph& /* local_graph */,
     const LocalMap /*& local_col_map*/,
     const int my_pid)
 {
@@ -862,8 +861,8 @@ unpackCrsGraphAndCombine(
     const Teuchos::ArrayView<const typename CrsGraph<LO,GO,Node>::packet_type>& imports,
     const Teuchos::ArrayView<const size_t>& numPacketsPerLID,
     const Teuchos::ArrayView<const LO>& importLIDs,
-    size_t constantNumPackets,
-    Distributor & distor,
+    size_t /* constantNumPackets */,
+    Distributor & /* distor */,
     CombineMode /* combineMode */)
 {
 
@@ -960,17 +959,19 @@ unpackCrsGraphAndCombine(
 template<class LO, class GO, class Node>
 void
 unpackCrsGraphAndCombineNew(
-    CrsGraph<LO, GO, Node>& sourceGraph,
+    CrsGraph<LO, GO, Node>& /* sourceGraph */,
     const Kokkos::DualView<const typename CrsGraph<LO,GO,Node>::packet_type*,
                            typename CrsGraph<LO,GO,Node>::buffer_device_type>& imports,
     const Kokkos::DualView<const size_t*,
                            typename CrsGraph<LO,GO,Node>::buffer_device_type>& numPacketsPerLID,
-    const Kokkos::DualView<const LO*, typename Node::device_type>& importLIDs,
-    const size_t constantNumPackets,
-    Distributor& distor,
+    const Kokkos::DualView<const LO*,
+                           typename CrsGraph<LO,GO,Node>::buffer_device_type>& importLIDs,
+    const size_t /* constantNumPackets */,
+    Distributor& /* distor */,
     const CombineMode /* combineMode */)
 {
   TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, "METHOD NOT COMPLETE");
+#if 0
   using UnpackAndCombineCrsGraphImpl::unpackAndCombine;
   using Tpetra::Details::castAwayConstDualView;
   using Kokkos::View;
@@ -992,21 +993,18 @@ unpackCrsGraphAndCombineNew(
 
   {
     auto numPacketsPerLID_nc = castAwayConstDualView(numPacketsPerLID);
-    numPacketsPerLID_nc.template sync<buffer_memory_space>();
+    numPacketsPerLID_nc.sync_device ();
   }
-  auto num_packets_per_lid_d = numPacketsPerLID.template view<buffer_memory_space>();
+  auto num_packets_per_lid_d = numPacketsPerLID.view_device ();
 
-  {
-    auto importLIDs_nc = castAwayConstDualView(importLIDs);
-    importLIDs_nc.template sync<memory_space>();
-  }
-  auto import_lids_d = importLIDs.template view<memory_space>();
+  TEUCHOS_ASSERT( ! importLIDs.need_sync_device () );
+  auto import_lids_d = importLIDs.view_device ();
 
   {
     auto imports_nc = castAwayConstDualView(imports);
-    imports_nc.template sync<buffer_memory_space>();
+    imports_nc.sync_device ();
   }
-  auto imports_d = imports.template view<buffer_memory_space>();
+  auto imports_d = imports.view_device ();
 
   // Now do the actual unpack!
   // TJF: Should be grabbed from the Graph
@@ -1016,6 +1014,7 @@ unpackCrsGraphAndCombineNew(
   unpackAndCombine<LO,packet_type,row_ptrs_type,indices_type,device_type,buffer_device_type>(
       row_ptrs_beg, row_ptrs_end, indices, imports_d,
       num_packets_per_lid_d, import_lids_d, false);
+#endif // 0
 }
 
 /// \brief Special version of Tpetra::Details::unpackCrsGraphAndCombine
@@ -1074,8 +1073,8 @@ unpackAndCombineWithOwningPIDsCount(
     const Teuchos::ArrayView<const LocalOrdinal> &importLIDs,
     const Teuchos::ArrayView<const typename CrsGraph<LocalOrdinal,GlobalOrdinal,Node>::packet_type> &imports,
     const Teuchos::ArrayView<const size_t>& numPacketsPerLID,
-    size_t constantNumPackets,
-    Distributor &distor,
+    size_t /* constantNumPackets */,
+    Distributor &/* distor */,
     CombineMode /* combineMode */,
     size_t numSameIDs,
     const Teuchos::ArrayView<const LocalOrdinal>& permuteToLIDs,
@@ -1146,8 +1145,8 @@ unpackAndCombineIntoCrsArrays(
     const Teuchos::ArrayView<const LocalOrdinal>& importLIDs,
     const Teuchos::ArrayView<const typename CrsGraph<LocalOrdinal,GlobalOrdinal,Node>::packet_type>& imports,
     const Teuchos::ArrayView<const size_t>& numPacketsPerLID,
-    const size_t constantNumPackets,
-    Distributor& distor,
+    const size_t /* constantNumPackets */,
+    Distributor& /* distor */,
     const CombineMode /* combineMode */,
     const size_t numSameIDs,
     const Teuchos::ArrayView<const LocalOrdinal>& permuteToLIDs,
@@ -1281,10 +1280,12 @@ unpackAndCombineIntoCrsArrays(
   template void \
   Details::unpackCrsGraphAndCombineNew<LO, GO, NT>( \
     CrsGraph<LO, GO, NT>&, \
-    const Kokkos::DualView<const typename CrsGraph<LO,GO,NT>::packet_type*, \
-                           typename CrsGraph<LO, GO, NT>::buffer_device_type>&, \
-    const Kokkos::DualView<const size_t*, typename CrsGraph<LO, GO, NT>::buffer_device_type>&, \
-    const Kokkos::DualView<const LO*, NT::device_type>&, \
+    const Kokkos::DualView<const CrsGraph<LO, GO, NT>::packet_type*, \
+                           CrsGraph<LO, GO, NT>::buffer_device_type>&, \
+    const Kokkos::DualView<const size_t*, \
+                           CrsGraph<LO, GO, NT>::buffer_device_type>&, \
+    const Kokkos::DualView<const LO*, \
+                           CrsGraph<LO, GO, NT>::buffer_device_type>&, \
     const size_t, \
     Distributor&, \
     const CombineMode); \

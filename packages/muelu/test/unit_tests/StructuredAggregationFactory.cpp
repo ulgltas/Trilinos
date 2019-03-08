@@ -128,10 +128,9 @@ namespace MueLuTests {
     dropFact->SetFactory("UnAmalgamationInfo", amalgFact);
     RCP<StructuredAggregationFactory> StructuredAggFact = rcp(new StructuredAggregationFactory());
     StructuredAggFact->SetFactory("Graph", dropFact);
+    StructuredAggFact->SetFactory("DofsPerNode", dropFact);
     StructuredAggFact->SetParameter("aggregation: mesh layout",
                                     Teuchos::ParameterEntry(meshLayout));
-    StructuredAggFact->SetParameter("aggregation: number of spatial dimensions",
-                                    Teuchos::ParameterEntry(numDimensions));
     StructuredAggFact->SetParameter("aggregation: coarsening order",
                                     Teuchos::ParameterEntry(0));
     StructuredAggFact->SetParameter("aggregation: coarsening rate",
@@ -232,10 +231,9 @@ namespace MueLuTests {
     dropFact->SetFactory("UnAmalgamationInfo", amalgFact);
     RCP<StructuredAggregationFactory> StructuredAggFact = rcp(new StructuredAggregationFactory());
     StructuredAggFact->SetFactory("Graph", dropFact);
+    StructuredAggFact->SetFactory("DofsPerNode", dropFact);
     StructuredAggFact->SetParameter("aggregation: mesh layout",
                                     Teuchos::ParameterEntry(meshLayout));
-    StructuredAggFact->SetParameter("aggregation: number of spatial dimensions",
-                                    Teuchos::ParameterEntry(numDimensions));
     StructuredAggFact->SetParameter("aggregation: coarsening order",
                                     Teuchos::ParameterEntry(0));
     StructuredAggFact->SetParameter("aggregation: coarsening rate",
@@ -336,10 +334,9 @@ namespace MueLuTests {
     dropFact->SetFactory("UnAmalgamationInfo", amalgFact);
     RCP<StructuredAggregationFactory> StructuredAggFact = rcp(new StructuredAggregationFactory());
     StructuredAggFact->SetFactory("Graph", dropFact);
+    StructuredAggFact->SetFactory("DofsPerNode", dropFact);
     StructuredAggFact->SetParameter("aggregation: mesh layout",
                                     Teuchos::ParameterEntry(meshLayout));
-    StructuredAggFact->SetParameter("aggregation: number of spatial dimensions",
-                                    Teuchos::ParameterEntry(numDimensions));
     StructuredAggFact->SetParameter("aggregation: coarsening order",
                                     Teuchos::ParameterEntry(0));
     StructuredAggFact->SetParameter("aggregation: coarsening rate",
@@ -442,10 +439,9 @@ namespace MueLuTests {
     dropFact->SetFactory("UnAmalgamationInfo", amalgFact);
     RCP<StructuredAggregationFactory> StructuredAggFact = rcp(new StructuredAggregationFactory());
     StructuredAggFact->SetFactory("Graph", dropFact);
+    StructuredAggFact->SetFactory("DofsPerNode", dropFact);
     StructuredAggFact->SetParameter("aggregation: mesh layout",
                                     Teuchos::ParameterEntry(meshLayout));
-    StructuredAggFact->SetParameter("aggregation: number of spatial dimensions",
-                                    Teuchos::ParameterEntry(numDimensions));
     StructuredAggFact->SetParameter("aggregation: coarsening order",
                                     Teuchos::ParameterEntry(0));
     StructuredAggFact->SetParameter("aggregation: coarsening rate",
@@ -548,10 +544,9 @@ namespace MueLuTests {
     dropFact->SetFactory("UnAmalgamationInfo", amalgFact);
     RCP<StructuredAggregationFactory> StructuredAggFact = rcp(new StructuredAggregationFactory());
     StructuredAggFact->SetFactory("Graph", dropFact);
+    StructuredAggFact->SetFactory("DofsPerNode", dropFact);
     StructuredAggFact->SetParameter("aggregation: mesh layout",
                                     Teuchos::ParameterEntry(meshLayout));
-    StructuredAggFact->SetParameter("aggregation: number of spatial dimensions",
-                                    Teuchos::ParameterEntry(numDimensions));
     StructuredAggFact->SetParameter("aggregation: coarsening order",
                                     Teuchos::ParameterEntry(0));
     StructuredAggFact->SetParameter("aggregation: coarsening rate",
@@ -655,10 +650,9 @@ namespace MueLuTests {
     dropFact->SetFactory("UnAmalgamationInfo", amalgFact);
     RCP<StructuredAggregationFactory> StructuredAggFact = rcp(new StructuredAggregationFactory());
     StructuredAggFact->SetFactory("Graph", dropFact);
+    StructuredAggFact->SetFactory("DofsPerNode", dropFact);
     StructuredAggFact->SetParameter("aggregation: mesh layout",
                                     Teuchos::ParameterEntry(meshLayout));
-    StructuredAggFact->SetParameter("aggregation: number of spatial dimensions",
-                                    Teuchos::ParameterEntry(numDimensions));
     StructuredAggFact->SetParameter("aggregation: coarsening order",
                                     Teuchos::ParameterEntry(0));
     StructuredAggFact->SetParameter("aggregation: coarsening rate",
@@ -767,12 +761,11 @@ namespace MueLuTests {
     dropFact->SetFactory("UnAmalgamationInfo", amalgFact);
     RCP<StructuredAggregationFactory> StructuredAggFact = rcp(new StructuredAggregationFactory());
     StructuredAggFact->SetFactory("Graph", dropFact);
+    StructuredAggFact->SetFactory("DofsPerNode", dropFact);
     StructuredAggFact->SetParameter("aggregation: mesh layout",
                                     Teuchos::ParameterEntry(meshLayout));
-    StructuredAggFact->SetParameter("aggregation: coupling",
+    StructuredAggFact->SetParameter("aggregation: mode",
                                     Teuchos::ParameterEntry(coupling));
-    StructuredAggFact->SetParameter("aggregation: number of spatial dimensions",
-                                    Teuchos::ParameterEntry(numDimensions));
     StructuredAggFact->SetParameter("aggregation: coarsening order",
                                     Teuchos::ParameterEntry(0));
     StructuredAggFact->SetParameter("aggregation: coarsening rate",
@@ -881,12 +874,11 @@ namespace MueLuTests {
     dropFact->SetFactory("UnAmalgamationInfo", amalgFact);
     RCP<StructuredAggregationFactory> StructuredAggFact = rcp(new StructuredAggregationFactory());
     StructuredAggFact->SetFactory("Graph", dropFact);
+    StructuredAggFact->SetFactory("DofsPerNode", dropFact);
     StructuredAggFact->SetParameter("aggregation: mesh layout",
                                     Teuchos::ParameterEntry(meshLayout));
-    StructuredAggFact->SetParameter("aggregation: coupling",
+    StructuredAggFact->SetParameter("aggregation: mode",
                                     Teuchos::ParameterEntry(coupling));
-    StructuredAggFact->SetParameter("aggregation: number of spatial dimensions",
-                                    Teuchos::ParameterEntry(numDimensions));
     StructuredAggFact->SetParameter("aggregation: coarsening order",
                                     Teuchos::ParameterEntry(0));
     StructuredAggFact->SetParameter("aggregation: coarsening rate",
@@ -996,12 +988,11 @@ namespace MueLuTests {
     dropFact->SetFactory("UnAmalgamationInfo", amalgFact);
     RCP<StructuredAggregationFactory> StructuredAggFact = rcp(new StructuredAggregationFactory());
     StructuredAggFact->SetFactory("Graph", dropFact);
+    StructuredAggFact->SetFactory("DofsPerNode", dropFact);
     StructuredAggFact->SetParameter("aggregation: mesh layout",
                                     Teuchos::ParameterEntry(meshLayout));
-    StructuredAggFact->SetParameter("aggregation: coupling",
+    StructuredAggFact->SetParameter("aggregation: mode",
                                     Teuchos::ParameterEntry(coupling));
-    StructuredAggFact->SetParameter("aggregation: number of spatial dimensions",
-                                    Teuchos::ParameterEntry(numDimensions));
     StructuredAggFact->SetParameter("aggregation: coarsening order",
                                     Teuchos::ParameterEntry(0));
     StructuredAggFact->SetParameter("aggregation: coarsening rate",
@@ -1119,13 +1110,14 @@ namespace MueLuTests {
     CDropfact->SetParameter("lightweight wrap", Teuchos::ParameterEntry(true));
     CDropfact->SetParameter("aggregation: drop tol", Teuchos::ParameterEntry(0.0));
 
-    Aggfact->SetParameter("aggregation: coupling", Teuchos::ParameterEntry(std::string("uncoupled")));
+    Aggfact->SetParameter("aggregation: mode", Teuchos::ParameterEntry(std::string("uncoupled")));
 
     Tfact->SetParameter("structured aggregation", Teuchos::ParameterEntry(true));
 
     // Set interfactory dependencies
     CDropfact->SetFactory("UnAmalgamationInfo", AmalgFact);
     Aggfact->SetFactory("Graph", CDropfact);
+    Aggfact->SetFactory("DofsPerNode", CDropfact);
     coarseMapFact->SetFactory("Aggregates", Aggfact);
     Pfact->SetFactory("Aggregates", Aggfact);
     Pfact->SetFactory("CoarseMap", coarseMapFact);

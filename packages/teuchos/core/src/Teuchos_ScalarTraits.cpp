@@ -84,6 +84,7 @@ operator>> (std::istream& in, __float128& x)
 
 void Teuchos::throwScalarTraitsNanInfError( const std::string &errMsg )
 {
+  (void)errMsg;
 #ifdef TEUCHOS_SCALAR_TRAITS_THROW_NAN_INF_ERR
   TEUCHOS_TEST_FOR_EXCEPTION( true, std::runtime_error, errMsg );
 #endif
@@ -105,7 +106,7 @@ bool Teuchos::operator&&(const qd_real &a, const qd_real &b) {
 #ifndef __sun
 // This is an intentional computation of NaN.
 namespace Teuchos {
-  const float  flt_nan = std::numeric_limits<float>::signaling_NaN();
-  const double dbl_nan = std::numeric_limits<double>::signaling_NaN();
+  const float  flt_nan = std::numeric_limits<float>::quiet_NaN();
+  const double dbl_nan = std::numeric_limits<double>::quiet_NaN();
 }
 #endif

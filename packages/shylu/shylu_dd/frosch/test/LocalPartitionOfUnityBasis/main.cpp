@@ -49,13 +49,14 @@
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <Xpetra_VectorFactory.hpp>
 #include <Xpetra_MapFactory.hpp>
+#include <Xpetra_UseDefaultTypes.hpp>
 
 #include "FROSch_LocalPartitionOfUnityBasis_def.hpp"
 
-typedef unsigned UN;
-typedef double SC;
-typedef int LO;
-typedef int GO;
+typedef unsigned                                    UN;
+typedef Scalar                                      SC;
+typedef LocalOrdinal                                LO;
+typedef GlobalOrdinal                               GO;
 typedef KokkosClassic::DefaultNode::DefaultNodeType NO;
 
 using namespace std;
@@ -174,9 +175,9 @@ int main(int argc, char *argv[])
 
     RCP<CoarseSpace<SC,LO,GO,NO> > coarseSpace = TestBasis.getLocalPartitionOfUnitySpace();
 
-    for (UN i=0; i<coarseSpace->getLocalBasis()->getLocalLength(); i++) {
-        for (UN j=0; j<coarseSpace->getLocalBasis()->getNumVectors(); j++) {
-            std::cout << coarseSpace->getLocalBasis()->getData(j)[i] << "\t";
+    for (UN i=0; i<coarseSpace->getAssembledBasis()->getLocalLength(); i++) {
+        for (UN j=0; j<coarseSpace->getAssembledBasis()->getNumVectors(); j++) {
+            std::cout << coarseSpace->getAssembledBasis()->getData(j)[i] << "\t";
         }
         std::cout << "\n";
     }
