@@ -8,7 +8,9 @@ This branch is based on [Kim Liegeois's fork of Trilinos](https://github.com/kli
 
 ### Debian / Ubuntu (gcc)
 
-This build is tested on Debian 9.1 and Ubuntu 18.04
+This build is tested on Debian 9.1 and Ubuntu 18.04.
+
+CMake >= 3.10 and SWIG>=3.0.11 are required. They should be rebuilt from source in Debian 9.1
 
 ```
 mkdir build
