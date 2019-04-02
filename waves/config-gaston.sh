@@ -45,6 +45,7 @@ cmake \
  -D Trilinos_ENABLE_Ifpack2:BOOL=ON \
  -D Trilinos_ENABLE_Thyra:BOOL=ON \
  -D Trilinos_ENABLE_Teko:BOOL=ON \
+ -D Trilinos_ENABLE_Galeri:BOOL=ON \
  -D Stokhos_ENABLE_EXAMPLES:BOOL=OFF \
  -D Stokhos_ENABLE_TESTS:BOOL=OFF \
  -D Stokhos_ENABLE_Ensemble_Reduction=OFF \
