@@ -1,6 +1,19 @@
-template<class DA, class ... PA,
-         class DB, class ... PB,
-         class DC, class ... PC>
+#ifndef KOKKOSBLAS3_GEMM_MP_VECTOR_HPP_
+#define KOKKOSBLAS3_GEMM_MP_VECTOR_HPP_
+
+#include <type_traits>
+#include "Sacado_ConfigDefs.h"
+
+#include "Stokhos_ViewStorage.hpp"
+#include "Sacado_MP_Vector.hpp"
+#include "Kokkos_View_MP_Vector.hpp"
+#include "Kokkos_ArithTraits_MP_Vector.hpp"
+#include "KokkosBlas.hpp"
+
+namespace KokkosBlas {
+template<typename DA, typename ... PA,
+         typename DB, typename ... PB,
+         typename DC, typename ... PC>
 typename std::enable_if< Kokkos::is_view_mp_vector< Kokkos::View<DA,PA...> >::value &&
                          Kokkos::is_view_mp_vector< Kokkos::View<DB,PB...> >::value &&
                          Kokkos::is_view_mp_vector< Kokkos::View<DC,PC...> >::value >::type
@@ -12,3 +25,19 @@ gemm (const char transA[],
       typename Kokkos::View<DC,PC...>::const_value_type& beta,
       const Kokkos::View<DC,PC...>& C)
 {
+  // Assert that A, B, and C are in fact matrices
+  static_assert (Kokkos::View<DA,PA...>::rank == 2, "GEMM: A must have rank 2 (be a matrix).");
+  static_assert (Kokkos::View<DB,PB...>::rank == 2, "GEMM: B must have rank 2 (be a matrix).");
+  static_assert (Kokkos::View<DC,PC...>::rank == 2, "GEMM: C must have rank 2 (be a matrix).");
+  
+  if (C.dimension_1 () == 1)
+  {  
+    auto x = Kokkos::subview (B, Kokkos::ALL, 0);
+    auto y = Kokkos::subview (C, Kokkos::ALL, 0);
+    KokkosBlas::gemv(transA,alpha,A,x,beta,y);
+  }
+  else
+    TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, "GEMM:  Not implemented for Sacado::MP::Vector scalar type!");
+}
+}
+#endif
